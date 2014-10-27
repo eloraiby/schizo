@@ -1,23 +1,23 @@
 #ifndef AST_H
 #define AST_H
 /*
-Schizo programming language
-Copyright (C) 2014  Wael El Oraiby
+  Schizo programming language
+  Copyright (C) 2014  Wael El Oraiby
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Also add information on how to contact you by electronic and paper mail.
+  Also add information on how to contact you by electronic and paper mail.
 */
 #include "parser.h"
 #include <stdint.h>
@@ -46,9 +46,21 @@ typedef double		real64;
 
 typedef int CELL_TYPE;
 
+struct cons_t;
+struct closure_t;
+struct cell_t;
+
+typedef struct cons_t {
+	struct cell_t*	prev;
+	struct cell_t*	to;
+} cons_t;
+
+typedef struct closure_t {
+
+} closure_t;
+
 typedef struct cell_t {
 	CELL_TYPE	type;
-	struct	cell_t*	next;
 
 	union {
 		char*		symbol;
@@ -71,8 +83,7 @@ typedef struct cell_t {
 		real64		r64;
 
 		char*		string;
-
-		struct cell_t*	cons;
+		cons_t		cons;
 	};
 
 } cell_t;

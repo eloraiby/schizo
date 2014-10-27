@@ -1,5 +1,24 @@
 
-#line 1 "/home/kin/schizo/lexer.rl"
+#line 1 "/home/kin/Projects/schizo/lexer.rl"
+/*
+  Schizo programming language
+  Copyright (C) 2014  Wael El Oraiby
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  Also add information on how to contact you by electronic and paper mail.
+*/
 /*
  * A C like scanner. Uses the longest match construction.
  * Taken from Ragel site
@@ -35,7 +54,7 @@ extern void	parser_free(void *p, void (*freeProc)(void*));
 extern void	parser_advance(void *yyp, int yymajor, cell_t* yyminor, state_t* state);
 
 
-#line 39 "/home/kin/schizo/lexer.c"
+#line 58 "/home/kin/Projects/schizo/lexer.c"
 static const char _scanner_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 19, 1, 20, 1, 
@@ -208,7 +227,7 @@ static const int scanner_en_c_comment = 12;
 static const int scanner_en_main = 14;
 
 
-#line 173 "/home/kin/schizo/lexer.rl"
+#line 192 "/home/kin/Projects/schizo/lexer.rl"
 
 
 static uint32
@@ -346,7 +365,7 @@ parse(const char* str)
 	memset(tmp, 0, sizeof(tmp));
 
 	
-#line 350 "/home/kin/schizo/lexer.c"
+#line 369 "/home/kin/Projects/schizo/lexer.c"
 	{
 	cs = scanner_start;
 	ts = 0;
@@ -354,14 +373,14 @@ parse(const char* str)
 	act = 0;
 	}
 
-#line 310 "/home/kin/schizo/lexer.rl"
+#line 329 "/home/kin/Projects/schizo/lexer.rl"
 
 	const char*	p = str;
 	const char*	pe = p + strlen(str) + 1;
 	const char*	eof = 0;
 
 	
-#line 365 "/home/kin/schizo/lexer.c"
+#line 384 "/home/kin/Projects/schizo/lexer.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -382,7 +401,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 386 "/home/kin/schizo/lexer.c"
+#line 405 "/home/kin/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -449,11 +468,11 @@ _eof_trans:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 48 "/home/kin/schizo/lexer.rl"
+#line 67 "/home/kin/Projects/schizo/lexer.rl"
 	{ ++line; }
 	break;
 	case 1:
-#line 50 "/home/kin/schizo/lexer.rl"
+#line 69 "/home/kin/Projects/schizo/lexer.rl"
 	{ {cs = 14; goto _again;} }
 	break;
 	case 4:
@@ -461,63 +480,63 @@ _eof_trans:
 	{te = p+1;}
 	break;
 	case 5:
-#line 53 "/home/kin/schizo/lexer.rl"
+#line 72 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 1;}
 	break;
 	case 6:
-#line 54 "/home/kin/schizo/lexer.rl"
+#line 73 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 2;}
 	break;
 	case 7:
-#line 85 "/home/kin/schizo/lexer.rl"
+#line 104 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 6;}
 	break;
 	case 8:
-#line 90 "/home/kin/schizo/lexer.rl"
+#line 109 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 9;}
 	break;
 	case 9:
-#line 94 "/home/kin/schizo/lexer.rl"
+#line 113 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 10;}
 	break;
 	case 10:
-#line 101 "/home/kin/schizo/lexer.rl"
+#line 120 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 11;}
 	break;
 	case 11:
-#line 103 "/home/kin/schizo/lexer.rl"
+#line 122 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 12;}
 	break;
 	case 12:
-#line 110 "/home/kin/schizo/lexer.rl"
+#line 129 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 13;}
 	break;
 	case 13:
-#line 117 "/home/kin/schizo/lexer.rl"
+#line 136 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 14;}
 	break;
 	case 14:
-#line 131 "/home/kin/schizo/lexer.rl"
+#line 150 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 16;}
 	break;
 	case 15:
-#line 138 "/home/kin/schizo/lexer.rl"
+#line 157 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 17;}
 	break;
 	case 16:
-#line 145 "/home/kin/schizo/lexer.rl"
+#line 164 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 18;}
 	break;
 	case 17:
-#line 163 "/home/kin/schizo/lexer.rl"
+#line 182 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 21;}
 	break;
 	case 18:
-#line 171 "/home/kin/schizo/lexer.rl"
+#line 190 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 25;}
 	break;
 	case 19:
-#line 57 "/home/kin/schizo/lexer.rl"
+#line 76 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -528,7 +547,7 @@ _eof_trans:
 								}}
 	break;
 	case 20:
-#line 66 "/home/kin/schizo/lexer.rl"
+#line 85 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -539,7 +558,7 @@ _eof_trans:
 								}}
 	break;
 	case 21:
-#line 75 "/home/kin/schizo/lexer.rl"
+#line 94 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -550,43 +569,43 @@ _eof_trans:
 								}}
 	break;
 	case 22:
-#line 89 "/home/kin/schizo/lexer.rl"
+#line 108 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ ADVANCE( real32 );}}
 	break;
 	case 23:
-#line 160 "/home/kin/schizo/lexer.rl"
+#line 179 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( LPAR );}}
 	break;
 	case 24:
-#line 161 "/home/kin/schizo/lexer.rl"
+#line 180 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( RPAR );}}
 	break;
 	case 25:
-#line 166 "/home/kin/schizo/lexer.rl"
+#line 185 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ printf("unexpected character %c\n", *ts); }}
 	break;
 	case 26:
-#line 170 "/home/kin/schizo/lexer.rl"
+#line 189 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;}
 	break;
 	case 27:
-#line 85 "/home/kin/schizo/lexer.rl"
+#line 104 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{ ADVANCE( symbol );}}
 	break;
 	case 28:
-#line 86 "/home/kin/schizo/lexer.rl"
+#line 105 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{ ADVANCE( symbol );}}
 	break;
 	case 29:
-#line 90 "/home/kin/schizo/lexer.rl"
+#line 109 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{ ADVANCE( real64 );}}
 	break;
 	case 30:
-#line 101 "/home/kin/schizo/lexer.rl"
+#line 120 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{ ADVANCE( sint32 );}}
 	break;
 	case 31:
-#line 124 "/home/kin/schizo/lexer.rl"
+#line 143 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{
 									PUSH_TE();
 									--te;
@@ -595,7 +614,7 @@ _eof_trans:
 								}}
 	break;
 	case 32:
-#line 145 "/home/kin/schizo/lexer.rl"
+#line 164 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{
 									fprintf(stderr, "invalid character trailer:\n    ");
 
@@ -610,15 +629,15 @@ _eof_trans:
 								}}
 	break;
 	case 33:
-#line 166 "/home/kin/schizo/lexer.rl"
+#line 185 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{ printf("unexpected character %c\n", *ts); }}
 	break;
 	case 34:
-#line 86 "/home/kin/schizo/lexer.rl"
+#line 105 "/home/kin/Projects/schizo/lexer.rl"
 	{{p = ((te))-1;}{ ADVANCE( symbol );}}
 	break;
 	case 35:
-#line 101 "/home/kin/schizo/lexer.rl"
+#line 120 "/home/kin/Projects/schizo/lexer.rl"
 	{{p = ((te))-1;}{ ADVANCE( sint32 );}}
 	break;
 	case 36:
@@ -710,7 +729,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 714 "/home/kin/schizo/lexer.c"
+#line 733 "/home/kin/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -723,7 +742,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 727 "/home/kin/schizo/lexer.c"
+#line 746 "/home/kin/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -743,7 +762,7 @@ _again:
 	_out: {}
 	}
 
-#line 316 "/home/kin/schizo/lexer.rl"
+#line 335 "/home/kin/Projects/schizo/lexer.rl"
 
 	/* Check if we failed. */
 	if ( cs == scanner_error ) {

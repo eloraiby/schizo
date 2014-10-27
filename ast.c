@@ -29,7 +29,6 @@
 							cell_t*	ret	= (cell_t*)malloc(sizeof(cell_t)); \
 							ret->type	= ENUM; \
 							ret->FIELD	= v; \
-							ret->next	= NULL; \
 							return ret; \
 						}
 cell_t*
@@ -40,7 +39,6 @@ cell_new_symbol(const char* b) {
 	ret->type	= CELL_SYMBOL;
 	ret->symbol	= (char*)(malloc(len + 1));
 	memcpy(ret->symbol, b, len + 1);
-	ret->next	= NULL;
 	return ret;
 }
 
@@ -49,7 +47,6 @@ cell_new_boolean(boolean b) {
 	cell_t* ret	= (cell_t*)malloc(sizeof(cell_t));
 	ret->type	= CELL_BOOL;
 	ret->boolean	= b;
-	ret->next	= NULL;
 	return ret;
 }
 
@@ -58,7 +55,6 @@ cell_new_char(char c) {
 	cell_t* ret	= (cell_t*)malloc(sizeof(cell_t));
 	ret->type	= CELL_CHAR;
 	ret->ch		= c;
-	ret->next	= NULL;
 	return ret;
 }
 
@@ -81,7 +77,6 @@ cell_new_string(const char* b) {
 	ret->type	= CELL_STRING;
 	ret->string	= (char*)(malloc(len + 1));
 	memcpy(ret->symbol, b, len + 1);
-	ret->next	= NULL;
 	return ret;
 }
 
@@ -89,8 +84,8 @@ cell_t*
 cell_new_cons(cell_t* to) {
 	cell_t* ret	= (cell_t*)malloc(sizeof(cell_t));
 	ret->type	= CELL_CONS;
-	ret->cons	= to;
-	ret->next	= NULL;
+	ret->cons.to	= to;
+	ret->cons.prev	= NULL;
 	return ret;
 }
 
@@ -98,7 +93,7 @@ cell_t*
 cell_cons(cell_t* c,
 	  cell_t* list)
 {
-	c->next	= list;
+	c->cons.prev	= list;
 	return c;
 }
 
@@ -177,26 +172,26 @@ print_cell(cell_t *c,
 		break;
 
 	case CELL_CONS:
-		if( c->cons ) {
+		if( c->cons.to ) {
 			fprintf(stderr, "cons:\n");
-			print_cell(c->cons, level + 1);
+			print_cell(c->cons.to, level + 1);
 			print_level(level);
 		} else {
 			fprintf(stderr, "cons: nil\n");
 		}
 
-		if( c->next ) {
-			cell_t* n = c->next;
+		if( c->cons.prev ) {
+			cell_t* n = c->cons.prev;
 			while(n) {
-				if( n->cons ) {
+				if( n->cons.to ) {
 					fprintf(stderr, "cons:\n");
-					print_cell(n->cons, level + 1);
+					print_cell(n->cons.to, level + 1);
 					print_level(level);
 				} else {
 					fprintf(stderr, "cons: nil\n");
 				}
 
-				n	= n->next;
+				n	= n->cons.prev;
 			}
 		}
 		break;

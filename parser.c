@@ -5,11 +5,11 @@
 ** in the input grammar file. */
 #include <stdio.h>
 #include <assert.h>
-#line 9 "/home/kin/schizo/parser.y"
+#line 28 "/home/kin/Projects/schizo/parser.y"
 
 #include <stdio.h>
 #include "ast.h"
-#line 13 "/home/kin/schizo/parser.c"
+#line 13 "/home/kin/Projects/schizo/parser.c"
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
 */
@@ -695,9 +695,9 @@ static void yy_reduce(
   **     break;
   */
       case 0: /* program ::= exp */
-#line 21 "/home/kin/schizo/parser.y"
+#line 40 "/home/kin/Projects/schizo/parser.y"
 { current_state->root = yymsp[0].minor.yy40; }
-#line 701 "/home/kin/schizo/parser.c"
+#line 701 "/home/kin/Projects/schizo/parser.c"
         break;
       case 1: /* exp ::= CELL_SYMBOL */
       case 2: /* exp ::= CELL_BOOL */ yytestcase(yyruleno==2);
@@ -713,29 +713,29 @@ static void yy_reduce(
       case 12: /* exp ::= CELL_REAL32 */ yytestcase(yyruleno==12);
       case 13: /* exp ::= CELL_REAL64 */ yytestcase(yyruleno==13);
       case 14: /* exp ::= CELL_STRING */ yytestcase(yyruleno==14);
-#line 24 "/home/kin/schizo/parser.y"
+#line 43 "/home/kin/Projects/schizo/parser.y"
 { yygotominor.yy40 = yymsp[0].minor.yy0; }
-#line 719 "/home/kin/schizo/parser.c"
+#line 719 "/home/kin/Projects/schizo/parser.c"
         break;
       case 17: /* exp ::= LPAR RPAR */
-#line 44 "/home/kin/schizo/parser.y"
+#line 63 "/home/kin/Projects/schizo/parser.y"
 { yygotominor.yy40 = cell_new_cons(NULL); }
-#line 724 "/home/kin/schizo/parser.c"
+#line 724 "/home/kin/Projects/schizo/parser.c"
         break;
       case 18: /* exp ::= LPAR exp_list RPAR */
-#line 45 "/home/kin/schizo/parser.y"
+#line 64 "/home/kin/Projects/schizo/parser.y"
 { yygotominor.yy40 = yymsp[-1].minor.yy40; }
-#line 729 "/home/kin/schizo/parser.c"
+#line 729 "/home/kin/Projects/schizo/parser.c"
         break;
       case 19: /* exp_list ::= exp */
-#line 47 "/home/kin/schizo/parser.y"
+#line 66 "/home/kin/Projects/schizo/parser.y"
 { yygotominor.yy40 = cell_new_cons(yymsp[0].minor.yy40); }
-#line 734 "/home/kin/schizo/parser.c"
+#line 734 "/home/kin/Projects/schizo/parser.c"
         break;
       case 20: /* exp_list ::= exp_list exp */
-#line 48 "/home/kin/schizo/parser.y"
+#line 67 "/home/kin/Projects/schizo/parser.y"
 { yygotominor.yy40 = cell_cons(cell_new_cons(yymsp[0].minor.yy40), yymsp[-1].minor.yy40); }
-#line 739 "/home/kin/schizo/parser.c"
+#line 739 "/home/kin/Projects/schizo/parser.c"
         break;
       default:
       /* (15) exp ::= CELL_CONS */ yytestcase(yyruleno==15);
