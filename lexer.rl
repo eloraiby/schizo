@@ -62,7 +62,6 @@ extern void	parser_advance(void *yyp, int yymajor, cell_t* yyminor, state_t* sta
 	# Floating literals.
 	fract_const = digit* '.' digit+ | digit+ '.';
 	exponent = [eE] [+\-]? digit+;
-	float_suffix = [fF];
 
 	action inc_line { ++line; }
 
@@ -105,73 +104,20 @@ extern void	parser_advance(void *yyp, int yymajor, cell_t* yyminor, state_t* sta
 		( op_char op_char* )				{ ADVANCE( symbol );};
 
 		# Floating literals.
-		( fract_const exponent? float_suffix | digit+ exponent float_suffix )		{ ADVANCE( real32 );};
-		( fract_const exponent? | digit+ exponent )	{ ADVANCE( real64 );};
+		( [+\-]? fract_const exponent? | [+\-]? digit+ exponent ) 	{ ADVANCE( real64 );};
 
 
 		# Integer decimal. Leading part buffered by float.
-		( [+\-]? ( '0' | [1-9] [0-9]* ) [l] )		{
-									PUSH_TE();
-									--te;
-									ADVANCE( sint64 );
-									POP_TE();
-								};
-
-		( [+\-]? ( '0' | [1-9] [0-9]* ) )		{ ADVANCE( sint32 );};
-
-		( [+\-]? ( '0' | [1-9] [0-9]* ) [s] )		{
-									PUSH_TE();
-									--te;
-									ADVANCE( sint16 );
-									POP_TE();
-								};
-
-		( [+\-]? ( '0' | [1-9] [0-9]* ) [y] )		{
-									PUSH_TE();
-									--te;
-									ADVANCE( sint8 );
-									POP_TE();
-								};
-
-		( ( '0' | [1-9] [0-9]* ) ('ul') )		{
-									PUSH_TE();
-									te -= 2;
-									ADVANCE( uint64 );
-									POP_TE();
-								};
-
-		( ( '0' | [1-9] [0-9]* ) ('u') )		{
-									PUSH_TE();
-									--te;
-									ADVANCE( uint32 );
-									POP_TE();
-								};
-
-		( ( '0' | [1-9] [0-9]* ) ('us') )		{
-									PUSH_TE();
-									te -= 2;
-									ADVANCE( uint16 );
-									POP_TE();
-								};
-
-		( ( '0' | [1-9] [0-9]* ) ('uy') )		{
-									PUSH_TE();
-									te -= 2;
-									ADVANCE( uint8 );
-									POP_TE();
-								};
+		( [+\-]? ( '0' | [1-9] [0-9]* ) )		{ ADVANCE( sint64 ); };
 
 		( [+\-]? ( '0' | [1-9] [0-9]* ) [a-zA-Z_]+ )	{
-									fprintf(stderr, "invalid character trailer:\n    ");
+									fprintf(stderr, "Error: invalid number:\n    ");
 
 									for( const char* i = ts; i < te; ++i ) {
 										fprintf(stderr, "%c", *i);
 									}
 									fprintf(stderr, "\n");
-									PUSH_TE();
-									--te;
-									ADVANCE( sint8 );
-									POP_TE();
+									cs	= scanner_error;
 								};
 
 
@@ -222,75 +168,11 @@ token_to_char(const char* b) {
 }
 
 static cell_t*
-token_to_sint8(const char* b) {
-	sint64	v	= 0;
-	sscanf(b, "%ld", &v);
-	/* TODO: check limit */
-	return cell_new_sint8(v);
-}
-
-static cell_t*
-token_to_sint16(const char* b) {
-	sint64	v	= 0;
-	sscanf(b, "%ld", &v);
-	/* TODO: check limit */
-	return cell_new_sint16(v);
-}
-
-static cell_t*
-token_to_sint32(const char* b) {
-	sint64	v	= 0;
-	sscanf(b, "%ld", &v);
-	/* TODO: check limit */
-	return cell_new_sint32(v);
-}
-
-static cell_t*
 token_to_sint64(const char* b) {
 	sint64	v	= 0;
 	sscanf(b, "%ld", &v);
 	/* TODO: check limit */
 	return cell_new_sint64(v);
-}
-
-static cell_t*
-token_to_uint8(const char* b) {
-	uint64	v	= 0;
-	sscanf(b, "%lu", &v);
-	/* TODO: check limit */
-	return cell_new_uint8(v);
-}
-
-static cell_t*
-token_to_uint16(const char* b) {
-	uint64	v	= 0;
-	sscanf(b, "%lu", &v);
-	/* TODO: check limit */
-	return cell_new_uint16(v);
-}
-
-static cell_t*
-token_to_uint32(const char* b) {
-	uint64	v	= 0;
-	sscanf(b, "%lu", &v);
-	/* TODO: check limit */
-	return cell_new_uint32(v);
-}
-
-static cell_t*
-token_to_uint64(const char* b) {
-	uint64	v	= 0;
-	sscanf(b, "%lu", &v);
-	/* TODO: check limit */
-	return cell_new_uint64(v);
-}
-
-static cell_t*
-token_to_real32(const char* b) {
-	real64	v	= 0;
-	sscanf(b, "%lf", &v);
-	/* TODO: check limit */
-	return cell_new_real32(v);
 }
 
 static cell_t*

@@ -36,33 +36,26 @@
 
 %start_symbol program
 
-/* a program is a statement list */
+/* a program is an expression */
 program		::= exp(B).			{ current_state->root = B; }
 
 /* literals */
 exp(A)		::= CELL_SYMBOL(B).		{ A = B; }
 exp(A)		::= CELL_BOOL(B).		{ A = B; }
 exp(A)		::= CELL_CHAR(B).		{ A = B; }
-exp(A)		::= CELL_SINT8(B).		{ A = B; }
-exp(A)		::= CELL_SINT16(B).		{ A = B; }
-exp(A)		::= CELL_SINT32(B).		{ A = B; }
 exp(A)		::= CELL_SINT64(B).		{ A = B; }
-exp(A)		::= CELL_UINT8(B).		{ A = B; }
-exp(A)		::= CELL_UINT16(B).		{ A = B; }
-exp(A)		::= CELL_UINT32(B).		{ A = B; }
-exp(A)		::= CELL_UINT64(B).		{ A = B; }
-exp(A)		::= CELL_REAL32(B).		{ A = B; }
 exp(A)		::= CELL_REAL64(B).		{ A = B; }
 exp(A)		::= CELL_STRING(B).		{ A = B; }
 
 /* NEVER USED: these are a hack to have the token ids */
-exp		::= CELL_CONS.
-exp		::= CELL_CLOSURE.
+exp		::= CELL_CONS.			/* cons cell */
+exp		::= CELL_CLOSURE.		/* closure */
+exp		::= CELL_FFI.			/* foreign function interface */
 
 /* ( ... ) */
 exp(A)		::= LPAR RPAR.			{ A = cell_new_cons(NULL); }
 exp(A)		::= LPAR exp_list(B) RPAR.	{ A = B; }
 
 exp_list(A)	::= exp(B).			{ A = cell_new_cons(B); }
-exp_list(A)	::= exp_list(B) exp(C).		{ A = cell_cons(cell_new_cons(C), B); }
+exp_list(A)	::= exp_list(B) exp(C).		{ A = cell_cons(C, B); }
 

@@ -51,12 +51,13 @@ struct closure_t;
 struct cell_t;
 
 typedef struct cons_t {
-	struct cell_t*	prev;
-	struct cell_t*	to;
+	struct cell_t*	cdr;	/* the tail */
+	struct cell_t*	car;
 } cons_t;
 
 typedef struct closure_t {
-
+	struct cell_t*	env;
+	struct cell_t*	expression;
 } closure_t;
 
 typedef struct cell_t {
@@ -69,21 +70,12 @@ typedef struct cell_t {
 
 		char		ch;
 
-		sint8		s8;
-		sint16		s16;
-		sint32		s32;
 		sint64		s64;
-
-		uint8		u8;
-		uint16		u16;
-		uint32		u32;
-		uint64		u64;
-
-		real32		r32;
 		real64		r64;
 
 		char*		string;
 		cons_t		cons;
+		closure_t	closure;
 	};
 
 } cell_t;
@@ -91,20 +83,16 @@ typedef struct cell_t {
 cell_t*		cell_new_symbol(const char* sym);
 cell_t*		cell_new_boolean(boolean b);
 cell_t*		cell_new_char(char c);
-cell_t*		cell_new_sint8(sint8 i);
-cell_t*		cell_new_sint16(sint16 i);
-cell_t*		cell_new_sint32(sint32 i);
 cell_t*		cell_new_sint64(sint64 i);
-cell_t*		cell_new_uint8(uint8 i);
-cell_t*		cell_new_uint16(uint16 i);
-cell_t*		cell_new_uint32(uint32 i);
-cell_t*		cell_new_uint64(uint64 i);
-cell_t*		cell_new_real32(real32 i);
 cell_t*		cell_new_real64(real64 i);
 cell_t*		cell_new_string(const char* b);
 
-cell_t*		cell_new_cons(cell_t *to);
-cell_t*		cell_cons(cell_t* c, cell_t* list);
+cell_t*		cell_new_cons(cell_t *car);
+cell_t*		cell_cons(cell_t* car, cell_t* list);
+cell_t*		cell_car(cell_t* list);
+cell_t*		cell_cdr(cell_t* list);
+
+
 
 typedef struct state_t {
 	cell_t*		root;

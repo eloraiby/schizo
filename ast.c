@@ -58,15 +58,8 @@ cell_new_char(char c) {
 	return ret;
 }
 
-IMPLEMENT_TYPE_CELL(sint8,  s8,  CELL_SINT8)
-IMPLEMENT_TYPE_CELL(sint16, s16, CELL_SINT16)
-IMPLEMENT_TYPE_CELL(sint32, s32, CELL_SINT32)
+
 IMPLEMENT_TYPE_CELL(sint64, s64, CELL_SINT64)
-IMPLEMENT_TYPE_CELL(uint8,  u8,  CELL_UINT8)
-IMPLEMENT_TYPE_CELL(uint16, u16, CELL_UINT16)
-IMPLEMENT_TYPE_CELL(uint32, u32, CELL_UINT32)
-IMPLEMENT_TYPE_CELL(uint64, u64, CELL_UINT64)
-IMPLEMENT_TYPE_CELL(real32, r32, CELL_REAL32)
 IMPLEMENT_TYPE_CELL(real64, r64, CELL_REAL64)
 
 cell_t*
@@ -81,25 +74,38 @@ cell_new_string(const char* b) {
 }
 
 cell_t*
-cell_new_cons(cell_t* to) {
+cell_new_cons(cell_t* car) {
 	cell_t* ret	= (cell_t*)malloc(sizeof(cell_t));
 	ret->type	= CELL_CONS;
-	ret->cons.to	= to;
-	ret->cons.prev	= NULL;
+	ret->cons.car	= car;
+	ret->cons.cdr	= NULL;
 	return ret;
 }
 
 cell_t*
-cell_cons(cell_t* c,
+cell_cons(cell_t* car,
 	  cell_t* list)
 {
-	c->cons.prev	= list;
-	return c;
+	cell_t* ret	= cell_new_cons(car);
+	ret->cons.cdr	= list;
+	return ret;
 }
 
-static void
-print_level(uint32 level)
+cell_t*
+cell_car(cell_t* list)
 {
+	return list->cons.car;
+}
+
+cell_t*
+cell_cdr(cell_t* list)
+{
+	return list->cons.cdr;
+}
+
+
+static void
+print_level(uint32 level) {
 	for( uint32 i = 0; i < level; ++i ) {
 		fprintf(stderr, "  ");
 	}
@@ -127,40 +133,8 @@ print_cell(cell_t *c,
 		fprintf(stderr, "char: '%c'", c->ch);
 		break;
 
-	case CELL_SINT8:
-		fprintf(stderr, "sint8: %ld", (sint64)c->s8);
-		break;
-
-	case CELL_SINT16:
-		fprintf(stderr, "sint16: %ld", (sint64)c->s16);
-		break;
-
-	case CELL_SINT32:
-		fprintf(stderr, "sint32: %ld", (sint64)c->s32);
-		break;
-
 	case CELL_SINT64:
 		fprintf(stderr, "sint64: %ld", (sint64)c->s64);
-		break;
-
-	case CELL_UINT8:
-		fprintf(stderr, "uint8: %lu", (uint64)c->u8);
-		break;
-
-	case CELL_UINT16:
-		fprintf(stderr, "uint16: %lu", (uint64)c->u16);
-		break;
-
-	case CELL_UINT32:
-		fprintf(stderr, "uint32: %lu", (uint64)c->u32);
-		break;
-
-	case CELL_UINT64:
-		fprintf(stderr, "uint64: %lu", (uint64)c->u64);
-		break;
-
-	case CELL_REAL32:
-		fprintf(stderr, "real32: %lf", (real64)c->r32);
 		break;
 
 	case CELL_REAL64:
@@ -172,26 +146,26 @@ print_cell(cell_t *c,
 		break;
 
 	case CELL_CONS:
-		if( c->cons.to ) {
+		if( c->cons.car ) {
 			fprintf(stderr, "cons:\n");
-			print_cell(c->cons.to, level + 1);
+			print_cell(c->cons.car, level + 1);
 			print_level(level);
 		} else {
 			fprintf(stderr, "cons: nil\n");
 		}
 
-		if( c->cons.prev ) {
-			cell_t* n = c->cons.prev;
+		if( c->cons.cdr ) {
+			cell_t* n = c->cons.cdr;
 			while(n) {
-				if( n->cons.to ) {
+				if( n->cons.car ) {
 					fprintf(stderr, "cons:\n");
-					print_cell(n->cons.to, level + 1);
+					print_cell(n->cons.car, level + 1);
 					print_level(level);
 				} else {
 					fprintf(stderr, "cons: nil\n");
 				}
 
-				n	= n->cons.prev;
+				n	= n->cons.cdr;
 			}
 		}
 		break;
