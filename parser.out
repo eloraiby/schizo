@@ -1,0 +1,258 @@
+State 0:
+          program ::= * exp
+          exp ::= * CELL_SYMBOL
+          exp ::= * CELL_BOOL
+          exp ::= * CELL_CHAR
+          exp ::= * CELL_SINT8
+          exp ::= * CELL_SINT16
+          exp ::= * CELL_SINT32
+          exp ::= * CELL_SINT64
+          exp ::= * CELL_UINT8
+          exp ::= * CELL_UINT16
+          exp ::= * CELL_UINT32
+          exp ::= * CELL_UINT64
+          exp ::= * CELL_REAL32
+          exp ::= * CELL_REAL64
+          exp ::= * CELL_STRING
+          exp ::= * CELL_CONS
+          exp ::= * CELL_CLOSURE
+          exp ::= * LPAR RPAR
+          exp ::= * LPAR exp_list RPAR
+
+                   CELL_SYMBOL shift  23
+                     CELL_BOOL shift  22
+                     CELL_CHAR shift  21
+                    CELL_SINT8 shift  20
+                   CELL_SINT16 shift  19
+                   CELL_SINT32 shift  18
+                   CELL_SINT64 shift  17
+                    CELL_UINT8 shift  16
+                   CELL_UINT16 shift  15
+                   CELL_UINT32 shift  14
+                   CELL_UINT64 shift  13
+                   CELL_REAL32 shift  12
+                   CELL_REAL64 shift  11
+                   CELL_STRING shift  10
+                     CELL_CONS shift  9
+                  CELL_CLOSURE shift  8
+                          LPAR shift  1
+                           exp shift  3
+                       program accept
+
+State 1:
+          exp ::= * CELL_SYMBOL
+          exp ::= * CELL_BOOL
+          exp ::= * CELL_CHAR
+          exp ::= * CELL_SINT8
+          exp ::= * CELL_SINT16
+          exp ::= * CELL_SINT32
+          exp ::= * CELL_SINT64
+          exp ::= * CELL_UINT8
+          exp ::= * CELL_UINT16
+          exp ::= * CELL_UINT32
+          exp ::= * CELL_UINT64
+          exp ::= * CELL_REAL32
+          exp ::= * CELL_REAL64
+          exp ::= * CELL_STRING
+          exp ::= * CELL_CONS
+          exp ::= * CELL_CLOSURE
+          exp ::= * LPAR RPAR
+          exp ::= LPAR * RPAR
+          exp ::= * LPAR exp_list RPAR
+          exp ::= LPAR * exp_list RPAR
+          exp_list ::= * exp
+          exp_list ::= * exp_list exp
+
+                   CELL_SYMBOL shift  23
+                     CELL_BOOL shift  22
+                     CELL_CHAR shift  21
+                    CELL_SINT8 shift  20
+                   CELL_SINT16 shift  19
+                   CELL_SINT32 shift  18
+                   CELL_SINT64 shift  17
+                    CELL_UINT8 shift  16
+                   CELL_UINT16 shift  15
+                   CELL_UINT32 shift  14
+                   CELL_UINT64 shift  13
+                   CELL_REAL32 shift  12
+                   CELL_REAL64 shift  11
+                   CELL_STRING shift  10
+                     CELL_CONS shift  9
+                  CELL_CLOSURE shift  8
+                          LPAR shift  1
+                          RPAR shift  7
+                           exp shift  4
+                      exp_list shift  2
+
+State 2:
+          exp ::= * CELL_SYMBOL
+          exp ::= * CELL_BOOL
+          exp ::= * CELL_CHAR
+          exp ::= * CELL_SINT8
+          exp ::= * CELL_SINT16
+          exp ::= * CELL_SINT32
+          exp ::= * CELL_SINT64
+          exp ::= * CELL_UINT8
+          exp ::= * CELL_UINT16
+          exp ::= * CELL_UINT32
+          exp ::= * CELL_UINT64
+          exp ::= * CELL_REAL32
+          exp ::= * CELL_REAL64
+          exp ::= * CELL_STRING
+          exp ::= * CELL_CONS
+          exp ::= * CELL_CLOSURE
+          exp ::= * LPAR RPAR
+          exp ::= * LPAR exp_list RPAR
+          exp ::= LPAR exp_list * RPAR
+          exp_list ::= exp_list * exp
+
+                   CELL_SYMBOL shift  23
+                     CELL_BOOL shift  22
+                     CELL_CHAR shift  21
+                    CELL_SINT8 shift  20
+                   CELL_SINT16 shift  19
+                   CELL_SINT32 shift  18
+                   CELL_SINT64 shift  17
+                    CELL_UINT8 shift  16
+                   CELL_UINT16 shift  15
+                   CELL_UINT32 shift  14
+                   CELL_UINT64 shift  13
+                   CELL_REAL32 shift  12
+                   CELL_REAL64 shift  11
+                   CELL_STRING shift  10
+                     CELL_CONS shift  9
+                  CELL_CLOSURE shift  8
+                          LPAR shift  1
+                          RPAR shift  6
+                           exp shift  5
+
+State 3:
+      (0) program ::= exp *
+
+                             $ reduce 0
+
+State 4:
+     (19) exp_list ::= exp *
+
+                     {default} reduce 19
+
+State 5:
+     (20) exp_list ::= exp_list exp *
+
+                     {default} reduce 20
+
+State 6:
+     (18) exp ::= LPAR exp_list RPAR *
+
+                     {default} reduce 18
+
+State 7:
+     (17) exp ::= LPAR RPAR *
+
+                     {default} reduce 17
+
+State 8:
+     (16) exp ::= CELL_CLOSURE *
+
+                     {default} reduce 16
+
+State 9:
+     (15) exp ::= CELL_CONS *
+
+                     {default} reduce 15
+
+State 10:
+     (14) exp ::= CELL_STRING *
+
+                     {default} reduce 14
+
+State 11:
+     (13) exp ::= CELL_REAL64 *
+
+                     {default} reduce 13
+
+State 12:
+     (12) exp ::= CELL_REAL32 *
+
+                     {default} reduce 12
+
+State 13:
+     (11) exp ::= CELL_UINT64 *
+
+                     {default} reduce 11
+
+State 14:
+     (10) exp ::= CELL_UINT32 *
+
+                     {default} reduce 10
+
+State 15:
+      (9) exp ::= CELL_UINT16 *
+
+                     {default} reduce 9
+
+State 16:
+      (8) exp ::= CELL_UINT8 *
+
+                     {default} reduce 8
+
+State 17:
+      (7) exp ::= CELL_SINT64 *
+
+                     {default} reduce 7
+
+State 18:
+      (6) exp ::= CELL_SINT32 *
+
+                     {default} reduce 6
+
+State 19:
+      (5) exp ::= CELL_SINT16 *
+
+                     {default} reduce 5
+
+State 20:
+      (4) exp ::= CELL_SINT8 *
+
+                     {default} reduce 4
+
+State 21:
+      (3) exp ::= CELL_CHAR *
+
+                     {default} reduce 3
+
+State 22:
+      (2) exp ::= CELL_BOOL *
+
+                     {default} reduce 2
+
+State 23:
+      (1) exp ::= CELL_SYMBOL *
+
+                     {default} reduce 1
+
+----------------------------------------------------
+Symbols:
+    0: $:
+    1: CELL_SYMBOL
+    2: CELL_BOOL
+    3: CELL_CHAR
+    4: CELL_SINT8
+    5: CELL_SINT16
+    6: CELL_SINT32
+    7: CELL_SINT64
+    8: CELL_UINT8
+    9: CELL_UINT16
+   10: CELL_UINT32
+   11: CELL_UINT64
+   12: CELL_REAL32
+   13: CELL_REAL64
+   14: CELL_STRING
+   15: CELL_CONS
+   16: CELL_CLOSURE
+   17: LPAR
+   18: RPAR
+   19: error:
+   20: exp: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT8 CELL_SINT16 CELL_SINT32 CELL_SINT64 CELL_UINT8 CELL_UINT16 CELL_UINT32 CELL_UINT64 CELL_REAL32 CELL_REAL64 CELL_STRING CELL_CONS CELL_CLOSURE LPAR
+   21: program: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT8 CELL_SINT16 CELL_SINT32 CELL_SINT64 CELL_UINT8 CELL_UINT16 CELL_UINT32 CELL_UINT64 CELL_REAL32 CELL_REAL64 CELL_STRING CELL_CONS CELL_CLOSURE LPAR
+   22: exp_list: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT8 CELL_SINT16 CELL_SINT32 CELL_SINT64 CELL_UINT8 CELL_UINT16 CELL_UINT32 CELL_UINT64 CELL_REAL32 CELL_REAL64 CELL_STRING CELL_CONS CELL_CLOSURE LPAR
