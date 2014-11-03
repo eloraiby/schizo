@@ -19,7 +19,7 @@ SOURCES += \
     main.c \
     lexer.c \
     parser.c \
-    ast.c
+    cell.c
 
 lexer.target = lexer.c
 lexer.commands = ragel -C -o $$PWD/lexer.c $$PWD/lexer.rl
@@ -40,4 +40,4 @@ OTHER_FILES += \
 
 HEADERS += \
     parser.h \
-    ast.h
+    schizo.h

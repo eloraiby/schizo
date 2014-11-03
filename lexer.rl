@@ -26,16 +26,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ast.h"
+#include "schizo.h"
 
 #define ADVANCE(A)	state->token_start	= ts; \
 			state->token_end	= te; \
 			state->token_line	= line; \
 			copy_token(ts, te, tmp); \
-			state->current_cell	= token_to_##A(tmp); \
-			parser_advance(parser, state->current_cell->type, state->current_cell, state)
+			state->current_cell	= token_to_##A(state, tmp); \
+			parser_advance(parser, state->gc_block.cells[state->current_cell.index].type, state->current_cell, state)
 
-#define ADVANCE_TOKEN(A)	parser_advance(parser, A, NULL, state)
+#define ADVANCE_TOKEN(A)	parser_advance(parser, A, nil, state)
 
 #define PUSH_TE()	const char* tmp_te = te
 #define POP_TE()	te	= tmp_te
@@ -49,7 +49,7 @@
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));
-extern void	parser_advance(void *yyp, int yymajor, cell_t* yyminor, state_t* state);
+extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* state);
 
 %%{
 	machine scanner;
@@ -70,6 +70,8 @@ extern void	parser_advance(void *yyp, int yymajor, cell_t* yyminor, state_t* sta
 	main := |*
 		'true'						{ ADVANCE( boolean );};
 		'false'						{ ADVANCE( boolean );};
+		'quote'						{ ADVANCE_TOKEN( QUOTE ); };
+		"'"						{ ADVANCE_TOKEN( QUOTE ); };
 
 		# Single and double literals.
 		( "'" (any - ['\\] ) "'" )			{
@@ -148,44 +150,44 @@ copy_token(const char* ts, const char *te, char* dst) {
 	return index;
 }
 
-static cell_t*
-token_to_symbol(const char* b) {
-	return cell_new_symbol(b);
+static cell_id_t
+token_to_symbol(state_t* s, const char* b) {
+	return cell_new_symbol(s, b);
 }
 
-static cell_t*
-token_to_boolean(const char* b) {
+static cell_id_t
+token_to_boolean(state_t* s, const char* b) {
 	if( !strcmp(b, "true") ) {
-		return cell_new_boolean(TRUE);
+		return cell_new_boolean(s, true);
 	} else {
-		return cell_new_boolean(FALSE);
+		return cell_new_boolean(s, false);
 	}
 }
 
-static cell_t*
-token_to_char(const char* b) {
-	return cell_new_char(*b);
+static cell_id_t
+token_to_char(state_t* s, const char* b) {
+	return cell_new_char(s, *b);
 }
 
-static cell_t*
-token_to_sint64(const char* b) {
+static cell_id_t
+token_to_sint64(state_t* s, const char* b) {
 	sint64	v	= 0;
 	sscanf(b, "%ld", &v);
 	/* TODO: check limit */
-	return cell_new_sint64(v);
+	return cell_new_sint64(s, v);
 }
 
-static cell_t*
-token_to_real64(const char* b) {
+static cell_id_t
+token_to_real64(state_t* s, const char* b) {
 	real64	v	= 0;
 	sscanf(b, "%lf", &v);
 	/* TODO: check limit */
-	return cell_new_real64(v);
+	return cell_new_real64(s, v);
 }
 
-static cell_t*
-token_to_string(const char* b) {
-	return cell_new_string(b);
+static cell_id_t
+token_to_string(state_t* s, const char* b) {
+	return cell_new_string(s, b);
 }
 
 
@@ -200,6 +202,7 @@ parse(const char* str)
 	int		act	= 0;
 	int		cs	= 0;
 	char		tmp[4096];
+	cell_id_t	nil	= { 0 };
 
 	memset(state, 0, sizeof(state_t));
 
@@ -222,7 +225,7 @@ parse(const char* str)
 		exit(1);
 	}
 
-	parser_advance(parser, 0, 0, state);
+	parser_advance(parser, 0, nil, state);
 
 	parser_free(parser, free);
 

@@ -4,8 +4,11 @@
 #define CELL_SINT64                     4
 #define CELL_REAL64                     5
 #define CELL_STRING                     6
-#define CELL_CONS                       7
-#define CELL_CLOSURE                    8
-#define CELL_FFI                        9
-#define LPAR                           10
-#define RPAR                           11
+#define CELL_FREE                       7
+#define CELL_CONS                       8
+#define CELL_LAMBDA                     9
+#define CELL_PROCEDURE                 10
+#define CELL_IF                        11
+#define QUOTE                          12
+#define LPAR                           13
+#define RPAR                           14

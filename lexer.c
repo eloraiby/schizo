@@ -28,16 +28,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ast.h"
+#include "schizo.h"
 
 #define ADVANCE(A)	state->token_start	= ts; \
 			state->token_end	= te; \
 			state->token_line	= line; \
 			copy_token(ts, te, tmp); \
-			state->current_cell	= token_to_##A(tmp); \
-			parser_advance(parser, state->current_cell->type, state->current_cell, state)
+			state->current_cell	= token_to_##A(state, tmp); \
+			parser_advance(parser, state->gc_block.cells[state->current_cell.index].type, state->current_cell, state)
 
-#define ADVANCE_TOKEN(A)	parser_advance(parser, A, NULL, state)
+#define ADVANCE_TOKEN(A)	parser_advance(parser, A, nil, state)
 
 #define PUSH_TE()	const char* tmp_te = te
 #define POP_TE()	te	= tmp_te
@@ -51,168 +51,185 @@
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));
-extern void	parser_advance(void *yyp, int yymajor, cell_t* yyminor, state_t* state);
+extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* state);
 
 
 #line 58 "/home/kin/Projects/schizo/lexer.c"
 static const char _scanner_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
-	3, 1, 4, 1, 13, 1, 14, 1, 
-	15, 1, 16, 1, 17, 1, 18, 1, 
-	20, 1, 21, 1, 22, 1, 23, 1, 
-	24, 1, 25, 1, 26, 1, 27, 1, 
-	28, 2, 0, 19, 2, 4, 5, 2, 
-	4, 6, 2, 4, 7, 2, 4, 8, 
-	2, 4, 9, 2, 4, 10, 2, 4, 
-	11, 2, 4, 12
+	3, 1, 4, 1, 14, 1, 15, 1, 
+	16, 1, 17, 1, 18, 1, 19, 1, 
+	21, 1, 22, 1, 23, 1, 24, 1, 
+	25, 1, 26, 1, 27, 1, 28, 1, 
+	29, 1, 30, 1, 31, 2, 0, 20, 
+	2, 4, 5, 2, 4, 6, 2, 4, 
+	7, 2, 4, 8, 2, 4, 9, 2, 
+	4, 10, 2, 4, 11, 2, 4, 12, 
+	2, 4, 13
 };
 
-static const unsigned char _scanner_key_offsets[] = {
-	0, 0, 3, 3, 5, 6, 13, 14, 
-	17, 19, 23, 25, 30, 31, 33, 36, 
-	72, 74, 87, 104, 108, 110, 120, 125, 
-	134, 144, 146, 159, 173, 180, 188, 196, 
-	204, 212, 220, 228, 236
+static const short _scanner_key_offsets[] = {
+	0, 0, 3, 3, 4, 11, 12, 15, 
+	17, 21, 23, 28, 29, 31, 34, 71, 
+	73, 86, 88, 105, 109, 111, 121, 126, 
+	135, 145, 147, 160, 174, 181, 189, 197, 
+	205, 213, 221, 229, 237, 245, 253, 261, 
+	269
 };
 
 static const char _scanner_trans_keys[] = {
-	10, 34, 92, 39, 92, 39, 39, 98, 
-	110, 114, 116, 48, 57, 39, 39, 48, 
-	57, 48, 57, 43, 45, 48, 57, 48, 
-	57, 46, 69, 101, 48, 57, 10, 10, 
-	42, 10, 42, 47, 10, 33, 34, 39, 
-	40, 41, 44, 46, 47, 48, 59, 64, 
-	94, 95, 102, 116, 124, 126, 35, 36, 
-	37, 42, 43, 45, 49, 57, 58, 63, 
-	65, 90, 91, 96, 97, 122, 123, 125, 
-	33, 126, 33, 45, 47, 58, 94, 124, 
-	126, 37, 38, 42, 43, 60, 63, 33, 
-	46, 48, 58, 94, 124, 126, 37, 38, 
-	42, 43, 45, 47, 49, 57, 60, 63, 
-	69, 101, 48, 57, 48, 57, 46, 69, 
-	95, 101, 48, 57, 65, 90, 97, 122, 
-	95, 65, 90, 97, 122, 43, 45, 95, 
-	48, 57, 65, 90, 97, 122, 46, 69, 
-	95, 101, 48, 57, 65, 90, 97, 122, 
-	48, 57, 33, 45, 47, 58, 94, 124, 
-	126, 37, 38, 42, 43, 60, 63, 10, 
-	33, 45, 47, 58, 94, 124, 126, 37, 
-	38, 42, 43, 60, 63, 95, 48, 57, 
-	65, 90, 97, 122, 95, 97, 48, 57, 
-	65, 90, 98, 122, 95, 108, 48, 57, 
-	65, 90, 97, 122, 95, 115, 48, 57, 
-	65, 90, 97, 122, 95, 101, 48, 57, 
-	65, 90, 97, 122, 95, 114, 48, 57, 
-	65, 90, 97, 122, 95, 117, 48, 57, 
-	65, 90, 97, 122, 95, 101, 48, 57, 
-	65, 90, 97, 122, 0
+	10, 34, 92, 39, 39, 98, 110, 114, 
+	116, 48, 57, 39, 39, 48, 57, 48, 
+	57, 43, 45, 48, 57, 48, 57, 46, 
+	69, 101, 48, 57, 10, 10, 42, 10, 
+	42, 47, 10, 33, 34, 39, 40, 41, 
+	44, 46, 47, 48, 59, 64, 94, 95, 
+	102, 113, 116, 124, 126, 35, 36, 37, 
+	42, 43, 45, 49, 57, 58, 63, 65, 
+	90, 91, 96, 97, 122, 123, 125, 33, 
+	126, 33, 45, 47, 58, 94, 124, 126, 
+	37, 38, 42, 43, 60, 63, 39, 92, 
+	33, 46, 48, 58, 94, 124, 126, 37, 
+	38, 42, 43, 45, 47, 49, 57, 60, 
+	63, 69, 101, 48, 57, 48, 57, 46, 
+	69, 95, 101, 48, 57, 65, 90, 97, 
+	122, 95, 65, 90, 97, 122, 43, 45, 
+	95, 48, 57, 65, 90, 97, 122, 46, 
+	69, 95, 101, 48, 57, 65, 90, 97, 
+	122, 48, 57, 33, 45, 47, 58, 94, 
+	124, 126, 37, 38, 42, 43, 60, 63, 
+	10, 33, 45, 47, 58, 94, 124, 126, 
+	37, 38, 42, 43, 60, 63, 95, 48, 
+	57, 65, 90, 97, 122, 95, 97, 48, 
+	57, 65, 90, 98, 122, 95, 108, 48, 
+	57, 65, 90, 97, 122, 95, 115, 48, 
+	57, 65, 90, 97, 122, 95, 101, 48, 
+	57, 65, 90, 97, 122, 95, 117, 48, 
+	57, 65, 90, 97, 122, 95, 111, 48, 
+	57, 65, 90, 97, 122, 95, 116, 48, 
+	57, 65, 90, 97, 122, 95, 101, 48, 
+	57, 65, 90, 97, 122, 95, 114, 48, 
+	57, 65, 90, 97, 122, 95, 117, 48, 
+	57, 65, 90, 97, 122, 95, 101, 48, 
+	57, 65, 90, 97, 122, 0
 };
 
 static const char _scanner_single_lengths[] = {
-	0, 3, 0, 2, 1, 5, 1, 1, 
-	0, 2, 0, 3, 1, 2, 3, 18, 
-	0, 7, 7, 2, 0, 4, 1, 3, 
+	0, 3, 0, 1, 5, 1, 1, 0, 
+	2, 0, 3, 1, 2, 3, 19, 0, 
+	7, 2, 7, 2, 0, 4, 1, 3, 
 	4, 0, 7, 8, 1, 2, 2, 2, 
-	2, 2, 2, 2, 0
+	2, 2, 2, 2, 2, 2, 2, 2, 
+	0
 };
 
 static const char _scanner_range_lengths[] = {
-	0, 0, 0, 0, 0, 1, 0, 1, 
-	1, 1, 1, 1, 0, 0, 0, 9, 
-	1, 3, 5, 1, 1, 3, 2, 3, 
+	0, 0, 0, 0, 1, 0, 1, 1, 
+	1, 1, 1, 0, 0, 0, 9, 1, 
+	3, 0, 5, 1, 1, 3, 2, 3, 
 	3, 1, 3, 3, 3, 3, 3, 3, 
-	3, 3, 3, 3, 0
+	3, 3, 3, 3, 3, 3, 3, 3, 
+	0
 };
 
-static const unsigned char _scanner_index_offsets[] = {
-	0, 0, 4, 5, 8, 10, 17, 19, 
-	22, 24, 28, 30, 35, 37, 40, 44, 
-	72, 74, 85, 98, 102, 104, 112, 116, 
-	123, 131, 133, 144, 156, 161, 167, 173, 
-	179, 185, 191, 197, 203
+static const short _scanner_index_offsets[] = {
+	0, 0, 4, 5, 7, 14, 16, 19, 
+	21, 25, 27, 32, 34, 37, 41, 70, 
+	72, 83, 86, 99, 103, 105, 113, 117, 
+	124, 132, 134, 145, 157, 162, 168, 174, 
+	180, 186, 192, 198, 204, 210, 216, 222, 
+	228
 };
 
 static const char _scanner_indicies[] = {
-	1, 2, 3, 0, 0, 1, 5, 4, 
-	6, 1, 7, 7, 7, 7, 7, 8, 
-	1, 9, 1, 9, 8, 1, 11, 10, 
-	13, 13, 14, 12, 14, 12, 11, 17, 
-	17, 16, 15, 19, 18, 21, 22, 20, 
-	21, 22, 23, 20, 25, 26, 0, 28, 
-	29, 30, 27, 32, 33, 34, 27, 27, 
-	26, 36, 37, 38, 26, 26, 27, 26, 
-	31, 35, 26, 36, 27, 36, 27, 24, 
-	12, 24, 26, 26, 26, 26, 26, 26, 
-	26, 26, 26, 26, 39, 26, 40, 34, 
-	26, 26, 26, 26, 26, 26, 26, 35, 
-	26, 39, 17, 17, 11, 41, 14, 41, 
-	11, 44, 43, 44, 16, 43, 43, 42, 
-	43, 43, 43, 45, 13, 13, 43, 14, 
-	43, 43, 45, 11, 44, 43, 44, 35, 
-	43, 43, 42, 11, 46, 26, 26, 47, 
-	26, 26, 26, 26, 26, 26, 26, 39, 
-	19, 47, 47, 47, 47, 47, 47, 47, 
-	47, 47, 47, 18, 36, 36, 36, 36, 
-	12, 36, 49, 36, 36, 36, 48, 36, 
-	50, 36, 36, 36, 48, 36, 51, 36, 
-	36, 36, 48, 36, 52, 36, 36, 36, 
-	48, 36, 53, 36, 36, 36, 48, 36, 
-	54, 36, 36, 36, 48, 36, 55, 36, 
-	36, 36, 48, 1, 0
+	1, 2, 3, 0, 0, 5, 4, 6, 
+	6, 6, 6, 6, 7, 4, 8, 4, 
+	8, 7, 4, 10, 9, 12, 12, 13, 
+	11, 13, 11, 10, 16, 16, 15, 14, 
+	18, 17, 20, 21, 19, 20, 21, 22, 
+	19, 24, 25, 0, 27, 28, 29, 26, 
+	31, 32, 33, 26, 26, 25, 35, 36, 
+	37, 38, 25, 25, 26, 25, 30, 34, 
+	25, 35, 26, 35, 26, 23, 11, 23, 
+	25, 25, 25, 25, 25, 25, 25, 25, 
+	25, 25, 39, 40, 42, 41, 25, 43, 
+	33, 25, 25, 25, 25, 25, 25, 25, 
+	34, 25, 39, 16, 16, 10, 44, 13, 
+	44, 10, 47, 46, 47, 15, 46, 46, 
+	45, 46, 46, 46, 48, 12, 12, 46, 
+	13, 46, 46, 48, 10, 47, 46, 47, 
+	34, 46, 46, 45, 10, 49, 25, 25, 
+	50, 25, 25, 25, 25, 25, 25, 25, 
+	39, 18, 50, 50, 50, 50, 50, 50, 
+	50, 50, 50, 50, 17, 35, 35, 35, 
+	35, 11, 35, 52, 35, 35, 35, 51, 
+	35, 53, 35, 35, 35, 51, 35, 54, 
+	35, 35, 35, 51, 35, 55, 35, 35, 
+	35, 51, 35, 56, 35, 35, 35, 51, 
+	35, 57, 35, 35, 35, 51, 35, 58, 
+	35, 35, 35, 51, 35, 59, 35, 35, 
+	35, 51, 35, 60, 35, 35, 35, 51, 
+	35, 61, 35, 35, 35, 51, 35, 62, 
+	35, 35, 35, 51, 1, 0
 };
 
 static const char _scanner_trans_targs[] = {
-	1, 0, 15, 2, 4, 5, 15, 6, 
-	7, 15, 15, 19, 15, 10, 20, 15, 
-	11, 9, 12, 15, 13, 13, 14, 36, 
-	16, 16, 17, 15, 3, 15, 15, 18, 
-	25, 26, 21, 24, 28, 29, 33, 15, 
-	8, 15, 15, 22, 23, 15, 15, 27, 
-	15, 30, 31, 32, 28, 34, 35, 28
+	1, 0, 14, 2, 14, 14, 5, 6, 
+	14, 14, 19, 14, 9, 20, 14, 10, 
+	8, 11, 14, 12, 12, 13, 40, 15, 
+	15, 16, 14, 17, 14, 14, 18, 25, 
+	26, 21, 24, 28, 29, 33, 37, 14, 
+	14, 3, 4, 7, 14, 14, 22, 23, 
+	14, 14, 27, 14, 30, 31, 32, 28, 
+	34, 35, 36, 28, 38, 39, 28
 };
 
 static const char _scanner_trans_actions[] = {
-	0, 0, 15, 0, 0, 0, 11, 0, 
-	0, 13, 35, 53, 39, 0, 0, 37, 
-	0, 0, 0, 41, 0, 1, 0, 3, 
-	65, 62, 0, 21, 0, 17, 19, 9, 
-	0, 0, 56, 0, 50, 0, 0, 25, 
-	0, 27, 29, 0, 59, 31, 33, 9, 
-	23, 0, 0, 0, 47, 0, 0, 44
+	0, 0, 15, 0, 37, 11, 0, 0, 
+	13, 39, 60, 43, 0, 0, 41, 0, 
+	0, 0, 45, 0, 1, 0, 3, 72, 
+	69, 0, 21, 9, 17, 19, 9, 0, 
+	0, 63, 0, 57, 0, 0, 0, 27, 
+	23, 0, 0, 0, 29, 31, 0, 66, 
+	33, 35, 9, 25, 0, 0, 0, 51, 
+	0, 0, 0, 54, 0, 0, 48
 };
 
 static const char _scanner_to_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 5, 0, 5, 
+	0, 0, 0, 0, 5, 0, 5, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0
 };
 
 static const char _scanner_from_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 7, 
+	0, 0, 0, 0, 0, 0, 7, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0
 };
 
-static const unsigned char _scanner_eof_trans[] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	11, 13, 13, 16, 11, 0, 0, 0, 
-	13, 40, 40, 42, 42, 43, 46, 46, 
-	43, 47, 40, 40, 13, 49, 49, 49, 
-	49, 49, 49, 49, 0
+static const short _scanner_eof_trans[] = {
+	0, 0, 0, 5, 5, 5, 5, 10, 
+	12, 12, 15, 10, 0, 0, 0, 12, 
+	40, 41, 40, 45, 45, 46, 49, 49, 
+	46, 50, 40, 40, 12, 52, 52, 52, 
+	52, 52, 52, 52, 52, 52, 52, 52, 
+	0
 };
 
-static const int scanner_start = 15;
+static const int scanner_start = 14;
 static const int scanner_error = 0;
 
-static const int scanner_en_c_comment = 13;
-static const int scanner_en_main = 15;
+static const int scanner_en_c_comment = 12;
+static const int scanner_en_main = 14;
 
 
-#line 138 "/home/kin/Projects/schizo/lexer.rl"
+#line 140 "/home/kin/Projects/schizo/lexer.rl"
 
 
 static uint32
@@ -226,44 +243,44 @@ copy_token(const char* ts, const char *te, char* dst) {
 	return index;
 }
 
-static cell_t*
-token_to_symbol(const char* b) {
-	return cell_new_symbol(b);
+static cell_id_t
+token_to_symbol(state_t* s, const char* b) {
+	return cell_new_symbol(s, b);
 }
 
-static cell_t*
-token_to_boolean(const char* b) {
+static cell_id_t
+token_to_boolean(state_t* s, const char* b) {
 	if( !strcmp(b, "true") ) {
-		return cell_new_boolean(TRUE);
+		return cell_new_boolean(s, true);
 	} else {
-		return cell_new_boolean(FALSE);
+		return cell_new_boolean(s, false);
 	}
 }
 
-static cell_t*
-token_to_char(const char* b) {
-	return cell_new_char(*b);
+static cell_id_t
+token_to_char(state_t* s, const char* b) {
+	return cell_new_char(s, *b);
 }
 
-static cell_t*
-token_to_sint64(const char* b) {
+static cell_id_t
+token_to_sint64(state_t* s, const char* b) {
 	sint64	v	= 0;
 	sscanf(b, "%ld", &v);
 	/* TODO: check limit */
-	return cell_new_sint64(v);
+	return cell_new_sint64(s, v);
 }
 
-static cell_t*
-token_to_real64(const char* b) {
+static cell_id_t
+token_to_real64(state_t* s, const char* b) {
 	real64	v	= 0;
 	sscanf(b, "%lf", &v);
 	/* TODO: check limit */
-	return cell_new_real64(v);
+	return cell_new_real64(s, v);
 }
 
-static cell_t*
-token_to_string(const char* b) {
-	return cell_new_string(b);
+static cell_id_t
+token_to_string(state_t* s, const char* b) {
+	return cell_new_string(s, b);
 }
 
 
@@ -278,6 +295,7 @@ parse(const char* str)
 	int		act	= 0;
 	int		cs	= 0;
 	char		tmp[4096];
+	cell_id_t	nil	= { 0 };
 
 	memset(state, 0, sizeof(state_t));
 
@@ -286,7 +304,7 @@ parse(const char* str)
 	memset(tmp, 0, sizeof(tmp));
 
 	
-#line 290 "/home/kin/Projects/schizo/lexer.c"
+#line 308 "/home/kin/Projects/schizo/lexer.c"
 	{
 	cs = scanner_start;
 	ts = 0;
@@ -294,14 +312,14 @@ parse(const char* str)
 	act = 0;
 	}
 
-#line 211 "/home/kin/Projects/schizo/lexer.rl"
+#line 214 "/home/kin/Projects/schizo/lexer.rl"
 
 	const char*	p = str;
 	const char*	pe = p + strlen(str) + 1;
 	const char*	eof = 0;
 
 	
-#line 305 "/home/kin/Projects/schizo/lexer.c"
+#line 323 "/home/kin/Projects/schizo/lexer.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -322,7 +340,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 326 "/home/kin/Projects/schizo/lexer.c"
+#line 344 "/home/kin/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -394,7 +412,7 @@ _eof_trans:
 	break;
 	case 1:
 #line 68 "/home/kin/Projects/schizo/lexer.rl"
-	{ {cs = 15; goto _again;} }
+	{ {cs = 14; goto _again;} }
 	break;
 	case 4:
 #line 1 "NONE"
@@ -409,42 +427,35 @@ _eof_trans:
 	{act = 2;}
 	break;
 	case 7:
-#line 103 "/home/kin/Projects/schizo/lexer.rl"
-	{act = 6;}
+#line 73 "/home/kin/Projects/schizo/lexer.rl"
+	{act = 3;}
 	break;
 	case 8:
-#line 107 "/home/kin/Projects/schizo/lexer.rl"
+#line 105 "/home/kin/Projects/schizo/lexer.rl"
 	{act = 8;}
 	break;
 	case 9:
-#line 111 "/home/kin/Projects/schizo/lexer.rl"
-	{act = 9;}
+#line 109 "/home/kin/Projects/schizo/lexer.rl"
+	{act = 10;}
 	break;
 	case 10:
 #line 113 "/home/kin/Projects/schizo/lexer.rl"
-	{act = 10;}
+	{act = 11;}
 	break;
 	case 11:
-#line 128 "/home/kin/Projects/schizo/lexer.rl"
-	{act = 13;}
+#line 115 "/home/kin/Projects/schizo/lexer.rl"
+	{act = 12;}
 	break;
 	case 12:
-#line 136 "/home/kin/Projects/schizo/lexer.rl"
-	{act = 17;}
+#line 130 "/home/kin/Projects/schizo/lexer.rl"
+	{act = 15;}
 	break;
 	case 13:
-#line 75 "/home/kin/Projects/schizo/lexer.rl"
-	{te = p+1;{
-									PUSH_TE();
-									PUSH_TS();
-									++ts; --te;
-									ADVANCE( char );
-									POP_TS();
-									POP_TE();
-								}}
+#line 138 "/home/kin/Projects/schizo/lexer.rl"
+	{act = 19;}
 	break;
 	case 14:
-#line 84 "/home/kin/Projects/schizo/lexer.rl"
+#line 77 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -455,7 +466,18 @@ _eof_trans:
 								}}
 	break;
 	case 15:
-#line 93 "/home/kin/Projects/schizo/lexer.rl"
+#line 86 "/home/kin/Projects/schizo/lexer.rl"
+	{te = p+1;{
+									PUSH_TE();
+									PUSH_TS();
+									++ts; --te;
+									ADVANCE( char );
+									POP_TS();
+									POP_TE();
+								}}
+	break;
+	case 16:
+#line 95 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -465,40 +487,44 @@ _eof_trans:
 									POP_TE();
 								}}
 	break;
-	case 16:
-#line 125 "/home/kin/Projects/schizo/lexer.rl"
+	case 17:
+#line 127 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( LPAR );}}
 	break;
-	case 17:
-#line 126 "/home/kin/Projects/schizo/lexer.rl"
+	case 18:
+#line 128 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( RPAR );}}
 	break;
-	case 18:
-#line 131 "/home/kin/Projects/schizo/lexer.rl"
+	case 19:
+#line 133 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;{ printf("unexpected character %c\n", *ts); }}
 	break;
-	case 19:
-#line 135 "/home/kin/Projects/schizo/lexer.rl"
+	case 20:
+#line 137 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p+1;}
 	break;
-	case 20:
-#line 103 "/home/kin/Projects/schizo/lexer.rl"
-	{te = p;p--;{ ADVANCE( symbol );}}
-	break;
 	case 21:
-#line 104 "/home/kin/Projects/schizo/lexer.rl"
-	{te = p;p--;{ ADVANCE( symbol );}}
+#line 74 "/home/kin/Projects/schizo/lexer.rl"
+	{te = p;p--;{ ADVANCE_TOKEN( QUOTE ); }}
 	break;
 	case 22:
-#line 107 "/home/kin/Projects/schizo/lexer.rl"
-	{te = p;p--;{ ADVANCE( real64 );}}
+#line 105 "/home/kin/Projects/schizo/lexer.rl"
+	{te = p;p--;{ ADVANCE( symbol );}}
 	break;
 	case 23:
-#line 111 "/home/kin/Projects/schizo/lexer.rl"
-	{te = p;p--;{ ADVANCE( sint64 ); }}
+#line 106 "/home/kin/Projects/schizo/lexer.rl"
+	{te = p;p--;{ ADVANCE( symbol );}}
 	break;
 	case 24:
+#line 109 "/home/kin/Projects/schizo/lexer.rl"
+	{te = p;p--;{ ADVANCE( real64 );}}
+	break;
+	case 25:
 #line 113 "/home/kin/Projects/schizo/lexer.rl"
+	{te = p;p--;{ ADVANCE( sint64 ); }}
+	break;
+	case 26:
+#line 115 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{
 									fprintf(stderr, "Error: invalid number:\n    ");
 
@@ -509,19 +535,23 @@ _eof_trans:
 									cs	= scanner_error;
 								}}
 	break;
-	case 25:
-#line 131 "/home/kin/Projects/schizo/lexer.rl"
+	case 27:
+#line 133 "/home/kin/Projects/schizo/lexer.rl"
 	{te = p;p--;{ printf("unexpected character %c\n", *ts); }}
 	break;
-	case 26:
-#line 104 "/home/kin/Projects/schizo/lexer.rl"
+	case 28:
+#line 74 "/home/kin/Projects/schizo/lexer.rl"
+	{{p = ((te))-1;}{ ADVANCE_TOKEN( QUOTE ); }}
+	break;
+	case 29:
+#line 106 "/home/kin/Projects/schizo/lexer.rl"
 	{{p = ((te))-1;}{ ADVANCE( symbol );}}
 	break;
-	case 27:
-#line 111 "/home/kin/Projects/schizo/lexer.rl"
+	case 30:
+#line 113 "/home/kin/Projects/schizo/lexer.rl"
 	{{p = ((te))-1;}{ ADVANCE( sint64 ); }}
 	break;
-	case 28:
+	case 31:
 #line 1 "NONE"
 	{	switch( act ) {
 	case 1:
@@ -530,16 +560,19 @@ _eof_trans:
 	case 2:
 	{{p = ((te))-1;} ADVANCE( boolean );}
 	break;
-	case 6:
-	{{p = ((te))-1;} ADVANCE( symbol );}
+	case 3:
+	{{p = ((te))-1;} ADVANCE_TOKEN( QUOTE ); }
 	break;
 	case 8:
-	{{p = ((te))-1;} ADVANCE( real64 );}
-	break;
-	case 9:
-	{{p = ((te))-1;} ADVANCE( sint64 ); }
+	{{p = ((te))-1;} ADVANCE( symbol );}
 	break;
 	case 10:
+	{{p = ((te))-1;} ADVANCE( real64 );}
+	break;
+	case 11:
+	{{p = ((te))-1;} ADVANCE( sint64 ); }
+	break;
+	case 12:
 	{{p = ((te))-1;}
 									fprintf(stderr, "Error: invalid number:\n    ");
 
@@ -550,7 +583,7 @@ _eof_trans:
 									cs	= scanner_error;
 								}
 	break;
-	case 13:
+	case 15:
 	{{p = ((te))-1;} ++line; }
 	break;
 	default:
@@ -559,7 +592,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 563 "/home/kin/Projects/schizo/lexer.c"
+#line 596 "/home/kin/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -572,7 +605,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 576 "/home/kin/Projects/schizo/lexer.c"
+#line 609 "/home/kin/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -592,7 +625,7 @@ _again:
 	_out: {}
 	}
 
-#line 217 "/home/kin/Projects/schizo/lexer.rl"
+#line 220 "/home/kin/Projects/schizo/lexer.rl"
 
 	/* Check if we failed. */
 	if ( cs == scanner_error ) {
@@ -601,7 +634,7 @@ _again:
 		exit(1);
 	}
 
-	parser_advance(parser, 0, 0, state);
+	parser_advance(parser, 0, nil, state);
 
 	parser_free(parser, free);
 

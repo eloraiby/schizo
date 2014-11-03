@@ -22,40 +22,42 @@
 */
 %name parser
 
-%token_type	{ cell_t* }
-%extra_argument { state_t* current_state }
+%token_type	{ cell_id_t }
+%extra_argument { state_t* s }
 
 %include {
 #include <stdio.h>
-#include "ast.h"
+#include "schizo.h"
 }
 
-%type exp	{ cell_t* }
-%type program	{ cell_t* }
-%type exp_list	{ cell_t* }
+%type cell	{ cell_id_t }
+%type program	{ cell_id_t }
+%type cell_list	{ cell_id_t }
 
 %start_symbol program
 
-/* a program is an expression */
-program		::= exp(B).			{ current_state->root = B; }
+/* a program is a cell */
+program		::= cell(B).				{ s->root = B; }
 
 /* literals */
-exp(A)		::= CELL_SYMBOL(B).		{ A = B; }
-exp(A)		::= CELL_BOOL(B).		{ A = B; }
-exp(A)		::= CELL_CHAR(B).		{ A = B; }
-exp(A)		::= CELL_SINT64(B).		{ A = B; }
-exp(A)		::= CELL_REAL64(B).		{ A = B; }
-exp(A)		::= CELL_STRING(B).		{ A = B; }
+cell(A)		::= CELL_SYMBOL(B).			{ A = B; }
+cell(A)		::= CELL_BOOL(B).			{ A = B; }
+cell(A)		::= CELL_CHAR(B).			{ A = B; }
+cell(A)		::= CELL_SINT64(B).			{ A = B; }
+cell(A)		::= CELL_REAL64(B).			{ A = B; }
+cell(A)		::= CELL_STRING(B).			{ A = B; }
 
 /* NEVER USED: these are a hack to have the token ids */
-exp		::= CELL_CONS.			/* cons cell */
-exp		::= CELL_CLOSURE.		/* closure */
-exp		::= CELL_FFI.			/* foreign function interface */
+cell		::= CELL_FREE.				/* a free cell */
+cell		::= CELL_CONS.				/* cons cell */
+cell		::= CELL_LAMBDA.			/* closure */
+cell		::= CELL_PROCEDURE.			/* foreign function interface */
+cell		::= CELL_IF.				/* if */
 
 /* ( ... ) */
-exp(A)		::= LPAR RPAR.			{ A = cell_new_cons(NULL); }
-exp(A)		::= LPAR exp_list(B) RPAR.	{ A = B; }
+cell(A)		::= QUOTE LPAR RPAR.			{ cell_id_t nil = { 0 }; A = cell_new_cons(s, nil); }
+cell(A)		::= QUOTE cell(B).			{ A = cell_new_cons(s, B); }
+cell(A)		::= LPAR cell_list(B) RPAR.		{ A = B; }
 
-exp_list(A)	::= exp(B).			{ A = cell_new_cons(B); }
-exp_list(A)	::= exp_list(B) exp(C).		{ A = cell_cons(C, B); }
-
+cell_list(A)	::= cell(B).				{ A = cell_new_cons(s, B); }
+cell_list(A)	::= cell_list(B) cell(C).		{ A = cell_cons(s, C, B); }

@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 
-#include "ast.h"
+#include "schizo.h"
 
 
 int
@@ -28,6 +28,7 @@ main(int argc,
      char* argv[])
 {
 	const char*	prog[]	= {
+		"((((a))))",
 		"(10 -10 +10)",
 		"(10.0 -10.1 +10.2)",
 		"(a 10 -11 true ++ - +)",
@@ -38,7 +39,7 @@ main(int argc,
 
 	for(size_t i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		state	= parse(prog[i]);
-		print_cell(state->root, 0);
+		print_cell(state, state->root, 0);
 		fprintf(stderr, "---------------\n");
 	}
 
