@@ -715,7 +715,7 @@ static void yy_reduce(
         break;
       case 14: /* cell ::= LPAR cell_list RPAR */
 #line 60 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy26 = yymsp[-1].minor.yy26; }
+{ yygotominor.yy26 = cell_reverse_in_place(s, yymsp[-1].minor.yy26); }
 #line 720 "/home/kin/Projects/schizo/parser.c"
         break;
       case 16: /* cell_list ::= cell_list cell */

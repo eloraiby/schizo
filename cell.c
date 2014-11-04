@@ -34,6 +34,13 @@
 							ret->FIELD	= v; \
 							return id; \
 						}
+INLINE cell_t*
+cell_from_index(state_t* s,
+		cell_id_t idx)
+{
+	return &s->gc_block.cells[idx.index];
+}
+
 cell_id_t
 cell_alloc(state_t* s) {
 	/*
@@ -136,6 +143,25 @@ cell_cons(state_t* s,
 	cell_t* ret	= &s->gc_block.cells[id.index];
 	ret->cons.cdr	= list;
 	return id;
+}
+
+cell_id_t
+cell_reverse_in_place(state_t *s,
+		      cell_id_t list)
+{
+	cell_t*		c	= cell_from_index(s, list);
+	cell_id_t	current	= list;
+	cell_id_t	next	= c->cons.cdr;
+	while( !is_nil(next) ) {
+		cell_t*		n	= cell_from_index(s, next);
+		cell_id_t	tmp	= n->cons.cdr;
+
+		n->cons.cdr	= current;
+		c->cons.cdr	= tmp;
+		current		= next;
+		next		= tmp;
+	}
+	return current;
 }
 
 cell_id_t

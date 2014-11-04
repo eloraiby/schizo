@@ -100,6 +100,9 @@ cell_id_t	cell_new_cons(state_t* s, cell_id_t car);
 cell_id_t	cell_new_application(state_t* s, cell_t* app, cell_t* args);
 
 cell_id_t	cell_cons(state_t* s, cell_id_t car, cell_id_t list);
+cell_id_t	cell_reverse_in_place(state_t* s, cell_id_t list);
+cell_id_t	cell_get_head(state_t*s, cell_id_t tail);
+
 cell_id_t	cell_car(state_t* s, cell_id_t list);
 cell_id_t	cell_cdr(state_t* s, cell_id_t list);
 cell_id_t	cell_array(state_t* s, uint32 count);

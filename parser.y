@@ -57,7 +57,7 @@ cell		::= CELL_IF.				/* if */
 /* ( ... ) */
 cell(A)		::= QUOTE LPAR RPAR.			{ cell_id_t nil = { 0 }; A = cell_new_cons(s, nil); }
 cell(A)		::= QUOTE cell(B).			{ A = cell_new_cons(s, B); }
-cell(A)		::= LPAR cell_list(B) RPAR.		{ A = B; }
+cell(A)		::= LPAR cell_list(B) RPAR.		{ A = cell_reverse_in_place(s, B); }
 
 cell_list(A)	::= cell(B).				{ A = cell_new_cons(s, B); }
 cell_list(A)	::= cell_list(B) cell(C).		{ A = cell_cons(s, C, B); }
