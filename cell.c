@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define INITIAL_CELL_COUNT	4096
+#define INITIAL_CELL_COUNT	2	/* this should be at least 2 (index 0 is reserved for NIL) */
 
 #define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_id_t \
 						cell_new_ ## TYPE(state_t* s, TYPE v) { \
@@ -49,18 +49,40 @@ cell_alloc(state_t* s) {
 	*/
 	if( s->gc_block.cells == NULL ) {
 		s->gc_block.count	= INITIAL_CELL_COUNT;
-		s->gc_block.free_count	= INITIAL_CELL_COUNT;
+		s->gc_block.free_count	= INITIAL_CELL_COUNT - 1;
 		s->gc_block.free_list	= cell_id(1);	/* 0 is reserved for the nil cell */
 		s->gc_block.cells	= (cell_t*)malloc(sizeof(cell_t) * s->gc_block.count);
 		memset(s->gc_block.cells, 0, sizeof(cell_t) * s->gc_block.free_count);
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_CONS;
-			s->gc_block.cells[i].cons.car	= nil();
+			s->gc_block.cells[i].cons.car	= cell_nil();
 			s->gc_block.cells[i].cons.cdr	= cell_id(i + 1);
 		}
-	} else if( s->gc_block.free_list.index == NIL_CELL ){
-		exit(1);
+
+		s->gc_block.cells[INITIAL_CELL_COUNT - 1].cons.cdr	= cell_nil();
+
+	} else if( s->gc_block.free_list.index == NIL_CELL ) {
+
+		/* TODO: call garbage collector before trigger a reallocation */
+
+		s->gc_block.free_count	= s->gc_block.count;
+		s->gc_block.free_list	= cell_id(s->gc_block.count);
+		s->gc_block.count	*= 2;
+		s->gc_block.cells	= (cell_t*)realloc(s->gc_block.cells, sizeof(cell_t) * s->gc_block.count);
+
+		if( s->gc_block.cells == NULL ) {
+			fprintf(stderr, "Fatal error: Not enough memory...\n");
+			exit(1);
+		}
+
+		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
+			s->gc_block.cells[i].type	= CELL_CONS;
+			s->gc_block.cells[i].cons.car	= cell_nil();
+			s->gc_block.cells[i].cons.cdr	= cell_id(i + 1);
+		}
+
+		s->gc_block.cells[s->gc_block.count - 1].cons.cdr	= cell_nil();
 	}
 
 	cell_id_t	c = s->gc_block.free_list;
@@ -130,7 +152,7 @@ cell_new_cons(state_t* s,
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 	ret->type	= CELL_CONS;
 	ret->cons.car	= car;
-	ret->cons.cdr	= nil();
+	ret->cons.cdr	= cell_nil();
 	return id;
 }
 

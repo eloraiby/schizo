@@ -50,7 +50,7 @@ cell_id(uint32 id) {
 #define NIL_CELL	0x0
 #define is_nil(c)	(c.index == NIL_CELL)
 
-static INLINE cell_id_t nil() {
+static INLINE cell_id_t cell_nil() {
 	cell_id_t	id = { 0 };
 	return id;
 }
