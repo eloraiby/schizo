@@ -31,16 +31,9 @@
 							cell_id_t id	= cell_alloc(s); \
 							cell_t* ret	= &s->gc_block.cells[id.index]; \
 							ret->type	= ENUM; \
-							ret->FIELD	= v; \
+							ret->object.FIELD	= v; \
 							return id; \
 						}
-INLINE cell_t*
-cell_from_index(state_t* s,
-		cell_id_t idx)
-{
-	return &s->gc_block.cells[idx.index];
-}
-
 cell_id_t
 cell_alloc(state_t* s) {
 	/*
@@ -56,11 +49,11 @@ cell_alloc(state_t* s) {
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_CONS;
-			s->gc_block.cells[i].cons.car	= cell_nil();
-			s->gc_block.cells[i].cons.cdr	= cell_id(i + 1);
+			s->gc_block.cells[i].object.cons.car	= cell_nil();
+			s->gc_block.cells[i].object.cons.cdr	= cell_id(i + 1);
 		}
 
-		s->gc_block.cells[INITIAL_CELL_COUNT - 1].cons.cdr	= cell_nil();
+		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.cons.cdr	= cell_nil();
 
 	} else if( s->gc_block.free_list.index == NIL_CELL ) {
 
@@ -78,11 +71,11 @@ cell_alloc(state_t* s) {
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_CONS;
-			s->gc_block.cells[i].cons.car	= cell_nil();
-			s->gc_block.cells[i].cons.cdr	= cell_id(i + 1);
+			s->gc_block.cells[i].object.cons.car	= cell_nil();
+			s->gc_block.cells[i].object.cons.cdr	= cell_id(i + 1);
 		}
 
-		s->gc_block.cells[s->gc_block.count - 1].cons.cdr	= cell_nil();
+		s->gc_block.cells[s->gc_block.count - 1].object.cons.cdr	= cell_nil();
 	}
 
 	cell_id_t	c = s->gc_block.free_list;
@@ -100,8 +93,8 @@ cell_new_symbol(state_t* s,
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 
 	ret->type	= CELL_SYMBOL;
-	ret->symbol	= (char*)(malloc(len + 1));
-	memcpy(ret->symbol, b, len + 1);
+	ret->object.symbol	= (char*)(malloc(len + 1));
+	memcpy(ret->object.symbol, b, len + 1);
 	return id;
 }
 
@@ -112,7 +105,7 @@ cell_new_boolean(state_t* s,
 	cell_id_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 	ret->type	= CELL_BOOL;
-	ret->boolean	= b;
+	ret->object.boolean	= b;
 	return id;
 }
 
@@ -123,7 +116,7 @@ cell_new_char(state_t* s,
 	cell_id_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 	ret->type	= CELL_CHAR;
-	ret->ch		= c;
+	ret->object.ch		= c;
 	return id;
 }
 
@@ -139,8 +132,8 @@ cell_new_string(state_t* s,
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 
 	ret->type	= CELL_STRING;
-	ret->string	= (char*)(malloc(len + 1));
-	memcpy(ret->symbol, b, len + 1);
+	ret->object.string	= (char*)(malloc(len + 1));
+	memcpy(ret->object.symbol, b, len + 1);
 	return id;
 }
 
@@ -151,8 +144,8 @@ cell_new_cons(state_t* s,
 	cell_id_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 	ret->type	= CELL_CONS;
-	ret->cons.car	= car;
-	ret->cons.cdr	= cell_nil();
+	ret->object.cons.car	= car;
+	ret->object.cons.cdr	= cell_nil();
 	return id;
 }
 
@@ -163,7 +156,7 @@ cell_cons(state_t* s,
 {
 	cell_id_t id	= cell_new_cons(s, car);
 	cell_t* ret	= &s->gc_block.cells[id.index];
-	ret->cons.cdr	= list;
+	ret->object.cons.cdr	= list;
 	return id;
 }
 
@@ -173,13 +166,13 @@ cell_reverse_in_place(state_t *s,
 {
 	cell_t*		c	= cell_from_index(s, list);
 	cell_id_t	current	= list;
-	cell_id_t	next	= c->cons.cdr;
+	cell_id_t	next	= c->object.cons.cdr;
 	while( !is_nil(next) ) {
 		cell_t*		n	= cell_from_index(s, next);
-		cell_id_t	tmp	= n->cons.cdr;
+		cell_id_t	tmp	= n->object.cons.cdr;
 
-		n->cons.cdr	= current;
-		c->cons.cdr	= tmp;
+		n->object.cons.cdr	= current;
+		c->object.cons.cdr	= tmp;
 		current		= next;
 		next		= tmp;
 	}
@@ -190,14 +183,14 @@ cell_id_t
 cell_car(state_t* s, cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->cons.car;
+	return c->object.cons.car;
 }
 
 cell_id_t
 cell_cdr(state_t* s, cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->cons.cdr;
+	return c->object.cons.cdr;
 }
 
 
@@ -218,7 +211,7 @@ print_cell(state_t* s,
 	print_level(level);
 	switch(c->type) {
 	case CELL_BOOL:
-		if( c->boolean ) {
+		if( c->object.boolean ) {
 			fprintf(stderr, "bool: true");
 		} else {
 			fprintf(stderr, "bool: false");
@@ -226,41 +219,41 @@ print_cell(state_t* s,
 		break;
 
 	case CELL_SYMBOL:
-		fprintf(stderr, "symbol: %s", c->symbol);
+		fprintf(stderr, "symbol: %s", c->object.symbol);
 		break;
 
 	case CELL_CHAR:
-		fprintf(stderr, "char: '%c'", c->ch);
+		fprintf(stderr, "char: '%c'", c->object.ch);
 		break;
 
 	case CELL_SINT64:
-		fprintf(stderr, "sint64: %ld", (sint64)c->s64);
+		fprintf(stderr, "sint64: %ld", (sint64)c->object.s64);
 		break;
 
 	case CELL_REAL64:
-		fprintf(stderr, "real64: %lf", (real64)c->r64);
+		fprintf(stderr, "real64: %lf", (real64)c->object.r64);
 		break;
 
 	case CELL_STRING:
-		fprintf(stderr, "string: %s", c->string);
+		fprintf(stderr, "string: %s", c->object.string);
 		break;
 
 	case CELL_CONS:
-		if( !is_nil(c->cons.car) ) {
+		if( !is_nil(c->object.cons.car) ) {
 			fprintf(stderr, "cons:\n");
-			print_cell(s, c->cons.car, level + 1);
+			print_cell(s, c->object.cons.car, level + 1);
 			print_level(level);
 		} else {
 			fprintf(stderr, "cons: nil\n");
 		}
 
-		if( !is_nil(c->cons.cdr) ) {
-			cell_id_t id	= c->cons.cdr;
+		if( !is_nil(c->object.cons.cdr) ) {
+			cell_id_t id	= c->object.cons.cdr;
 			while( !is_nil(id) ) {
 				cell_t* n = &s->gc_block.cells[id.index];
-				if( !is_nil(n->cons.car) ) {
+				if( !is_nil(n->object.cons.car) ) {
 					fprintf(stderr, "cons:\n");
-					print_cell(s, n->cons.car, level + 1);
+					print_cell(s, n->object.cons.car, level + 1);
 					print_level(level);
 				} else {
 					fprintf(stderr, "cons: nil\n");

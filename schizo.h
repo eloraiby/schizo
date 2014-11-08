@@ -29,7 +29,8 @@ typedef float		real32;
 typedef double		real64;
 
 
-typedef int		CELL_TYPE;
+typedef uint16		CELL_TYPE;
+
 
 struct cons_t;
 struct closure_t;
@@ -65,7 +66,12 @@ typedef struct closure_t {
 	cell_id_t	expression;
 } closure_t;
 
+#define GC_REACHABLE	0x8000
+#define FOREIGN		0x0800
+#define REDIRECTOR	0x0400
+
 typedef struct cell_t {
+	uint16		flags;
 	CELL_TYPE	type;
 
 	union {
@@ -81,12 +87,33 @@ typedef struct cell_t {
 		char*		string;
 		cons_t		cons;
 		closure_t	closure;
-	};
+	} object;
 
 } cell_t;
 
-cell_t*		cell_from_index(state_t* s, cell_id_t idx);
+struct state_t {
+	struct gc_block_t {
+		cell_t*		cells;
+		uint32		count;
+		uint32		free_count;
+		cell_id_t	free_list;
+	} gc_block;
 
+	cell_id_t	root;
+	cell_id_t	current_cell;
+	const char*	token_start;
+	const char*	token_end;
+	uint32		token_line;
+};
+
+static INLINE cell_t*
+cell_from_index(state_t* s,
+		cell_id_t idx)
+{
+	return &s->gc_block.cells[idx.index];
+}
+
+/* atoms */
 cell_id_t	cell_new_symbol(state_t* s, const char* sym);
 cell_id_t	cell_new_boolean(state_t* s, bool b);
 cell_id_t	cell_new_char(state_t* s, char c);
@@ -107,20 +134,6 @@ cell_id_t	cell_car(state_t* s, cell_id_t list);
 cell_id_t	cell_cdr(state_t* s, cell_id_t list);
 cell_id_t	cell_array(state_t* s, uint32 count);
 
-struct state_t {
-	struct gc_block_t {
-		cell_t*		cells;
-		uint32		count;
-		uint32		free_count;
-		cell_id_t	free_list;
-	} gc_block;
-
-	cell_id_t	root;
-	cell_id_t	current_cell;
-	const char*	token_start;
-	const char*	token_end;
-	uint32		token_line;
-};
 
 state_t*	parse(const char* str);
 
