@@ -21,15 +21,20 @@ typedef struct cell_id_t {
 	uint32		index;
 } cell_id_t;
 
-typedef struct cons_t {
-	cell_id_t	cdr;		/* the tail */
-	cell_id_t	car;		/* the head */
-} cons_t;
+typedef struct pair_t {
+	cell_id_t	tail;		/* the tail */
+	cell_id_t	head;		/* the head */
+} pair_t;
 
 typedef struct closure_t {
 	uint32		arg_count;	/* total argument count */
 	cell_id_t	expression;
 } closure_t;
+
+typedef struct scope_t {
+	cell_id_t	parent;
+	cell_id_t	symbols;
+} scope_t;
 
 #define GC_REACHABLE	0x8000
 #define FOREIGN		0x0800
@@ -50,7 +55,7 @@ typedef struct cell_t {
 		real64		r64;
 
 		char*		string;
-		cons_t		cons;
+		pair_t		pair;
 		closure_t	closure;
 	} object;
 
@@ -100,7 +105,7 @@ cell_car(state_t* s,
 	 cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->object.cons.car;
+	return c->object.pair.head;
 }
 
 static INLINE cell_id_t
@@ -108,7 +113,7 @@ cell_cdr(state_t* s,
 	 cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->object.cons.cdr;
+	return c->object.pair.tail;
 }
 
 static INLINE cell_id_t

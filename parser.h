@@ -10,6 +10,5 @@
 #define CELL_APPLY                     10
 #define CELL_ENVIRONMENT               11
 #define CELL_FRAME                     12
-#define QUOTE                          13
-#define LPAR                           14
-#define RPAR                           15
+#define LPAR                           13
+#define RPAR                           14

@@ -70,8 +70,8 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 	main := |*
 		'true'						{ ADVANCE( boolean );};
 		'false'						{ ADVANCE( boolean );};
-		'quote'						{ ADVANCE_TOKEN( QUOTE ); };
-		"'"						{ ADVANCE_TOKEN( QUOTE ); };
+		#'quote'						{ ADVANCE_TOKEN( QUOTE ); };
+		#"'"						{ ADVANCE_TOKEN( QUOTE ); };
 
 		# Single and double literals.
 		( "'" (any - ['\\] ) "'" )			{

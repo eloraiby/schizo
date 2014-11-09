@@ -12,24 +12,22 @@ State 0:
           cell ::= * CELL_APPLY
           cell ::= * CELL_ENVIRONMENT
           cell ::= * CELL_FRAME
-          cell ::= * QUOTE cell
           cell ::= * LPAR cell_members RPAR
 
-                   CELL_SYMBOL shift  21
-                     CELL_BOOL shift  20
-                     CELL_CHAR shift  19
-                   CELL_SINT64 shift  18
-                   CELL_REAL64 shift  17
-                   CELL_STRING shift  16
-                     CELL_FREE shift  15
-                     CELL_PAIR shift  14
-                   CELL_VECTOR shift  13
-                    CELL_APPLY shift  12
-              CELL_ENVIRONMENT shift  11
-                    CELL_FRAME shift  10
-                         QUOTE shift  3
+                   CELL_SYMBOL shift  19
+                     CELL_BOOL shift  18
+                     CELL_CHAR shift  17
+                   CELL_SINT64 shift  16
+                   CELL_REAL64 shift  15
+                   CELL_STRING shift  14
+                     CELL_FREE shift  13
+                     CELL_PAIR shift  12
+                   CELL_VECTOR shift  11
+                    CELL_APPLY shift  10
+              CELL_ENVIRONMENT shift  9
+                    CELL_FRAME shift  8
                           LPAR shift  1
-                          cell shift  5
+                          cell shift  4
                        program accept
 
 State 1:
@@ -45,32 +43,30 @@ State 1:
           cell ::= * CELL_APPLY
           cell ::= * CELL_ENVIRONMENT
           cell ::= * CELL_FRAME
-          cell ::= * QUOTE cell
           cell ::= * LPAR cell_members RPAR
           cell ::= LPAR * cell_members RPAR
           cell_list ::= * cell
           cell_list ::= * cell_list cell
-     (17) cell_members ::= *
+     (16) cell_members ::= *
           cell_members ::= * cell_list
 
-                   CELL_SYMBOL shift  21
-                     CELL_BOOL shift  20
-                     CELL_CHAR shift  19
-                   CELL_SINT64 shift  18
-                   CELL_REAL64 shift  17
-                   CELL_STRING shift  16
-                     CELL_FREE shift  15
-                     CELL_PAIR shift  14
-                   CELL_VECTOR shift  13
-                    CELL_APPLY shift  12
-              CELL_ENVIRONMENT shift  11
-                    CELL_FRAME shift  10
-                         QUOTE shift  3
+                   CELL_SYMBOL shift  19
+                     CELL_BOOL shift  18
+                     CELL_CHAR shift  17
+                   CELL_SINT64 shift  16
+                   CELL_REAL64 shift  15
+                   CELL_STRING shift  14
+                     CELL_FREE shift  13
+                     CELL_PAIR shift  12
+                   CELL_VECTOR shift  11
+                    CELL_APPLY shift  10
+              CELL_ENVIRONMENT shift  9
+                    CELL_FRAME shift  8
                           LPAR shift  1
-                          cell shift  7
+                          cell shift  6
                      cell_list shift  2
-                  cell_members shift  4
-                     {default} reduce 17
+                  cell_members shift  3
+                     {default} reduce 16
 
 State 2:
           cell ::= * CELL_SYMBOL
@@ -85,147 +81,107 @@ State 2:
           cell ::= * CELL_APPLY
           cell ::= * CELL_ENVIRONMENT
           cell ::= * CELL_FRAME
-          cell ::= * QUOTE cell
           cell ::= * LPAR cell_members RPAR
           cell_list ::= cell_list * cell
-     (18) cell_members ::= cell_list *
+     (17) cell_members ::= cell_list *
 
-                   CELL_SYMBOL shift  21
-                     CELL_BOOL shift  20
-                     CELL_CHAR shift  19
-                   CELL_SINT64 shift  18
-                   CELL_REAL64 shift  17
-                   CELL_STRING shift  16
-                     CELL_FREE shift  15
-                     CELL_PAIR shift  14
-                   CELL_VECTOR shift  13
-                    CELL_APPLY shift  12
-              CELL_ENVIRONMENT shift  11
-                    CELL_FRAME shift  10
-                         QUOTE shift  3
+                   CELL_SYMBOL shift  19
+                     CELL_BOOL shift  18
+                     CELL_CHAR shift  17
+                   CELL_SINT64 shift  16
+                   CELL_REAL64 shift  15
+                   CELL_STRING shift  14
+                     CELL_FREE shift  13
+                     CELL_PAIR shift  12
+                   CELL_VECTOR shift  11
+                    CELL_APPLY shift  10
+              CELL_ENVIRONMENT shift  9
+                    CELL_FRAME shift  8
                           LPAR shift  1
-                          cell shift  6
-                     {default} reduce 18
+                          cell shift  5
+                     {default} reduce 17
 
 State 3:
-          cell ::= * CELL_SYMBOL
-          cell ::= * CELL_BOOL
-          cell ::= * CELL_CHAR
-          cell ::= * CELL_SINT64
-          cell ::= * CELL_REAL64
-          cell ::= * CELL_STRING
-          cell ::= * CELL_FREE
-          cell ::= * CELL_PAIR
-          cell ::= * CELL_VECTOR
-          cell ::= * CELL_APPLY
-          cell ::= * CELL_ENVIRONMENT
-          cell ::= * CELL_FRAME
-          cell ::= * QUOTE cell
-          cell ::= QUOTE * cell
-          cell ::= * LPAR cell_members RPAR
-
-                   CELL_SYMBOL shift  21
-                     CELL_BOOL shift  20
-                     CELL_CHAR shift  19
-                   CELL_SINT64 shift  18
-                   CELL_REAL64 shift  17
-                   CELL_STRING shift  16
-                     CELL_FREE shift  15
-                     CELL_PAIR shift  14
-                   CELL_VECTOR shift  13
-                    CELL_APPLY shift  12
-              CELL_ENVIRONMENT shift  11
-                    CELL_FRAME shift  10
-                         QUOTE shift  3
-                          LPAR shift  1
-                          cell shift  9
-
-State 4:
           cell ::= LPAR cell_members * RPAR
 
-                          RPAR shift  8
+                          RPAR shift  7
 
-State 5:
+State 4:
       (0) program ::= cell *
 
                              $ reduce 0
 
-State 6:
-     (16) cell_list ::= cell_list cell *
-
-                     {default} reduce 16
-
-State 7:
-     (15) cell_list ::= cell *
+State 5:
+     (15) cell_list ::= cell_list cell *
 
                      {default} reduce 15
 
-State 8:
-     (14) cell ::= LPAR cell_members RPAR *
+State 6:
+     (14) cell_list ::= cell *
 
                      {default} reduce 14
 
-State 9:
-     (13) cell ::= QUOTE cell *
+State 7:
+     (13) cell ::= LPAR cell_members RPAR *
 
                      {default} reduce 13
 
-State 10:
+State 8:
      (12) cell ::= CELL_FRAME *
 
                      {default} reduce 12
 
-State 11:
+State 9:
      (11) cell ::= CELL_ENVIRONMENT *
 
                      {default} reduce 11
 
-State 12:
+State 10:
      (10) cell ::= CELL_APPLY *
 
                      {default} reduce 10
 
-State 13:
+State 11:
       (9) cell ::= CELL_VECTOR *
 
                      {default} reduce 9
 
-State 14:
+State 12:
       (8) cell ::= CELL_PAIR *
 
                      {default} reduce 8
 
-State 15:
+State 13:
       (7) cell ::= CELL_FREE *
 
                      {default} reduce 7
 
-State 16:
+State 14:
       (6) cell ::= CELL_STRING *
 
                      {default} reduce 6
 
-State 17:
+State 15:
       (5) cell ::= CELL_REAL64 *
 
                      {default} reduce 5
 
-State 18:
+State 16:
       (4) cell ::= CELL_SINT64 *
 
                      {default} reduce 4
 
-State 19:
+State 17:
       (3) cell ::= CELL_CHAR *
 
                      {default} reduce 3
 
-State 20:
+State 18:
       (2) cell ::= CELL_BOOL *
 
                      {default} reduce 2
 
-State 21:
+State 19:
       (1) cell ::= CELL_SYMBOL *
 
                      {default} reduce 1
@@ -245,11 +201,10 @@ Symbols:
    10: CELL_APPLY
    11: CELL_ENVIRONMENT
    12: CELL_FRAME
-   13: QUOTE
-   14: LPAR
-   15: RPAR
-   16: error:
-   17: cell: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME QUOTE LPAR
-   18: program: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME QUOTE LPAR
-   19: cell_list: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME QUOTE LPAR
-   20: cell_members: <lambda> CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME QUOTE LPAR
+   13: LPAR
+   14: RPAR
+   15: error:
+   16: cell: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   17: program: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   18: cell_list: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   19: cell_members: <lambda> CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR

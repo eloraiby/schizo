@@ -49,11 +49,11 @@ cell_alloc(state_t* s) {
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_PAIR;
-			s->gc_block.cells[i].object.cons.car	= cell_nil();
-			s->gc_block.cells[i].object.cons.cdr	= cell_id(i + 1);
+			s->gc_block.cells[i].object.pair.head	= cell_nil();
+			s->gc_block.cells[i].object.pair.tail	= cell_id(i + 1);
 		}
 
-		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.cons.cdr	= cell_nil();
+		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.pair.tail	= cell_nil();
 
 	} else if( s->gc_block.free_list.index == NIL_CELL ) {
 
@@ -71,11 +71,11 @@ cell_alloc(state_t* s) {
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_PAIR;
-			s->gc_block.cells[i].object.cons.car	= cell_nil();
-			s->gc_block.cells[i].object.cons.cdr	= cell_id(i + 1);
+			s->gc_block.cells[i].object.pair.head	= cell_nil();
+			s->gc_block.cells[i].object.pair.tail	= cell_id(i + 1);
 		}
 
-		s->gc_block.cells[s->gc_block.count - 1].object.cons.cdr	= cell_nil();
+		s->gc_block.cells[s->gc_block.count - 1].object.pair.tail	= cell_nil();
 	}
 
 	cell_id_t	c = s->gc_block.free_list;
@@ -144,8 +144,8 @@ cell_new_pair(state_t* s,
 	cell_id_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 	ret->type	= CELL_PAIR;
-	ret->object.cons.car	= car;
-	ret->object.cons.cdr	= cell_nil();
+	ret->object.pair.head	= car;
+	ret->object.pair.tail	= cell_nil();
 	return id;
 }
 
@@ -156,7 +156,7 @@ cell_cons(state_t* s,
 {
 	cell_id_t id	= cell_new_pair(s, car);
 	cell_t* ret	= &s->gc_block.cells[id.index];
-	ret->object.cons.cdr	= list;
+	ret->object.pair.tail	= list;
 	return id;
 }
 
@@ -166,13 +166,13 @@ cell_reverse_in_place(state_t *s,
 {
 	cell_t*		c	= cell_from_index(s, list);
 	cell_id_t	current	= list;
-	cell_id_t	next	= c->object.cons.cdr;
+	cell_id_t	next	= c->object.pair.tail;
 	while( !is_nil(next) ) {
 		cell_t*		n	= cell_from_index(s, next);
-		cell_id_t	tmp	= n->object.cons.cdr;
+		cell_id_t	tmp	= n->object.pair.tail;
 
-		n->object.cons.cdr	= current;
-		c->object.cons.cdr	= tmp;
+		n->object.pair.tail	= current;
+		c->object.pair.tail	= tmp;
 		current		= next;
 		next		= tmp;
 	}
@@ -224,23 +224,19 @@ print_cell(state_t* s,
 		break;
 
 	case CELL_PAIR:
-		if( !is_nil(c->object.cons.car) ) {
-			//print_level(level);
+		if( !is_nil(c->object.pair.head) ) {
 			fprintf(stderr, "(");
-			print_cell(s, c->object.cons.car, 0);
-			//
+			print_cell(s, c->object.pair.head, 0);
 		} else {
 			fprintf(stderr, "nil");
 		}
 
-		if( !is_nil(c->object.cons.cdr) ) {
-			cell_id_t id	= c->object.cons.cdr;
+		if( !is_nil(c->object.pair.tail) ) {
+			cell_id_t id	= c->object.pair.tail;
 			while( !is_nil(id) ) {
 				cell_t* n = &s->gc_block.cells[id.index];
-				if( !is_nil(n->object.cons.car) ) {
-					//fprintf(stderr, "(");
-					print_cell(s, n->object.cons.car, 1);
-					//print_level(level);
+				if( !is_nil(n->object.pair.head) ) {
+					print_cell(s, n->object.pair.head, 1);
 				} else {
 					fprintf(stderr, "nil");
 				}

@@ -60,13 +60,13 @@
 **                       defined, then do no error processing.
 */
 #define YYCODETYPE unsigned char
-#define YYNOCODE 22
+#define YYNOCODE 21
 #define YYACTIONTYPE unsigned char
 #define parserTOKENTYPE  cell_id_t 
 typedef union {
   int yyinit;
   parserTOKENTYPE yy0;
-  cell_id_t yy42;
+  cell_id_t yy4;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -75,8 +75,8 @@ typedef union {
 #define parserARG_PDECL , state_t* s 
 #define parserARG_FETCH  state_t* s  = yypParser->s 
 #define parserARG_STORE yypParser->s  = s 
-#define YYNSTATE 22
-#define YYNRULE 19
+#define YYNSTATE 20
+#define YYNRULE 18
 #define YY_NO_ACTION      (YYNSTATE+YYNRULE+2)
 #define YY_ACCEPT_ACTION  (YYNSTATE+YYNRULE+1)
 #define YY_ERROR_ACTION   (YYNSTATE+YYNRULE)
@@ -145,35 +145,34 @@ static const YYMINORTYPE yyzerominor = { 0 };
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
-#define YY_ACTTAB_COUNT (24)
+#define YY_ACTTAB_COUNT (21)
 static const YYACTIONTYPE yy_action[] = {
- /*     0 */    21,   20,   19,   18,   17,   16,   15,   14,   13,   12,
- /*    10 */    11,   10,    3,    1,    7,   22,    2,    4,    5,   42,
- /*    20 */     8,    9,   43,    6,
+ /*     0 */    19,   18,   17,   16,   15,   14,   13,   12,   11,   10,
+ /*    10 */     9,    8,    1,    6,   20,    2,    3,    4,   39,    7,
+ /*    20 */     5,
 };
 static const YYCODETYPE yy_lookahead[] = {
  /*     0 */     1,    2,    3,    4,    5,    6,    7,    8,    9,   10,
- /*    10 */    11,   12,   13,   14,   17,    0,   19,   20,   17,   18,
- /*    20 */    15,   17,   21,   17,
+ /*    10 */    11,   12,   13,   16,    0,   18,   19,   16,   17,   14,
+ /*    20 */    16,
 };
 #define YY_SHIFT_USE_DFLT (-2)
-#define YY_SHIFT_COUNT (5)
+#define YY_SHIFT_COUNT (4)
 #define YY_SHIFT_MIN   (-1)
-#define YY_SHIFT_MAX   (15)
+#define YY_SHIFT_MAX   (14)
 static const signed char yy_shift_ofst[] = {
- /*     0 */    -1,   -1,   -1,   -1,    5,   15,
+ /*     0 */    -1,   -1,   -1,    5,   14,
 };
 #define YY_REDUCE_USE_DFLT (-4)
-#define YY_REDUCE_COUNT (3)
+#define YY_REDUCE_COUNT (2)
 #define YY_REDUCE_MIN   (-3)
-#define YY_REDUCE_MAX   (6)
+#define YY_REDUCE_MAX   (4)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */     1,   -3,    6,    4,
+ /*     0 */     1,   -3,    4,
 };
 static const YYACTIONTYPE yy_default[] = {
- /*     0 */    41,   39,   40,   41,   41,   41,   38,   37,   36,   35,
- /*    10 */    34,   33,   32,   31,   30,   29,   28,   27,   26,   25,
- /*    20 */    24,   23,
+ /*     0 */    38,   36,   37,   38,   38,   35,   34,   33,   32,   31,
+ /*    10 */    30,   29,   28,   27,   26,   25,   24,   23,   22,   21,
 };
 
 /* The next table maps tokens into fallback tokens.  If a construct
@@ -269,9 +268,8 @@ static const char *const yyTokenName[] = {
   "$",             "CELL_SYMBOL",   "CELL_BOOL",     "CELL_CHAR",   
   "CELL_SINT64",   "CELL_REAL64",   "CELL_STRING",   "CELL_FREE",   
   "CELL_PAIR",     "CELL_VECTOR",   "CELL_APPLY",    "CELL_ENVIRONMENT",
-  "CELL_FRAME",    "QUOTE",         "LPAR",          "RPAR",        
-  "error",         "cell",          "program",       "cell_list",   
-  "cell_members",
+  "CELL_FRAME",    "LPAR",          "RPAR",          "error",       
+  "cell",          "program",       "cell_list",     "cell_members",
 };
 #endif /* NDEBUG */
 
@@ -292,12 +290,11 @@ static const char *const yyRuleName[] = {
  /*  10 */ "cell ::= CELL_APPLY",
  /*  11 */ "cell ::= CELL_ENVIRONMENT",
  /*  12 */ "cell ::= CELL_FRAME",
- /*  13 */ "cell ::= QUOTE cell",
- /*  14 */ "cell ::= LPAR cell_members RPAR",
- /*  15 */ "cell_list ::= cell",
- /*  16 */ "cell_list ::= cell_list cell",
- /*  17 */ "cell_members ::=",
- /*  18 */ "cell_members ::= cell_list",
+ /*  13 */ "cell ::= LPAR cell_members RPAR",
+ /*  14 */ "cell_list ::= cell",
+ /*  15 */ "cell_list ::= cell_list cell",
+ /*  16 */ "cell_members ::=",
+ /*  17 */ "cell_members ::= cell_list",
 };
 #endif /* NDEBUG */
 
@@ -611,25 +608,24 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
+  { 17, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 1 },
+  { 16, 3 },
   { 18, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 1 },
-  { 17, 2 },
-  { 17, 3 },
+  { 18, 2 },
+  { 19, 0 },
   { 19, 1 },
-  { 19, 2 },
-  { 20, 0 },
-  { 20, 1 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -686,8 +682,8 @@ static void yy_reduce(
   */
       case 0: /* program ::= cell */
 #line 50 "/home/kin/Projects/schizo/parser.y"
-{ s->root = yymsp[0].minor.yy42; }
-#line 691 "/home/kin/Projects/schizo/parser.c"
+{ s->root = yymsp[0].minor.yy4; }
+#line 687 "/home/kin/Projects/schizo/parser.c"
         break;
       case 1: /* cell ::= CELL_SYMBOL */
       case 2: /* cell ::= CELL_BOOL */ yytestcase(yyruleno==2);
@@ -696,34 +692,33 @@ static void yy_reduce(
       case 5: /* cell ::= CELL_REAL64 */ yytestcase(yyruleno==5);
       case 6: /* cell ::= CELL_STRING */ yytestcase(yyruleno==6);
 #line 53 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy42 = yymsp[0].minor.yy0; }
-#line 701 "/home/kin/Projects/schizo/parser.c"
+{ yygotominor.yy4 = yymsp[0].minor.yy0; }
+#line 697 "/home/kin/Projects/schizo/parser.c"
         break;
-      case 13: /* cell ::= QUOTE cell */
-      case 15: /* cell_list ::= cell */ yytestcase(yyruleno==15);
+      case 13: /* cell ::= LPAR cell_members RPAR */
 #line 69 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy42 = cell_new_pair(s, yymsp[0].minor.yy42); }
+{ yygotominor.yy4 = cell_reverse_in_place(s, yymsp[-1].minor.yy0); }
+#line 702 "/home/kin/Projects/schizo/parser.c"
+        break;
+      case 14: /* cell_list ::= cell */
+#line 71 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy4 = cell_new_pair(s, yymsp[0].minor.yy4); }
 #line 707 "/home/kin/Projects/schizo/parser.c"
         break;
-      case 14: /* cell ::= LPAR cell_members RPAR */
-#line 70 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy42 = cell_reverse_in_place(s, yymsp[-1].minor.yy0); }
+      case 15: /* cell_list ::= cell_list cell */
+#line 72 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy4 = cell_cons(s, yymsp[0].minor.yy4, yymsp[-1].minor.yy4); }
 #line 712 "/home/kin/Projects/schizo/parser.c"
         break;
-      case 16: /* cell_list ::= cell_list cell */
-#line 73 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy42 = cell_cons(s, yymsp[0].minor.yy42, yymsp[-1].minor.yy42); }
+      case 16: /* cell_members ::= */
+#line 74 "/home/kin/Projects/schizo/parser.y"
+{ cell_id_t nil = { 0 }; yygotominor.yy0 = cell_new_pair(s, nil); }
 #line 717 "/home/kin/Projects/schizo/parser.c"
         break;
-      case 17: /* cell_members ::= */
+      case 17: /* cell_members ::= cell_list */
 #line 75 "/home/kin/Projects/schizo/parser.y"
-{ cell_id_t nil = { 0 }; yygotominor.yy0 = cell_new_pair(s, nil); }
+{ yygotominor.yy0 = yymsp[0].minor.yy4; }
 #line 722 "/home/kin/Projects/schizo/parser.c"
-        break;
-      case 18: /* cell_members ::= cell_list */
-#line 76 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy0 = yymsp[0].minor.yy42; }
-#line 727 "/home/kin/Projects/schizo/parser.c"
         break;
       default:
       /* (7) cell ::= CELL_FREE */ yytestcase(yyruleno==7);
@@ -800,7 +795,7 @@ static void yy_syntax_error(
 			printf("possible token: %s\n", yyTokenName[i]);
 		}
 	}
-#line 804 "/home/kin/Projects/schizo/parser.c"
+#line 799 "/home/kin/Projects/schizo/parser.c"
   parserARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 

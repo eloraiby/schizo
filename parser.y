@@ -66,7 +66,6 @@ cell		::= CELL_ENVIRONMENT.			/* environment */
 cell		::= CELL_FRAME.				/* arguments */
 
 /* ( ... ) */
-cell(A)		::= QUOTE cell(B).			{ A = cell_new_pair(s, B); }
 cell(A)		::= LPAR cell_members(B) RPAR.		{ A = cell_reverse_in_place(s, B); }
 
 cell_list(A)	::= cell(B).				{ A = cell_new_pair(s, B); }
