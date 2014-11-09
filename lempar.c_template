@@ -291,9 +291,9 @@ void *Parse_alloc(void *(*mallocProc)(size_t)){
 static void yy_destructor(
   yyParser *yypParser,    /* The parser */
   YYCODETYPE yymajor,     /* Type code for object to destroy */
-  YYMINORTYPE *yypminor   /* The object to be destroyed */
+  UNUSED YYMINORTYPE *yypminor   /* The object to be destroyed */
 ){
-  ParseARG_FETCH;
+  UNUSED ParseARG_FETCH;
   switch( yymajor ){
     /* Here is inserted the actions which take place when a
     ** terminal or non-terminal is destroyed.  This can happen
@@ -474,7 +474,7 @@ static int yy_find_reduce_action(
 /*
 ** The following routine is called if the stack overflows.
 */
-static void yyStackOverflow(yyParser *yypParser, YYMINORTYPE *yypMinor){
+static void yyStackOverflow(yyParser *yypParser, UNUSED YYMINORTYPE *yypMinor){
    ParseARG_FETCH;
    yypParser->yyidx--;
 #ifndef NDEBUG
@@ -652,8 +652,8 @@ static void yy_parse_failed(
 */
 static void yy_syntax_error(
   yyParser *yypParser,           /* The parser */
-  int yymajor,                   /* The major type of the error token */
-  YYMINORTYPE yyminor            /* The minor type of the error token */
+  UNUSED int yymajor,                   /* The major type of the error token */
+  UNUSED YYMINORTYPE yyminor            /* The minor type of the error token */
 ){
   ParseARG_FETCH;
 #define TOKEN (yyminor.yy0)

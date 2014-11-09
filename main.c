@@ -40,7 +40,7 @@ main(int argc,
 	for(size_t i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		state	= parse(prog[i]);
 		print_cell(state, state->root, 0);
-		fprintf(stderr, "---------------\n");
+		fprintf(stderr, "\n");
 	}
 
 	return 0;

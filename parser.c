@@ -60,13 +60,13 @@
 **                       defined, then do no error processing.
 */
 #define YYCODETYPE unsigned char
-#define YYNOCODE 20
+#define YYNOCODE 22
 #define YYACTIONTYPE unsigned char
 #define parserTOKENTYPE  cell_id_t 
 typedef union {
   int yyinit;
   parserTOKENTYPE yy0;
-  cell_id_t yy26;
+  cell_id_t yy42;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -76,7 +76,7 @@ typedef union {
 #define parserARG_FETCH  state_t* s  = yypParser->s 
 #define parserARG_STORE yypParser->s  = s 
 #define YYNSTATE 22
-#define YYNRULE 17
+#define YYNRULE 19
 #define YY_NO_ACTION      (YYNSTATE+YYNRULE+2)
 #define YY_ACCEPT_ACTION  (YYNSTATE+YYNRULE+1)
 #define YY_ERROR_ACTION   (YYNSTATE+YYNRULE)
@@ -145,41 +145,33 @@ static const YYMINORTYPE yyzerominor = { 0 };
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
-#define YY_ACTTAB_COUNT (61)
+#define YY_ACTTAB_COUNT (24)
 static const YYACTIONTYPE yy_action[] = {
  /*     0 */    21,   20,   19,   18,   17,   16,   15,   14,   13,   12,
- /*    10 */    11,    4,    2,    9,   21,   20,   19,   18,   17,   16,
- /*    20 */    15,   14,   13,   12,   11,    4,    2,   10,   21,   20,
- /*    30 */    19,   18,   17,   16,   15,   14,   13,   12,   11,    4,
- /*    40 */     1,   21,   20,   19,   18,   17,   16,   15,   14,   13,
- /*    50 */    12,   11,    4,    2,    7,   22,    3,    5,   40,    6,
- /*    60 */     8,
+ /*    10 */    11,   10,    3,    1,    7,   22,    2,    4,    5,   42,
+ /*    20 */     8,    9,   43,    6,
 };
 static const YYCODETYPE yy_lookahead[] = {
  /*     0 */     1,    2,    3,    4,    5,    6,    7,    8,    9,   10,
- /*    10 */    11,   12,   13,   14,    1,    2,    3,    4,    5,    6,
- /*    20 */     7,    8,    9,   10,   11,   12,   13,   14,    1,    2,
- /*    30 */     3,    4,    5,    6,    7,    8,    9,   10,   11,   12,
- /*    40 */    13,    1,    2,    3,    4,    5,    6,    7,    8,    9,
- /*    50 */    10,   11,   12,   13,   16,    0,   18,   16,   17,   16,
- /*    60 */    16,
+ /*    10 */    11,   12,   13,   14,   17,    0,   19,   20,   17,   18,
+ /*    20 */    15,   17,   21,   17,
 };
 #define YY_SHIFT_USE_DFLT (-2)
 #define YY_SHIFT_COUNT (5)
 #define YY_SHIFT_MIN   (-1)
-#define YY_SHIFT_MAX   (55)
+#define YY_SHIFT_MAX   (15)
 static const signed char yy_shift_ofst[] = {
- /*     0 */    40,   13,   40,   -1,   27,   55,
+ /*     0 */    -1,   -1,   -1,   -1,    5,   15,
 };
-#define YY_REDUCE_USE_DFLT (-1)
-#define YY_REDUCE_COUNT (4)
-#define YY_REDUCE_MIN   (0)
-#define YY_REDUCE_MAX   (44)
+#define YY_REDUCE_USE_DFLT (-4)
+#define YY_REDUCE_COUNT (3)
+#define YY_REDUCE_MIN   (-3)
+#define YY_REDUCE_MAX   (6)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    41,   38,   38,   44,   43,
+ /*     0 */     1,   -3,    6,    4,
 };
 static const YYACTIONTYPE yy_default[] = {
- /*     0 */    39,   39,   39,   39,   39,   39,   35,   37,   38,   36,
+ /*     0 */    41,   39,   40,   41,   41,   41,   38,   37,   36,   35,
  /*    10 */    34,   33,   32,   31,   30,   29,   28,   27,   26,   25,
  /*    20 */    24,   23,
 };
@@ -276,9 +268,10 @@ void parserTrace(FILE *TraceFILE, char *zTracePrompt){
 static const char *const yyTokenName[] = {
   "$",             "CELL_SYMBOL",   "CELL_BOOL",     "CELL_CHAR",   
   "CELL_SINT64",   "CELL_REAL64",   "CELL_STRING",   "CELL_FREE",   
-  "CELL_CONS",     "CELL_LAMBDA",   "CELL_PROCEDURE",  "CELL_IF",     
-  "QUOTE",         "LPAR",          "RPAR",          "error",       
-  "cell",          "program",       "cell_list",   
+  "CELL_PAIR",     "CELL_VECTOR",   "CELL_APPLY",    "CELL_ENVIRONMENT",
+  "CELL_FRAME",    "QUOTE",         "LPAR",          "RPAR",        
+  "error",         "cell",          "program",       "cell_list",   
+  "cell_members",
 };
 #endif /* NDEBUG */
 
@@ -294,15 +287,17 @@ static const char *const yyRuleName[] = {
  /*   5 */ "cell ::= CELL_REAL64",
  /*   6 */ "cell ::= CELL_STRING",
  /*   7 */ "cell ::= CELL_FREE",
- /*   8 */ "cell ::= CELL_CONS",
- /*   9 */ "cell ::= CELL_LAMBDA",
- /*  10 */ "cell ::= CELL_PROCEDURE",
- /*  11 */ "cell ::= CELL_IF",
- /*  12 */ "cell ::= QUOTE LPAR RPAR",
+ /*   8 */ "cell ::= CELL_PAIR",
+ /*   9 */ "cell ::= CELL_VECTOR",
+ /*  10 */ "cell ::= CELL_APPLY",
+ /*  11 */ "cell ::= CELL_ENVIRONMENT",
+ /*  12 */ "cell ::= CELL_FRAME",
  /*  13 */ "cell ::= QUOTE cell",
- /*  14 */ "cell ::= LPAR cell_list RPAR",
+ /*  14 */ "cell ::= LPAR cell_members RPAR",
  /*  15 */ "cell_list ::= cell",
  /*  16 */ "cell_list ::= cell_list cell",
+ /*  17 */ "cell_members ::=",
+ /*  18 */ "cell_members ::= cell_list",
 };
 #endif /* NDEBUG */
 
@@ -367,9 +362,9 @@ void *parser_alloc(void *(*mallocProc)(size_t)){
 static void yy_destructor(
   yyParser *yypParser,    /* The parser */
   YYCODETYPE yymajor,     /* Type code for object to destroy */
-  YYMINORTYPE *yypminor   /* The object to be destroyed */
+  UNUSED YYMINORTYPE *yypminor   /* The object to be destroyed */
 ){
-  parserARG_FETCH;
+  UNUSED parserARG_FETCH;
   switch( yymajor ){
     /* Here is inserted the actions which take place when a
     ** terminal or non-terminal is destroyed.  This can happen
@@ -549,7 +544,7 @@ static int yy_find_reduce_action(
 /*
 ** The following routine is called if the stack overflows.
 */
-static void yyStackOverflow(yyParser *yypParser, YYMINORTYPE *yypMinor){
+static void yyStackOverflow(yyParser *yypParser, UNUSED YYMINORTYPE *yypMinor){
    parserARG_FETCH;
    yypParser->yyidx--;
 #ifndef NDEBUG
@@ -616,23 +611,25 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 17, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 1 },
-  { 16, 3 },
-  { 16, 2 },
-  { 16, 3 },
   { 18, 1 },
-  { 18, 2 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 1 },
+  { 17, 2 },
+  { 17, 3 },
+  { 19, 1 },
+  { 19, 2 },
+  { 20, 0 },
+  { 20, 1 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -688,9 +685,9 @@ static void yy_reduce(
   **     break;
   */
       case 0: /* program ::= cell */
-#line 40 "/home/kin/Projects/schizo/parser.y"
-{ s->root = yymsp[0].minor.yy26; }
-#line 694 "/home/kin/Projects/schizo/parser.c"
+#line 50 "/home/kin/Projects/schizo/parser.y"
+{ s->root = yymsp[0].minor.yy42; }
+#line 691 "/home/kin/Projects/schizo/parser.c"
         break;
       case 1: /* cell ::= CELL_SYMBOL */
       case 2: /* cell ::= CELL_BOOL */ yytestcase(yyruleno==2);
@@ -698,37 +695,43 @@ static void yy_reduce(
       case 4: /* cell ::= CELL_SINT64 */ yytestcase(yyruleno==4);
       case 5: /* cell ::= CELL_REAL64 */ yytestcase(yyruleno==5);
       case 6: /* cell ::= CELL_STRING */ yytestcase(yyruleno==6);
-#line 43 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy26 = yymsp[0].minor.yy0; }
-#line 704 "/home/kin/Projects/schizo/parser.c"
-        break;
-      case 12: /* cell ::= QUOTE LPAR RPAR */
-#line 58 "/home/kin/Projects/schizo/parser.y"
-{ cell_id_t nil = { 0 }; yygotominor.yy26 = cell_new_cons(s, nil); }
-#line 709 "/home/kin/Projects/schizo/parser.c"
+#line 53 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy42 = yymsp[0].minor.yy0; }
+#line 701 "/home/kin/Projects/schizo/parser.c"
         break;
       case 13: /* cell ::= QUOTE cell */
       case 15: /* cell_list ::= cell */ yytestcase(yyruleno==15);
-#line 59 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy26 = cell_new_cons(s, yymsp[0].minor.yy26); }
-#line 715 "/home/kin/Projects/schizo/parser.c"
+#line 69 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy42 = cell_new_pair(s, yymsp[0].minor.yy42); }
+#line 707 "/home/kin/Projects/schizo/parser.c"
         break;
-      case 14: /* cell ::= LPAR cell_list RPAR */
-#line 60 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy26 = cell_reverse_in_place(s, yymsp[-1].minor.yy26); }
-#line 720 "/home/kin/Projects/schizo/parser.c"
+      case 14: /* cell ::= LPAR cell_members RPAR */
+#line 70 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy42 = cell_reverse_in_place(s, yymsp[-1].minor.yy0); }
+#line 712 "/home/kin/Projects/schizo/parser.c"
         break;
       case 16: /* cell_list ::= cell_list cell */
-#line 63 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy26 = cell_cons(s, yymsp[0].minor.yy26, yymsp[-1].minor.yy26); }
-#line 725 "/home/kin/Projects/schizo/parser.c"
+#line 73 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy42 = cell_cons(s, yymsp[0].minor.yy42, yymsp[-1].minor.yy42); }
+#line 717 "/home/kin/Projects/schizo/parser.c"
+        break;
+      case 17: /* cell_members ::= */
+#line 75 "/home/kin/Projects/schizo/parser.y"
+{ cell_id_t nil = { 0 }; yygotominor.yy0 = cell_new_pair(s, nil); }
+#line 722 "/home/kin/Projects/schizo/parser.c"
+        break;
+      case 18: /* cell_members ::= cell_list */
+#line 76 "/home/kin/Projects/schizo/parser.y"
+{ yygotominor.yy0 = yymsp[0].minor.yy42; }
+#line 727 "/home/kin/Projects/schizo/parser.c"
         break;
       default:
       /* (7) cell ::= CELL_FREE */ yytestcase(yyruleno==7);
-      /* (8) cell ::= CELL_CONS */ yytestcase(yyruleno==8);
-      /* (9) cell ::= CELL_LAMBDA */ yytestcase(yyruleno==9);
-      /* (10) cell ::= CELL_PROCEDURE */ yytestcase(yyruleno==10);
-      /* (11) cell ::= CELL_IF */ yytestcase(yyruleno==11);
+      /* (8) cell ::= CELL_PAIR */ yytestcase(yyruleno==8);
+      /* (9) cell ::= CELL_VECTOR */ yytestcase(yyruleno==9);
+      /* (10) cell ::= CELL_APPLY */ yytestcase(yyruleno==10);
+      /* (11) cell ::= CELL_ENVIRONMENT */ yytestcase(yyruleno==11);
+      /* (12) cell ::= CELL_FRAME */ yytestcase(yyruleno==12);
         break;
   };
   yygoto = yyRuleInfo[yyruleno].lhs;
@@ -783,11 +786,21 @@ static void yy_parse_failed(
 */
 static void yy_syntax_error(
   yyParser *yypParser,           /* The parser */
-  int yymajor,                   /* The major type of the error token */
-  YYMINORTYPE yyminor            /* The minor type of the error token */
+  UNUSED int yymajor,                   /* The major type of the error token */
+  UNUSED YYMINORTYPE yyminor            /* The minor type of the error token */
 ){
   parserARG_FETCH;
 #define TOKEN (yyminor.yy0)
+#line 37 "/home/kin/Projects/schizo/parser.y"
+
+	int n = sizeof(yyTokenName) / sizeof(yyTokenName[0]);
+	for (int i = 0; i < n; ++i) {
+		int a = yy_find_shift_action(yypParser, (YYCODETYPE)i);
+		if (a < YYNSTATE + YYNRULE) {
+			printf("possible token: %s\n", yyTokenName[i]);
+		}
+	}
+#line 804 "/home/kin/Projects/schizo/parser.c"
   parserARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 

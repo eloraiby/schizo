@@ -34,6 +34,16 @@
 %type program	{ cell_id_t }
 %type cell_list	{ cell_id_t }
 
+%syntax_error {
+	int n = sizeof(yyTokenName) / sizeof(yyTokenName[0]);
+	for (int i = 0; i < n; ++i) {
+		int a = yy_find_shift_action(yypParser, (YYCODETYPE)i);
+		if (a < YYNSTATE + YYNRULE) {
+			printf("possible token: %s\n", yyTokenName[i]);
+		}
+	}
+}
+
 %start_symbol program
 
 /* a program is a cell */
@@ -49,15 +59,18 @@ cell(A)		::= CELL_STRING(B).			{ A = B; }
 
 /* NEVER USED: these are a hack to have the token ids */
 cell		::= CELL_FREE.				/* a free cell */
-cell		::= CELL_CONS.				/* cons cell */
-cell		::= CELL_LAMBDA.			/* closure */
-cell		::= CELL_PROCEDURE.			/* foreign function interface */
-cell		::= CELL_IF.				/* if */
+cell		::= CELL_PAIR.				/* list */
+cell		::= CELL_VECTOR.			/* a vector of cells */
+cell		::= CELL_APPLY.				/* syntax/closure/foreign function interface */
+cell		::= CELL_ENVIRONMENT.			/* environment */
+cell		::= CELL_FRAME.				/* arguments */
 
 /* ( ... ) */
-cell(A)		::= QUOTE LPAR RPAR.			{ cell_id_t nil = { 0 }; A = cell_new_cons(s, nil); }
-cell(A)		::= QUOTE cell(B).			{ A = cell_new_cons(s, B); }
-cell(A)		::= LPAR cell_list(B) RPAR.		{ A = cell_reverse_in_place(s, B); }
+cell(A)		::= QUOTE cell(B).			{ A = cell_new_pair(s, B); }
+cell(A)		::= LPAR cell_members(B) RPAR.		{ A = cell_reverse_in_place(s, B); }
 
-cell_list(A)	::= cell(B).				{ A = cell_new_cons(s, B); }
+cell_list(A)	::= cell(B).				{ A = cell_new_pair(s, B); }
 cell_list(A)	::= cell_list(B) cell(C).		{ A = cell_cons(s, C, B); }
+
+cell_members(A)	::=.					{ cell_id_t nil = { 0 }; A = cell_new_pair(s, nil); }
+cell_members(A)	::= cell_list(B).			{ A = B; }

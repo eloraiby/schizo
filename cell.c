@@ -48,7 +48,7 @@ cell_alloc(state_t* s) {
 		memset(s->gc_block.cells, 0, sizeof(cell_t) * s->gc_block.free_count);
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type	= CELL_CONS;
+			s->gc_block.cells[i].type	= CELL_PAIR;
 			s->gc_block.cells[i].object.cons.car	= cell_nil();
 			s->gc_block.cells[i].object.cons.cdr	= cell_id(i + 1);
 		}
@@ -70,7 +70,7 @@ cell_alloc(state_t* s) {
 		}
 
 		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type	= CELL_CONS;
+			s->gc_block.cells[i].type	= CELL_PAIR;
 			s->gc_block.cells[i].object.cons.car	= cell_nil();
 			s->gc_block.cells[i].object.cons.cdr	= cell_id(i + 1);
 		}
@@ -138,12 +138,12 @@ cell_new_string(state_t* s,
 }
 
 cell_id_t
-cell_new_cons(state_t* s,
+cell_new_pair(state_t* s,
 	      cell_id_t car)
 {
 	cell_id_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
-	ret->type	= CELL_CONS;
+	ret->type	= CELL_PAIR;
 	ret->object.cons.car	= car;
 	ret->object.cons.cdr	= cell_nil();
 	return id;
@@ -154,7 +154,7 @@ cell_cons(state_t* s,
 	  cell_id_t car,
 	  cell_id_t list)
 {
-	cell_id_t id	= cell_new_cons(s, car);
+	cell_id_t id	= cell_new_pair(s, car);
 	cell_t* ret	= &s->gc_block.cells[id.index];
 	ret->object.cons.cdr	= list;
 	return id;
@@ -179,21 +179,6 @@ cell_reverse_in_place(state_t *s,
 	return current;
 }
 
-cell_id_t
-cell_car(state_t* s, cell_id_t list)
-{
-	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->object.cons.car;
-}
-
-cell_id_t
-cell_cdr(state_t* s, cell_id_t list)
-{
-	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->object.cons.cdr;
-}
-
-
 static void
 print_level(uint32 level) {
 	for( uint32 i = 0; i < level; ++i ) {
@@ -212,39 +197,40 @@ print_cell(state_t* s,
 	switch(c->type) {
 	case CELL_BOOL:
 		if( c->object.boolean ) {
-			fprintf(stderr, "bool: true");
+			fprintf(stderr, "#t");
 		} else {
-			fprintf(stderr, "bool: false");
+			fprintf(stderr, "#f");
 		}
 		break;
 
 	case CELL_SYMBOL:
-		fprintf(stderr, "symbol: %s", c->object.symbol);
+		fprintf(stderr, "%s", c->object.symbol);
 		break;
 
 	case CELL_CHAR:
-		fprintf(stderr, "char: '%c'", c->object.ch);
+		fprintf(stderr, "'%c'", c->object.ch);
 		break;
 
 	case CELL_SINT64:
-		fprintf(stderr, "sint64: %ld", (sint64)c->object.s64);
+		fprintf(stderr, "%ld", (sint64)c->object.s64);
 		break;
 
 	case CELL_REAL64:
-		fprintf(stderr, "real64: %lf", (real64)c->object.r64);
+		fprintf(stderr, "%lf", (real64)c->object.r64);
 		break;
 
 	case CELL_STRING:
-		fprintf(stderr, "string: %s", c->object.string);
+		fprintf(stderr, "\"%s\"", c->object.string);
 		break;
 
-	case CELL_CONS:
+	case CELL_PAIR:
 		if( !is_nil(c->object.cons.car) ) {
-			fprintf(stderr, "cons:\n");
-			print_cell(s, c->object.cons.car, level + 1);
-			print_level(level);
+			//print_level(level);
+			fprintf(stderr, "(");
+			print_cell(s, c->object.cons.car, 0);
+			//
 		} else {
-			fprintf(stderr, "cons: nil\n");
+			fprintf(stderr, "nil");
 		}
 
 		if( !is_nil(c->object.cons.cdr) ) {
@@ -252,20 +238,21 @@ print_cell(state_t* s,
 			while( !is_nil(id) ) {
 				cell_t* n = &s->gc_block.cells[id.index];
 				if( !is_nil(n->object.cons.car) ) {
-					fprintf(stderr, "cons:\n");
-					print_cell(s, n->object.cons.car, level + 1);
-					print_level(level);
+					//fprintf(stderr, "(");
+					print_cell(s, n->object.cons.car, 1);
+					//print_level(level);
 				} else {
-					fprintf(stderr, "cons: nil\n");
+					fprintf(stderr, "nil");
 				}
 
 				id	= cell_cdr(s, id);
 			}
 		}
+		fprintf(stderr, ")");
 		break;
 	default:
 		break;
 	}
 
-	fprintf(stderr, "\n");
+	//fprintf(stderr, "\n");
 }

@@ -2,32 +2,11 @@
 #define CELL_H
 
 #include "parser.h"
-#include <stdint.h>
-
-#define INLINE __inline
+#include "platform.h"
 
 #ifdef __cplusplus
 extern "C" {
-#else
-typedef	unsigned char	bool;
-#	define false	(0)
-#	define true	(!false)
 #endif
-
-
-typedef int8_t		sint8;
-typedef int16_t		sint16;
-typedef int32_t		sint32;
-typedef int64_t		sint64;
-
-typedef uint8_t		uint8;
-typedef uint16_t	uint16;
-typedef uint32_t	uint32;
-typedef uint64_t	uint64;
-
-typedef float		real32;
-typedef double		real64;
-
 
 typedef uint16		CELL_TYPE;
 
@@ -41,20 +20,6 @@ typedef struct state_t	state_t;
 typedef struct cell_id_t {
 	uint32		index;
 } cell_id_t;
-
-static INLINE cell_id_t
-cell_id(uint32 id) {
-	cell_id_t	ret = { id };
-	return ret;
-}
-
-#define NIL_CELL	0x0
-#define is_nil(c)	(c.index == NIL_CELL)
-
-static INLINE cell_id_t cell_nil() {
-	cell_id_t	id = { 0 };
-	return id;
-}
 
 typedef struct cons_t {
 	cell_id_t	cdr;		/* the tail */
@@ -106,12 +71,54 @@ struct state_t {
 	uint32		token_line;
 };
 
+/*
+ * Inline helpers
+ */
+static INLINE cell_id_t
+cell_id(uint32 id)
+{
+	cell_id_t	ret = { id };
+	return ret;
+}
+
+#define NIL_CELL	0x0
+#define is_nil(c)	(c.index == NIL_CELL)
+
+static INLINE cell_id_t	cell_nil()		{ cell_id_t	id = { 0 };		return id;	}
+static INLINE cell_id_t cell_quote()		{ cell_id_t	id = { (uint32)-1 };	return id;	}
+static INLINE cell_id_t cell_quasiquote()	{ cell_id_t	id = { (uint32)-2 };	return id;	}
+
 static INLINE cell_t*
 cell_from_index(state_t* s,
 		cell_id_t idx)
 {
 	return &s->gc_block.cells[idx.index];
 }
+
+static INLINE cell_id_t
+cell_car(state_t* s,
+	 cell_id_t list)
+{
+	cell_t*	c	= &s->gc_block.cells[list.index];
+	return c->object.cons.car;
+}
+
+static INLINE cell_id_t
+cell_cdr(state_t* s,
+	 cell_id_t list)
+{
+	cell_t*	c	= &s->gc_block.cells[list.index];
+	return c->object.cons.cdr;
+}
+
+static INLINE cell_id_t
+index_from_cell(state_t* s,
+		cell_t* c)
+{
+	cell_id_t	ret	= { (uint32)(c - s->gc_block.cells) };
+	return ret;
+}
+
 
 /* atoms */
 cell_id_t	cell_new_symbol(state_t* s, const char* sym);
@@ -121,19 +128,18 @@ cell_id_t	cell_new_sint64(state_t* s, sint64 i);
 cell_id_t	cell_new_real64(state_t* s, real64 i);
 cell_id_t	cell_new_string(state_t* s, const char* b);
 
-cell_id_t	index_from_cell(state_t* s, cell_t* c);
-
-cell_id_t	cell_new_cons(state_t* s, cell_id_t car);
+/* applications */
+cell_id_t	cell_new_pair(state_t* s, cell_id_t car);
 cell_id_t	cell_new_application(state_t* s, cell_t* app, cell_t* args);
 
 cell_id_t	cell_cons(state_t* s, cell_id_t car, cell_id_t list);
+
+/* list */
 cell_id_t	cell_reverse_in_place(state_t* s, cell_id_t list);
 cell_id_t	cell_get_head(state_t*s, cell_id_t tail);
 
-cell_id_t	cell_car(state_t* s, cell_id_t list);
-cell_id_t	cell_cdr(state_t* s, cell_id_t list);
-cell_id_t	cell_array(state_t* s, uint32 count);
-
+/* vectors */
+cell_id_t	cell_vector(state_t* s, uint32 count);
 
 state_t*	parse(const char* str);
 

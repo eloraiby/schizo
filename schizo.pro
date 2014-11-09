@@ -41,4 +41,6 @@ OTHER_FILES += \
 
 HEADERS += \
     parser.h \
-    schizo.h
+    schizo.h \
+    vector.h \
+    platform.h
