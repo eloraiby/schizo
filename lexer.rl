@@ -68,8 +68,8 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 	c_comment := (any | '\n'@inc_line)* :>> '*/' @{ fgoto main; };
 
 	main := |*
-		'true'						{ ADVANCE( boolean );};
-		'false'						{ ADVANCE( boolean );};
+		'#t'						{ ADVANCE( boolean );};
+		'#f'						{ ADVANCE( boolean );};
 		#'quote'						{ ADVANCE_TOKEN( QUOTE ); };
 		#"'"						{ ADVANCE_TOKEN( QUOTE ); };
 
@@ -152,21 +152,21 @@ copy_token(const char* ts, const char *te, char* dst) {
 
 static cell_id_t
 token_to_symbol(state_t* s, const char* b) {
-	return cell_new_symbol(s, b);
+	return atom_new_symbol(s, b);
 }
 
 static cell_id_t
 token_to_boolean(state_t* s, const char* b) {
-	if( !strcmp(b, "true") ) {
-		return cell_new_boolean(s, true);
+	if( !strcmp(b, "#t") ) {
+		return atom_new_boolean(s, true);
 	} else {
-		return cell_new_boolean(s, false);
+		return atom_new_boolean(s, false);
 	}
 }
 
 static cell_id_t
 token_to_char(state_t* s, const char* b) {
-	return cell_new_char(s, *b);
+	return atom_new_char(s, *b);
 }
 
 static cell_id_t
@@ -174,7 +174,7 @@ token_to_sint64(state_t* s, const char* b) {
 	sint64	v	= 0;
 	sscanf(b, "%ld", &v);
 	/* TODO: check limit */
-	return cell_new_sint64(s, v);
+	return atom_new_sint64(s, v);
 }
 
 static cell_id_t
@@ -182,12 +182,12 @@ token_to_real64(state_t* s, const char* b) {
 	real64	v	= 0;
 	sscanf(b, "%lf", &v);
 	/* TODO: check limit */
-	return cell_new_real64(s, v);
+	return atom_new_real64(s, v);
 }
 
 static cell_id_t
 token_to_string(state_t* s, const char* b) {
-	return cell_new_string(s, b);
+	return atom_new_string(s, b);
 }
 
 

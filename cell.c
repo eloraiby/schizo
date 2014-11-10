@@ -26,14 +26,6 @@
 
 #define INITIAL_CELL_COUNT	2	/* this should be at least 2 (index 0 is reserved for NIL) */
 
-#define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_id_t \
-						cell_new_ ## TYPE(state_t* s, TYPE v) { \
-							cell_id_t id	= cell_alloc(s); \
-							cell_t* ret	= &s->gc_block.cells[id.index]; \
-							ret->type	= ENUM; \
-							ret->object.FIELD	= v; \
-							return id; \
-						}
 cell_id_t
 cell_alloc(state_t* s) {
 	/*
@@ -79,63 +71,12 @@ cell_alloc(state_t* s) {
 	}
 
 	cell_id_t	c = s->gc_block.free_list;
-	s->gc_block.free_list	= cell_cdr(s, c);
+	s->gc_block.free_list	= cell_tail(s, c);
 	--(s->gc_block.free_count);
 	return c;
 }
 
-cell_id_t
-cell_new_symbol(state_t* s,
-		const char* b)
-{
-	size_t len	= strlen(b);
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
 
-	ret->type	= CELL_SYMBOL;
-	ret->object.symbol	= (char*)(malloc(len + 1));
-	memcpy(ret->object.symbol, b, len + 1);
-	return id;
-}
-
-cell_id_t
-cell_new_boolean(state_t* s,
-		 bool b)
-{
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
-	ret->type	= CELL_BOOL;
-	ret->object.boolean	= b;
-	return id;
-}
-
-cell_id_t
-cell_new_char(state_t* s,
-	      char c)
-{
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
-	ret->type	= CELL_CHAR;
-	ret->object.ch		= c;
-	return id;
-}
-
-IMPLEMENT_TYPE_CELL(sint64, s64, CELL_SINT64)
-IMPLEMENT_TYPE_CELL(real64, r64, CELL_REAL64)
-
-cell_id_t
-cell_new_string(state_t* s,
-		const char* b)
-{
-	size_t len	= strlen(b);
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
-
-	ret->type	= CELL_STRING;
-	ret->object.string	= (char*)(malloc(len + 1));
-	memcpy(ret->object.symbol, b, len + 1);
-	return id;
-}
 
 cell_id_t
 cell_new_pair(state_t* s,
@@ -241,7 +182,7 @@ print_cell(state_t* s,
 					fprintf(stderr, "nil");
 				}
 
-				id	= cell_cdr(s, id);
+				id	= cell_tail(s, id);
 			}
 		}
 		fprintf(stderr, ")");

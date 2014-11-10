@@ -17,28 +17,38 @@ struct cell_t;
 
 typedef struct state_t	state_t;
 
+/* C doesn't have units of measure, fake one */
 typedef struct cell_id_t {
 	uint32		index;
 } cell_id_t;
 
+/* lists */
 typedef struct pair_t {
 	cell_id_t	tail;		/* the tail */
 	cell_id_t	head;		/* the head */
 } pair_t;
 
+/* lambda */
 typedef struct closure_t {
 	uint32		arg_count;	/* total argument count */
 	cell_id_t	expression;
 } closure_t;
 
-typedef struct scope_t {
+/* scope or environment */
+typedef struct environment_t {
 	cell_id_t	parent;
 	cell_id_t	symbols;
-} scope_t;
+} environment_t;
+
+/* for a foreign procedure, the arguments are evaluated before calling the procedure */
+typedef cell_id_t	(*foreign_procedure_t)(state_t* sc, cell_id_t args);
+
+/* for a foreign syntax, the arguments are not evaluated and are left for the syntax to interpret them */
+typedef cell_id_t	(*foreign_syntax_t)(state_t* sc, cell_id_t env, cell_id_t args);
 
 #define GC_REACHABLE	0x8000
 #define FOREIGN		0x0800
-#define REDIRECTOR	0x0400
+#define SYNTAX		0x0400
 
 typedef struct cell_t {
 	uint16		flags;
@@ -87,30 +97,25 @@ cell_id(uint32 id)
 }
 
 #define NIL_CELL	0x0
-#define is_nil(c)	(c.index == NIL_CELL)
+#define is_nil(c)	((c).index == NIL_CELL)
 
 static INLINE cell_id_t	cell_nil()		{ cell_id_t	id = { 0 };		return id;	}
 static INLINE cell_id_t cell_quote()		{ cell_id_t	id = { (uint32)-1 };	return id;	}
 static INLINE cell_id_t cell_quasiquote()	{ cell_id_t	id = { (uint32)-2 };	return id;	}
 
-static INLINE cell_t*
-cell_from_index(state_t* s,
-		cell_id_t idx)
-{
-	return &s->gc_block.cells[idx.index];
-}
+#define cell_from_index(s, idx)			(&(s)->gc_block.cells[(idx).index])
 
 static INLINE cell_id_t
-cell_car(state_t* s,
-	 cell_id_t list)
+cell_head(state_t* s,
+	  cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
 	return c->object.pair.head;
 }
 
 static INLINE cell_id_t
-cell_cdr(state_t* s,
-	 cell_id_t list)
+cell_tail(state_t* s,
+	  cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
 	return c->object.pair.tail;
@@ -124,14 +129,29 @@ index_from_cell(state_t* s,
 	return ret;
 }
 
+#define gc_mark_reachable(sc, cid)	{ \
+						cell_t*	c	= cell_from_index((sc), (cid)); \
+						c->flags	|= GC_REACHABLE; \
+					}
+
+#define gc_mark_unreachable(sc, cid)	{ \
+						cell_t* c	= cell_from_index((sc), (cid)); \
+						c->flags	&= ~GC_REACHABLE; \
+					}
+
+#define gc_is_reachable(sc, cid)	((cell_from_index((sc), (cid))->flags & GC_REACHABLE) ? true : false)
+
+
+/* cell */
+cell_id_t	cell_alloc(state_t* s);
 
 /* atoms */
-cell_id_t	cell_new_symbol(state_t* s, const char* sym);
-cell_id_t	cell_new_boolean(state_t* s, bool b);
-cell_id_t	cell_new_char(state_t* s, char c);
-cell_id_t	cell_new_sint64(state_t* s, sint64 i);
-cell_id_t	cell_new_real64(state_t* s, real64 i);
-cell_id_t	cell_new_string(state_t* s, const char* b);
+cell_id_t	atom_new_symbol(state_t* s, const char* sym);
+cell_id_t	atom_new_boolean(state_t* s, bool b);
+cell_id_t	atom_new_char(state_t* s, char c);
+cell_id_t	atom_new_sint64(state_t* s, sint64 i);
+cell_id_t	atom_new_real64(state_t* s, real64 i);
+cell_id_t	atom_new_string(state_t* s, const char* b);
 
 /* applications */
 cell_id_t	cell_new_pair(state_t* s, cell_id_t car);
