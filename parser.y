@@ -66,10 +66,10 @@ cell		::= CELL_ENVIRONMENT.			/* environment */
 cell		::= CELL_FRAME.				/* arguments */
 
 /* ( ... ) */
-cell(A)		::= LPAR cell_members(B) RPAR.		{ A = cell_reverse_in_place(s, B); }
+cell(A)		::= LPAR cell_members(B) RPAR.		{ A = list_reverse_in_place(s, B); }
 
-cell_list(A)	::= cell(B).				{ A = cell_new_pair(s, B); }
-cell_list(A)	::= cell_list(B) cell(C).		{ A = cell_cons(s, C, B); }
+cell_list(A)	::= cell(B).				{ A = list_new_pair(s, B); }
+cell_list(A)	::= cell_list(B) cell(C).		{ A = list_cons(s, C, B); }
 
-cell_members(A)	::=.					{ cell_id_t nil = { 0 }; A = cell_new_pair(s, nil); }
+cell_members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new_pair(s, nil); }
 cell_members(A)	::= cell_list(B).			{ A = B; }

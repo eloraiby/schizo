@@ -1,8 +1,5 @@
 #include "schizo.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 #define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_id_t \
 						atom_new_ ## TYPE(state_t* s, TYPE v) { \
 							cell_id_t id	= cell_alloc(s); \

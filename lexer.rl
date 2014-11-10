@@ -22,8 +22,6 @@
  * Taken from Ragel site
  */
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 #include "schizo.h"

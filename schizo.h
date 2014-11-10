@@ -153,15 +153,10 @@ cell_id_t	atom_new_sint64(state_t* s, sint64 i);
 cell_id_t	atom_new_real64(state_t* s, real64 i);
 cell_id_t	atom_new_string(state_t* s, const char* b);
 
-/* applications */
-cell_id_t	cell_new_pair(state_t* s, cell_id_t car);
-cell_id_t	cell_new_application(state_t* s, cell_t* app, cell_t* args);
-
-cell_id_t	cell_cons(state_t* s, cell_id_t car, cell_id_t list);
-
 /* list */
-cell_id_t	cell_reverse_in_place(state_t* s, cell_id_t list);
-cell_id_t	cell_get_head(state_t*s, cell_id_t tail);
+cell_id_t	list_new_pair(state_t* s, cell_id_t car);
+cell_id_t	list_cons(state_t* s, cell_id_t car, cell_id_t list);
+cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
 
 /* vectors */
 cell_id_t	cell_vector(state_t* s, uint32 count);

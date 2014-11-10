@@ -697,22 +697,22 @@ static void yy_reduce(
         break;
       case 13: /* cell ::= LPAR cell_members RPAR */
 #line 69 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy4 = cell_reverse_in_place(s, yymsp[-1].minor.yy0); }
+{ yygotominor.yy4 = list_reverse_in_place(s, yymsp[-1].minor.yy0); }
 #line 702 "/home/kin/Projects/schizo/parser.c"
         break;
       case 14: /* cell_list ::= cell */
 #line 71 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy4 = cell_new_pair(s, yymsp[0].minor.yy4); }
+{ yygotominor.yy4 = list_new_pair(s, yymsp[0].minor.yy4); }
 #line 707 "/home/kin/Projects/schizo/parser.c"
         break;
       case 15: /* cell_list ::= cell_list cell */
 #line 72 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy4 = cell_cons(s, yymsp[0].minor.yy4, yymsp[-1].minor.yy4); }
+{ yygotominor.yy4 = list_cons(s, yymsp[0].minor.yy4, yymsp[-1].minor.yy4); }
 #line 712 "/home/kin/Projects/schizo/parser.c"
         break;
       case 16: /* cell_members ::= */
 #line 74 "/home/kin/Projects/schizo/parser.y"
-{ cell_id_t nil = { 0 }; yygotominor.yy0 = cell_new_pair(s, nil); }
+{ cell_id_t nil = { 0 }; yygotominor.yy0 = list_new_pair(s, nil); }
 #line 717 "/home/kin/Projects/schizo/parser.c"
         break;
       case 17: /* cell_members ::= cell_list */

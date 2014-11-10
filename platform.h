@@ -1,6 +1,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef __GNUC__
 #	define INLINE inline __attribute__ ((__unused__))

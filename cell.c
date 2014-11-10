@@ -20,8 +20,6 @@
 
 #include "schizo.h"
 
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 #define INITIAL_CELL_COUNT	2	/* this should be at least 2 (index 0 is reserved for NIL) */
@@ -74,50 +72,6 @@ cell_alloc(state_t* s) {
 	s->gc_block.free_list	= cell_tail(s, c);
 	--(s->gc_block.free_count);
 	return c;
-}
-
-
-
-cell_id_t
-cell_new_pair(state_t* s,
-	      cell_id_t car)
-{
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
-	ret->type	= CELL_PAIR;
-	ret->object.pair.head	= car;
-	ret->object.pair.tail	= cell_nil();
-	return id;
-}
-
-cell_id_t
-cell_cons(state_t* s,
-	  cell_id_t car,
-	  cell_id_t list)
-{
-	cell_id_t id	= cell_new_pair(s, car);
-	cell_t* ret	= &s->gc_block.cells[id.index];
-	ret->object.pair.tail	= list;
-	return id;
-}
-
-cell_id_t
-cell_reverse_in_place(state_t *s,
-		      cell_id_t list)
-{
-	cell_t*		c	= cell_from_index(s, list);
-	cell_id_t	current	= list;
-	cell_id_t	next	= c->object.pair.tail;
-	while( !is_nil(next) ) {
-		cell_t*		n	= cell_from_index(s, next);
-		cell_id_t	tmp	= n->object.pair.tail;
-
-		n->object.pair.tail	= current;
-		c->object.pair.tail	= tmp;
-		current		= next;
-		next		= tmp;
-	}
-	return current;
 }
 
 static void

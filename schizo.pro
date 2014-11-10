@@ -21,7 +21,8 @@ SOURCES += \
     lexer.c \
     parser.c \
     cell.c \
-    atom.c
+    atom.c \
+    list.c
 
 lexer.target = lexer.c
 lexer.commands = ragel -C -o $$PWD/lexer.c $$PWD/lexer.rl
