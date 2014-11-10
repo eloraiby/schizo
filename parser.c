@@ -265,8 +265,8 @@ void parserTrace(FILE *TraceFILE, char *zTracePrompt){
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = {
-  "$",             "CELL_SYMBOL",   "CELL_BOOL",     "CELL_CHAR",   
-  "CELL_SINT64",   "CELL_REAL64",   "CELL_STRING",   "CELL_FREE",   
+  "$",             "ATOM_SYMBOL",   "ATOM_BOOL",     "ATOM_CHAR",   
+  "ATOM_SINT64",   "ATOM_REAL64",   "ATOM_STRING",   "CELL_FREE",   
   "CELL_PAIR",     "CELL_VECTOR",   "CELL_APPLY",    "CELL_ENVIRONMENT",
   "CELL_FRAME",    "LPAR",          "RPAR",          "error",       
   "cell",          "program",       "cell_list",     "cell_members",
@@ -278,12 +278,12 @@ static const char *const yyTokenName[] = {
 */
 static const char *const yyRuleName[] = {
  /*   0 */ "program ::= cell",
- /*   1 */ "cell ::= CELL_SYMBOL",
- /*   2 */ "cell ::= CELL_BOOL",
- /*   3 */ "cell ::= CELL_CHAR",
- /*   4 */ "cell ::= CELL_SINT64",
- /*   5 */ "cell ::= CELL_REAL64",
- /*   6 */ "cell ::= CELL_STRING",
+ /*   1 */ "cell ::= ATOM_SYMBOL",
+ /*   2 */ "cell ::= ATOM_BOOL",
+ /*   3 */ "cell ::= ATOM_CHAR",
+ /*   4 */ "cell ::= ATOM_SINT64",
+ /*   5 */ "cell ::= ATOM_REAL64",
+ /*   6 */ "cell ::= ATOM_STRING",
  /*   7 */ "cell ::= CELL_FREE",
  /*   8 */ "cell ::= CELL_PAIR",
  /*   9 */ "cell ::= CELL_VECTOR",
@@ -685,12 +685,12 @@ static void yy_reduce(
 { s->root = yymsp[0].minor.yy4; }
 #line 687 "/home/kin/Projects/schizo/parser.c"
         break;
-      case 1: /* cell ::= CELL_SYMBOL */
-      case 2: /* cell ::= CELL_BOOL */ yytestcase(yyruleno==2);
-      case 3: /* cell ::= CELL_CHAR */ yytestcase(yyruleno==3);
-      case 4: /* cell ::= CELL_SINT64 */ yytestcase(yyruleno==4);
-      case 5: /* cell ::= CELL_REAL64 */ yytestcase(yyruleno==5);
-      case 6: /* cell ::= CELL_STRING */ yytestcase(yyruleno==6);
+      case 1: /* cell ::= ATOM_SYMBOL */
+      case 2: /* cell ::= ATOM_BOOL */ yytestcase(yyruleno==2);
+      case 3: /* cell ::= ATOM_CHAR */ yytestcase(yyruleno==3);
+      case 4: /* cell ::= ATOM_SINT64 */ yytestcase(yyruleno==4);
+      case 5: /* cell ::= ATOM_REAL64 */ yytestcase(yyruleno==5);
+      case 6: /* cell ::= ATOM_STRING */ yytestcase(yyruleno==6);
 #line 53 "/home/kin/Projects/schizo/parser.y"
 { yygotominor.yy4 = yymsp[0].minor.yy0; }
 #line 697 "/home/kin/Projects/schizo/parser.c"

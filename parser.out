@@ -1,11 +1,11 @@
 State 0:
           program ::= * cell
-          cell ::= * CELL_SYMBOL
-          cell ::= * CELL_BOOL
-          cell ::= * CELL_CHAR
-          cell ::= * CELL_SINT64
-          cell ::= * CELL_REAL64
-          cell ::= * CELL_STRING
+          cell ::= * ATOM_SYMBOL
+          cell ::= * ATOM_BOOL
+          cell ::= * ATOM_CHAR
+          cell ::= * ATOM_SINT64
+          cell ::= * ATOM_REAL64
+          cell ::= * ATOM_STRING
           cell ::= * CELL_FREE
           cell ::= * CELL_PAIR
           cell ::= * CELL_VECTOR
@@ -14,12 +14,12 @@ State 0:
           cell ::= * CELL_FRAME
           cell ::= * LPAR cell_members RPAR
 
-                   CELL_SYMBOL shift  19
-                     CELL_BOOL shift  18
-                     CELL_CHAR shift  17
-                   CELL_SINT64 shift  16
-                   CELL_REAL64 shift  15
-                   CELL_STRING shift  14
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  18
+                     ATOM_CHAR shift  17
+                   ATOM_SINT64 shift  16
+                   ATOM_REAL64 shift  15
+                   ATOM_STRING shift  14
                      CELL_FREE shift  13
                      CELL_PAIR shift  12
                    CELL_VECTOR shift  11
@@ -31,12 +31,12 @@ State 0:
                        program accept
 
 State 1:
-          cell ::= * CELL_SYMBOL
-          cell ::= * CELL_BOOL
-          cell ::= * CELL_CHAR
-          cell ::= * CELL_SINT64
-          cell ::= * CELL_REAL64
-          cell ::= * CELL_STRING
+          cell ::= * ATOM_SYMBOL
+          cell ::= * ATOM_BOOL
+          cell ::= * ATOM_CHAR
+          cell ::= * ATOM_SINT64
+          cell ::= * ATOM_REAL64
+          cell ::= * ATOM_STRING
           cell ::= * CELL_FREE
           cell ::= * CELL_PAIR
           cell ::= * CELL_VECTOR
@@ -50,12 +50,12 @@ State 1:
      (16) cell_members ::= *
           cell_members ::= * cell_list
 
-                   CELL_SYMBOL shift  19
-                     CELL_BOOL shift  18
-                     CELL_CHAR shift  17
-                   CELL_SINT64 shift  16
-                   CELL_REAL64 shift  15
-                   CELL_STRING shift  14
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  18
+                     ATOM_CHAR shift  17
+                   ATOM_SINT64 shift  16
+                   ATOM_REAL64 shift  15
+                   ATOM_STRING shift  14
                      CELL_FREE shift  13
                      CELL_PAIR shift  12
                    CELL_VECTOR shift  11
@@ -69,12 +69,12 @@ State 1:
                      {default} reduce 16
 
 State 2:
-          cell ::= * CELL_SYMBOL
-          cell ::= * CELL_BOOL
-          cell ::= * CELL_CHAR
-          cell ::= * CELL_SINT64
-          cell ::= * CELL_REAL64
-          cell ::= * CELL_STRING
+          cell ::= * ATOM_SYMBOL
+          cell ::= * ATOM_BOOL
+          cell ::= * ATOM_CHAR
+          cell ::= * ATOM_SINT64
+          cell ::= * ATOM_REAL64
+          cell ::= * ATOM_STRING
           cell ::= * CELL_FREE
           cell ::= * CELL_PAIR
           cell ::= * CELL_VECTOR
@@ -85,12 +85,12 @@ State 2:
           cell_list ::= cell_list * cell
      (17) cell_members ::= cell_list *
 
-                   CELL_SYMBOL shift  19
-                     CELL_BOOL shift  18
-                     CELL_CHAR shift  17
-                   CELL_SINT64 shift  16
-                   CELL_REAL64 shift  15
-                   CELL_STRING shift  14
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  18
+                     ATOM_CHAR shift  17
+                   ATOM_SINT64 shift  16
+                   ATOM_REAL64 shift  15
+                   ATOM_STRING shift  14
                      CELL_FREE shift  13
                      CELL_PAIR shift  12
                    CELL_VECTOR shift  11
@@ -157,44 +157,44 @@ State 13:
                      {default} reduce 7
 
 State 14:
-      (6) cell ::= CELL_STRING *
+      (6) cell ::= ATOM_STRING *
 
                      {default} reduce 6
 
 State 15:
-      (5) cell ::= CELL_REAL64 *
+      (5) cell ::= ATOM_REAL64 *
 
                      {default} reduce 5
 
 State 16:
-      (4) cell ::= CELL_SINT64 *
+      (4) cell ::= ATOM_SINT64 *
 
                      {default} reduce 4
 
 State 17:
-      (3) cell ::= CELL_CHAR *
+      (3) cell ::= ATOM_CHAR *
 
                      {default} reduce 3
 
 State 18:
-      (2) cell ::= CELL_BOOL *
+      (2) cell ::= ATOM_BOOL *
 
                      {default} reduce 2
 
 State 19:
-      (1) cell ::= CELL_SYMBOL *
+      (1) cell ::= ATOM_SYMBOL *
 
                      {default} reduce 1
 
 ----------------------------------------------------
 Symbols:
     0: $:
-    1: CELL_SYMBOL
-    2: CELL_BOOL
-    3: CELL_CHAR
-    4: CELL_SINT64
-    5: CELL_REAL64
-    6: CELL_STRING
+    1: ATOM_SYMBOL
+    2: ATOM_BOOL
+    3: ATOM_CHAR
+    4: ATOM_SINT64
+    5: ATOM_REAL64
+    6: ATOM_STRING
     7: CELL_FREE
     8: CELL_PAIR
     9: CELL_VECTOR
@@ -204,7 +204,7 @@ Symbols:
    13: LPAR
    14: RPAR
    15: error:
-   16: cell: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
-   17: program: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
-   18: cell_list: CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
-   19: cell_members: <lambda> CELL_SYMBOL CELL_BOOL CELL_CHAR CELL_SINT64 CELL_REAL64 CELL_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   16: cell: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   17: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   18: cell_list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   19: cell_members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR

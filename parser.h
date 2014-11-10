@@ -1,9 +1,9 @@
-#define CELL_SYMBOL                     1
-#define CELL_BOOL                       2
-#define CELL_CHAR                       3
-#define CELL_SINT64                     4
-#define CELL_REAL64                     5
-#define CELL_STRING                     6
+#define ATOM_SYMBOL                     1
+#define ATOM_BOOL                       2
+#define ATOM_CHAR                       3
+#define ATOM_SINT64                     4
+#define ATOM_REAL64                     5
+#define ATOM_STRING                     6
 #define CELL_FREE                       7
 #define CELL_PAIR                       8
 #define CELL_VECTOR                     9

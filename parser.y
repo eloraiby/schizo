@@ -50,12 +50,12 @@
 program		::= cell(B).				{ s->root = B; }
 
 /* literals */
-cell(A)		::= CELL_SYMBOL(B).			{ A = B; }
-cell(A)		::= CELL_BOOL(B).			{ A = B; }
-cell(A)		::= CELL_CHAR(B).			{ A = B; }
-cell(A)		::= CELL_SINT64(B).			{ A = B; }
-cell(A)		::= CELL_REAL64(B).			{ A = B; }
-cell(A)		::= CELL_STRING(B).			{ A = B; }
+cell(A)		::= ATOM_SYMBOL(B).			{ A = B; }
+cell(A)		::= ATOM_BOOL(B).			{ A = B; }
+cell(A)		::= ATOM_CHAR(B).			{ A = B; }
+cell(A)		::= ATOM_SINT64(B).			{ A = B; }
+cell(A)		::= ATOM_REAL64(B).			{ A = B; }
+cell(A)		::= ATOM_STRING(B).			{ A = B; }
 
 /* NEVER USED: these are a hack to have the token ids */
 cell		::= CELL_FREE.				/* a free cell */

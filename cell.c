@@ -90,7 +90,7 @@ print_cell(state_t* s,
 
 	print_level(level);
 	switch(c->type) {
-	case CELL_BOOL:
+	case ATOM_BOOL:
 		if( c->object.boolean ) {
 			fprintf(stderr, "#t");
 		} else {
@@ -98,23 +98,23 @@ print_cell(state_t* s,
 		}
 		break;
 
-	case CELL_SYMBOL:
+	case ATOM_SYMBOL:
 		fprintf(stderr, "%s", c->object.symbol);
 		break;
 
-	case CELL_CHAR:
+	case ATOM_CHAR:
 		fprintf(stderr, "'%c'", c->object.ch);
 		break;
 
-	case CELL_SINT64:
+	case ATOM_SINT64:
 		fprintf(stderr, "%ld", (sint64)c->object.s64);
 		break;
 
-	case CELL_REAL64:
+	case ATOM_REAL64:
 		fprintf(stderr, "%lf", (real64)c->object.r64);
 		break;
 
-	case CELL_STRING:
+	case ATOM_STRING:
 		fprintf(stderr, "\"%s\"", c->object.string);
 		break;
 
