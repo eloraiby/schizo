@@ -161,10 +161,11 @@ index_from_cell(state_t* s,
 #define gc_is_reachable(sc, cid)	((cell_from_index((sc), (cid))->flags & GC_REACHABLE) ? true : false)
 
 
-/* cell */
+/* cell.c */
 cell_id_t	cell_alloc(state_t* s);
+void		print_cell(state_t* s, cell_id_t c, uint32 level);
 
-/* atoms */
+/* atom.c */
 cell_id_t	atom_new_symbol(state_t* s, const char* sym);
 cell_id_t	atom_new_boolean(state_t* s, bool b);
 cell_id_t	atom_new_char(state_t* s, char c);
@@ -172,7 +173,7 @@ cell_id_t	atom_new_sint64(state_t* s, sint64 i);
 cell_id_t	atom_new_real64(state_t* s, real64 i);
 cell_id_t	atom_new_string(state_t* s, const char* b);
 
-/* list */
+/* list.c */
 cell_id_t	list_new_pair(state_t* s, cell_id_t car);
 cell_id_t	list_cons(state_t* s, cell_id_t car, cell_id_t list);
 cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
@@ -180,9 +181,9 @@ cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
 /* vectors */
 cell_id_t	cell_vector(state_t* s, uint32 count);
 
+/* parser.y / lexer.rl */
 state_t*	parse(const char* str);
 
-void		print_cell(state_t* s, cell_id_t c, uint32 level);
 #ifdef __cplusplus
 }
 #endif
