@@ -69,7 +69,7 @@ cell_alloc(state_t* s) {
 	}
 
 	cell_id_t	c = s->gc_block.free_list;
-	s->gc_block.free_list	= cell_tail(s, c);
+	s->gc_block.free_list	= list_tail(s, c);
 	--(s->gc_block.free_count);
 	return c;
 }
@@ -136,7 +136,7 @@ print_cell(state_t* s,
 					fprintf(stderr, "nil");
 				}
 
-				id	= cell_tail(s, id);
+				id	= list_tail(s, id);
 			}
 		}
 		fprintf(stderr, ")");

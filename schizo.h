@@ -49,20 +49,20 @@ typedef struct pair_t {
 
 /* lambda */
 typedef struct closure_t {
-	uint32		arg_count;	/* total argument count */
+	uint32		arg_count;	/* total argument count, -1 = any */
 	cell_id_t	expression;
 } closure_t;
 
 /* scope or environment */
 typedef struct environment_t {
-	cell_id_t	parent;
-	cell_id_t	symbols;
+	cell_id_t	parent;		/* parent environment */
+	cell_id_t	sym_bindings;	/* list of pairs (symbol * binding) */
 } environment_t;
 
 /* for a foreign procedure, the arguments are evaluated before calling the procedure */
 typedef cell_id_t	(*foreign_procedure_t)(state_t* sc, cell_id_t args);
 
-/* for a foreign syntax, the arguments are not evaluated and are left for the syntax to interpret them */
+/* for a foreign syntax, the arguments are not evaluated and are left to the syntax to interpret them */
 typedef cell_id_t	(*foreign_syntax_t)(state_t* sc, cell_id_t env, cell_id_t args);
 
 #define GC_REACHABLE	0x8000
@@ -98,7 +98,12 @@ struct state_t {
 		cell_id_t	free_list;
 	} gc_block;
 
-	cell_id_t	root;
+	struct {
+		cell_id_t	op;		/* current operation pointer */
+		cell_id_t	stack_top;	/* frame stack */
+	} exec_environment;
+
+	cell_id_t	root;			/* root cell */
 	cell_id_t	current_cell;
 	const char*	token_start;
 	const char*	token_end;
@@ -125,7 +130,7 @@ static INLINE cell_id_t cell_quasiquote()	{ cell_id_t	id = { (uint32)-2 };	retur
 #define cell_from_index(s, idx)			(&(s)->gc_block.cells[(idx).index])
 
 static INLINE cell_id_t
-cell_head(state_t* s,
+list_head(state_t* s,
 	  cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
@@ -133,7 +138,7 @@ cell_head(state_t* s,
 }
 
 static INLINE cell_id_t
-cell_tail(state_t* s,
+list_tail(state_t* s,
 	  cell_id_t list)
 {
 	cell_t*	c	= &s->gc_block.cells[list.index];
@@ -174,8 +179,10 @@ cell_id_t	atom_new_real64(state_t* s, real64 i);
 cell_id_t	atom_new_string(state_t* s, const char* b);
 
 /* list.c */
-cell_id_t	list_new_pair(state_t* s, cell_id_t car);
-cell_id_t	list_cons(state_t* s, cell_id_t car, cell_id_t list);
+cell_id_t	list_new(state_t* s, cell_id_t head);
+cell_id_t	list_cons(state_t* s, cell_id_t head, cell_id_t tail);
+#define		like_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
+
 cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
 
 /* vectors */
@@ -183,6 +190,10 @@ cell_id_t	cell_vector(state_t* s, uint32 count);
 
 /* parser.y / lexer.rl */
 state_t*	parse(const char* str);
+
+/* environment.c */
+cell_id_t	env_new(state_t* s, cell_id_t parent);
+cell_id_t	env_add_symbol(state_t* s, cell_id_t env, cell_id_t sym);
 
 #ifdef __cplusplus
 }

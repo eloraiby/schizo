@@ -702,7 +702,7 @@ static void yy_reduce(
         break;
       case 14: /* cell_list ::= cell */
 #line 71 "/home/kin/Projects/schizo/parser.y"
-{ yygotominor.yy4 = list_new_pair(s, yymsp[0].minor.yy4); }
+{ yygotominor.yy4 = list_new(s, yymsp[0].minor.yy4); }
 #line 707 "/home/kin/Projects/schizo/parser.c"
         break;
       case 15: /* cell_list ::= cell_list cell */
@@ -712,7 +712,7 @@ static void yy_reduce(
         break;
       case 16: /* cell_members ::= */
 #line 74 "/home/kin/Projects/schizo/parser.y"
-{ cell_id_t nil = { 0 }; yygotominor.yy0 = list_new_pair(s, nil); }
+{ cell_id_t nil = { 0 }; yygotominor.yy0 = list_new(s, nil); }
 #line 717 "/home/kin/Projects/schizo/parser.c"
         break;
       case 17: /* cell_members ::= cell_list */

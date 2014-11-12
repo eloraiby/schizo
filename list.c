@@ -21,25 +21,25 @@
 #include "schizo.h"
 
 cell_id_t
-list_new_pair(state_t* s,
-	      cell_id_t car)
+list_new(state_t* s,
+	 cell_id_t head)
 {
 	cell_id_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 	ret->type	= CELL_PAIR;
-	ret->object.pair.head	= car;
+	ret->object.pair.head	= head;
 	ret->object.pair.tail	= cell_nil();
 	return id;
 }
 
 cell_id_t
 list_cons(state_t* s,
-	  cell_id_t car,
-	  cell_id_t list)
+	  cell_id_t head,
+	  cell_id_t tail)
 {
-	cell_id_t id	= list_new_pair(s, car);
+	cell_id_t id	= list_new(s, head);
 	cell_t* ret	= &s->gc_block.cells[id.index];
-	ret->object.pair.tail	= list;
+	ret->object.pair.tail	= tail;
 	return id;
 }
 
@@ -47,17 +47,25 @@ cell_id_t
 list_reverse_in_place(state_t *s,
 		      cell_id_t list)
 {
-	cell_t*		c	= cell_from_index(s, list);
-	cell_id_t	current	= list;
-	cell_id_t	next	= c->object.pair.tail;
-	while( !is_nil(next) ) {
-		cell_t*		n	= cell_from_index(s, next);
-		cell_id_t	tmp	= n->object.pair.tail;
+	if( !is_nil(list) ) {
+		assert( cell_from_index(s, list)->type == CELL_PAIR );
 
-		n->object.pair.tail	= current;
-		c->object.pair.tail	= tmp;
-		current		= next;
-		next		= tmp;
+		cell_t*		c	= cell_from_index(s, list);
+		cell_id_t	current	= list;
+		cell_id_t	next	= c->object.pair.tail;
+		while( !is_nil(next) ) {
+			cell_t*		n	= cell_from_index(s, next);
+			assert( cell_from_index(s, list)->type == CELL_PAIR );
+
+			cell_id_t	tmp	= n->object.pair.tail;
+
+			n->object.pair.tail	= current;
+			c->object.pair.tail	= tmp;
+			current		= next;
+			next		= tmp;
+		}
+		return current;
+	} else {
+		return list;
 	}
-	return current;
 }
