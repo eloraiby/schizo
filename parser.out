@@ -1,190 +1,434 @@
 State 0:
-          program ::= * cell
-          cell ::= * ATOM_SYMBOL
-          cell ::= * ATOM_BOOL
-          cell ::= * ATOM_CHAR
-          cell ::= * ATOM_SINT64
-          cell ::= * ATOM_REAL64
-          cell ::= * ATOM_STRING
-          cell ::= * CELL_FREE
-          cell ::= * CELL_PAIR
-          cell ::= * CELL_VECTOR
-          cell ::= * CELL_APPLY
-          cell ::= * CELL_ENVIRONMENT
-          cell ::= * CELL_FRAME
-          cell ::= * LPAR cell_members RPAR
+          program ::= * atom
+          program ::= * sexpr
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
 
-                   ATOM_SYMBOL shift  19
-                     ATOM_BOOL shift  18
-                     ATOM_CHAR shift  17
-                   ATOM_SINT64 shift  16
-                   ATOM_REAL64 shift  15
-                   ATOM_STRING shift  14
-                     CELL_FREE shift  13
-                     CELL_PAIR shift  12
-                   CELL_VECTOR shift  11
-                    CELL_APPLY shift  10
-              CELL_ENVIRONMENT shift  9
-                    CELL_FRAME shift  8
-                          LPAR shift  1
-                          cell shift  4
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
                        program accept
+                          atom shift  10
+                         sexpr shift  9
 
 State 1:
-          cell ::= * ATOM_SYMBOL
-          cell ::= * ATOM_BOOL
-          cell ::= * ATOM_CHAR
-          cell ::= * ATOM_SINT64
-          cell ::= * ATOM_REAL64
-          cell ::= * ATOM_STRING
-          cell ::= * CELL_FREE
-          cell ::= * CELL_PAIR
-          cell ::= * CELL_VECTOR
-          cell ::= * CELL_APPLY
-          cell ::= * CELL_ENVIRONMENT
-          cell ::= * CELL_FRAME
-          cell ::= * LPAR cell_members RPAR
-          cell ::= LPAR * cell_members RPAR
-          cell_list ::= * cell
-          cell_list ::= * cell_list cell
-     (16) cell_members ::= *
-          cell_members ::= * cell_list
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= LBR * bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          sexpr ::= LBR * bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          list ::= * ilist
+          list ::= * list ilist
+     (25) bexpr ::= *
+          bexpr ::= * list
+          bexpr ::= * bexpr col list
+          bexpr ::= * error
 
-                   ATOM_SYMBOL shift  19
-                     ATOM_BOOL shift  18
-                     ATOM_CHAR shift  17
-                   ATOM_SINT64 shift  16
-                   ATOM_REAL64 shift  15
-                   ATOM_STRING shift  14
-                     CELL_FREE shift  13
-                     CELL_PAIR shift  12
-                   CELL_VECTOR shift  11
-                    CELL_APPLY shift  10
-              CELL_ENVIRONMENT shift  9
-                    CELL_FRAME shift  8
-                          LPAR shift  1
-                          cell shift  6
-                     cell_list shift  2
-                  cell_members shift  3
-                     {default} reduce 16
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
+                         error shift  11
+                          atom shift  17
+                         sexpr shift  16
+                         bexpr shift  7
+                         ilist shift  15
+                          list shift  5
+                     {default} reduce 25
 
 State 2:
-          cell ::= * ATOM_SYMBOL
-          cell ::= * ATOM_BOOL
-          cell ::= * ATOM_CHAR
-          cell ::= * ATOM_SINT64
-          cell ::= * ATOM_REAL64
-          cell ::= * ATOM_STRING
-          cell ::= * CELL_FREE
-          cell ::= * CELL_PAIR
-          cell ::= * CELL_VECTOR
-          cell ::= * CELL_APPLY
-          cell ::= * CELL_ENVIRONMENT
-          cell ::= * CELL_FRAME
-          cell ::= * LPAR cell_members RPAR
-          cell_list ::= cell_list * cell
-     (17) cell_members ::= cell_list *
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= LPAR * members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          list ::= * ilist
+          list ::= * list ilist
+     (21) members ::= *
+          members ::= * list
 
-                   ATOM_SYMBOL shift  19
-                     ATOM_BOOL shift  18
-                     ATOM_CHAR shift  17
-                   ATOM_SINT64 shift  16
-                   ATOM_REAL64 shift  15
-                   ATOM_STRING shift  14
-                     CELL_FREE shift  13
-                     CELL_PAIR shift  12
-                   CELL_VECTOR shift  11
-                    CELL_APPLY shift  10
-              CELL_ENVIRONMENT shift  9
-                    CELL_FRAME shift  8
-                          LPAR shift  1
-                          cell shift  5
-                     {default} reduce 17
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
+                          atom shift  17
+                         sexpr shift  16
+                       members shift  8
+                         ilist shift  15
+                          list shift  4
+                     {default} reduce 21
 
 State 3:
-          cell ::= LPAR cell_members * RPAR
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          sexpr ::= LBR bexpr col * RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          list ::= * ilist
+          list ::= * list ilist
+          col ::= col * COL
+          bexpr ::= bexpr col * list
 
-                          RPAR shift  7
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
+                           RBR shift  18
+                           COL shift  13
+                          atom shift  17
+                         sexpr shift  16
+                         ilist shift  15
+                          list shift  6
 
 State 4:
-      (0) program ::= cell *
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          list ::= list * ilist
+     (22) members ::= list *
+
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
+                          atom shift  17
+                         sexpr shift  16
+                         ilist shift  14
+                     {default} reduce 22
+
+State 5:
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          list ::= list * ilist
+     (26) bexpr ::= list *
+
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
+                          atom shift  17
+                         sexpr shift  16
+                         ilist shift  14
+                     {default} reduce 26
+
+State 6:
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          list ::= list * ilist
+     (27) bexpr ::= bexpr col list *
+
+                   ATOM_SYMBOL shift  32
+                     ATOM_BOOL shift  31
+                     ATOM_CHAR shift  30
+                   ATOM_SINT64 shift  29
+                   ATOM_REAL64 shift  28
+                   ATOM_STRING shift  27
+                     CELL_FREE shift  26
+                     CELL_PAIR shift  25
+                   CELL_VECTOR shift  24
+                    CELL_APPLY shift  23
+              CELL_ENVIRONMENT shift  22
+                    CELL_FRAME shift  21
+                          LPAR shift  2
+                           LBR shift  1
+                          atom shift  17
+                         sexpr shift  16
+                         ilist shift  14
+                     {default} reduce 27
+
+State 7:
+          sexpr ::= LBR bexpr * RBR
+          sexpr ::= LBR bexpr * col RBR
+          col ::= * COL
+          col ::= * col COL
+          bexpr ::= bexpr * col list
+
+                           RBR shift  19
+                           COL shift  12
+                           col shift  3
+
+State 8:
+          sexpr ::= LPAR members * RPAR
+
+                          RPAR shift  20
+
+State 9:
+      (1) program ::= sexpr *
+
+                             $ reduce 1
+
+State 10:
+      (0) program ::= atom *
 
                              $ reduce 0
 
-State 5:
-     (15) cell_list ::= cell_list cell *
+State 11:
+     (28) bexpr ::= error *
+
+                     {default} reduce 28
+
+State 12:
+     (23) col ::= COL *
+
+                     {default} reduce 23
+
+State 13:
+     (24) col ::= col COL *
+
+                     {default} reduce 24
+
+State 14:
+     (20) list ::= list ilist *
+
+                     {default} reduce 20
+
+State 15:
+     (19) list ::= ilist *
+
+                     {default} reduce 19
+
+State 16:
+     (18) ilist ::= sexpr *
+
+                     {default} reduce 18
+
+State 17:
+     (17) ilist ::= atom *
+
+                     {default} reduce 17
+
+State 18:
+     (16) sexpr ::= LBR bexpr col RBR *
+
+                     {default} reduce 16
+
+State 19:
+     (15) sexpr ::= LBR bexpr RBR *
 
                      {default} reduce 15
 
-State 6:
-     (14) cell_list ::= cell *
+State 20:
+     (14) sexpr ::= LPAR members RPAR *
 
                      {default} reduce 14
 
-State 7:
-     (13) cell ::= LPAR cell_members RPAR *
+State 21:
+     (13) sexpr ::= CELL_FRAME *
 
                      {default} reduce 13
 
-State 8:
-     (12) cell ::= CELL_FRAME *
+State 22:
+     (12) sexpr ::= CELL_ENVIRONMENT *
 
                      {default} reduce 12
 
-State 9:
-     (11) cell ::= CELL_ENVIRONMENT *
+State 23:
+     (11) sexpr ::= CELL_APPLY *
 
                      {default} reduce 11
 
-State 10:
-     (10) cell ::= CELL_APPLY *
+State 24:
+     (10) sexpr ::= CELL_VECTOR *
 
                      {default} reduce 10
 
-State 11:
-      (9) cell ::= CELL_VECTOR *
+State 25:
+      (9) sexpr ::= CELL_PAIR *
 
                      {default} reduce 9
 
-State 12:
-      (8) cell ::= CELL_PAIR *
+State 26:
+      (8) sexpr ::= CELL_FREE *
 
                      {default} reduce 8
 
-State 13:
-      (7) cell ::= CELL_FREE *
+State 27:
+      (7) atom ::= ATOM_STRING *
 
                      {default} reduce 7
 
-State 14:
-      (6) cell ::= ATOM_STRING *
+State 28:
+      (6) atom ::= ATOM_REAL64 *
 
                      {default} reduce 6
 
-State 15:
-      (5) cell ::= ATOM_REAL64 *
+State 29:
+      (5) atom ::= ATOM_SINT64 *
 
                      {default} reduce 5
 
-State 16:
-      (4) cell ::= ATOM_SINT64 *
+State 30:
+      (4) atom ::= ATOM_CHAR *
 
                      {default} reduce 4
 
-State 17:
-      (3) cell ::= ATOM_CHAR *
+State 31:
+      (3) atom ::= ATOM_BOOL *
 
                      {default} reduce 3
 
-State 18:
-      (2) cell ::= ATOM_BOOL *
+State 32:
+      (2) atom ::= ATOM_SYMBOL *
 
                      {default} reduce 2
-
-State 19:
-      (1) cell ::= ATOM_SYMBOL *
-
-                     {default} reduce 1
 
 ----------------------------------------------------
 Symbols:
@@ -203,8 +447,17 @@ Symbols:
    12: CELL_FRAME
    13: LPAR
    14: RPAR
-   15: error:
-   16: cell: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
-   17: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
-   18: cell_list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
-   19: cell_members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR
+   15: LBR
+   16: RBR
+   17: COL
+   18: error:
+   19: cell:
+   20: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   21: cell_list:
+   22: atom: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING
+   23: sexpr: CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   24: members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   25: bexpr: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR COL
+   26: col: COL
+   27: ilist: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   28: list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR

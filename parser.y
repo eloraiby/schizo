@@ -47,29 +47,43 @@
 %start_symbol program
 
 /* a program is a cell */
-program		::= cell(B).				{ s->root = B; }
+program		::= atom(B).				{ s->root = B; }
+program		::= sexpr(B).				{ s->root = B; }
 
 /* literals */
-cell(A)		::= ATOM_SYMBOL(B).			{ A = B; }
-cell(A)		::= ATOM_BOOL(B).			{ A = B; }
-cell(A)		::= ATOM_CHAR(B).			{ A = B; }
-cell(A)		::= ATOM_SINT64(B).			{ A = B; }
-cell(A)		::= ATOM_REAL64(B).			{ A = B; }
-cell(A)		::= ATOM_STRING(B).			{ A = B; }
+atom(A)		::= ATOM_SYMBOL(B).			{ A = B; }
+atom(A)		::= ATOM_BOOL(B).			{ A = B; }
+atom(A)		::= ATOM_CHAR(B).			{ A = B; }
+atom(A)		::= ATOM_SINT64(B).			{ A = B; }
+atom(A)		::= ATOM_REAL64(B).			{ A = B; }
+atom(A)		::= ATOM_STRING(B).			{ A = B; }
 
 /* NEVER USED: these are a hack to have the token ids */
-cell		::= CELL_FREE.				/* a free cell */
-cell		::= CELL_PAIR.				/* list */
-cell		::= CELL_VECTOR.			/* a vector of cells */
-cell		::= CELL_APPLY.				/* syntax/closure/foreign function interface */
-cell		::= CELL_ENVIRONMENT.			/* environment */
-cell		::= CELL_FRAME.				/* arguments */
+sexpr		::= CELL_FREE.				/* a free cell */
+sexpr		::= CELL_PAIR.				/* list */
+sexpr		::= CELL_VECTOR.			/* a vector of cells */
+sexpr		::= CELL_APPLY.				/* syntax/closure/foreign function interface */
+sexpr		::= CELL_ENVIRONMENT.			/* environment */
+sexpr		::= CELL_FRAME.				/* arguments */
 
 /* ( ... ) */
-cell(A)		::= LPAR cell_members(B) RPAR.		{ A = list_reverse_in_place(s, B); }
+sexpr(A)	::= LPAR members(B) RPAR.		{ A = list_reverse_in_place(s, B); }
+sexpr(A)	::= LBR bexpr(B) RBR.			{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
+sexpr(A)	::= LBR bexpr(B) col RBR.			{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
 
-cell_list(A)	::= cell(B).				{ A = list_new(s, B); }
-cell_list(A)	::= cell_list(B) cell(C).		{ A = list_cons(s, C, B); }
+ilist(A)	::= atom(B).				{ A = B; }
+ilist(A)	::= sexpr(B).				{ A = B; }
 
-cell_members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-cell_members(A)	::= cell_list(B).			{ A = B; }
+list(A)		::= ilist(B).				{ A = list_new(s, B); }
+list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
+
+members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
+members(A)	::= list(B).				{ A = B; }
+
+col		::= COL.
+col		::= col COL.
+
+bexpr(A)	::= .					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
+bexpr(A)	::= list(B).				{ A = list_new(s, list_reverse_in_place(s, B)); }
+bexpr(A)	::= bexpr(B) col list(C).		{ A = list_cons(s, list_reverse_in_place(s, C), B); }
+bexpr		::= error.				{ fprintf(stderr, "Error: unexpected token: %d\n", yyruleno); }

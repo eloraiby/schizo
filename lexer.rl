@@ -124,6 +124,9 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 		# Only buffer the second item, first buffered by symbol. */
 		'('						{ ADVANCE_TOKEN( LPAR );};
 		')'						{ ADVANCE_TOKEN( RPAR );};
+		'{'						{ ADVANCE_TOKEN( LBR );};
+		'}'						{ ADVANCE_TOKEN( RBR );};
+		';'						{ ADVANCE_TOKEN( COL );};
 
 		'\n'						{ ++line; };
 

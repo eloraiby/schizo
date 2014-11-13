@@ -12,3 +12,6 @@
 #define CELL_FRAME                     12
 #define LPAR                           13
 #define RPAR                           14
+#define LBR                            15
+#define RBR                            16
+#define COL                            17
