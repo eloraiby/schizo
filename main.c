@@ -36,7 +36,13 @@ main(int argc,
 		"{ a b c; 1 2 3 }",
 		"{ a b c; 1 2 3; 4 5 6 }",
 		"{ a b c; 1 2 3;;; d e f}",
-		"{ a b c; 1 2 3; 4 5 6;;; }"
+		"{ a b c; 1 2 3; 4 5 6;;; }",
+		"{ if (a == b) { do this } else {do that}}",
+		"{ a[10] }",
+		"{ a[10][11] }",
+		"{ (a b c)[10] }",
+		"{ a[10] + 10.5 asb }",
+		"{ (a b c)[10] }",
 	};
 
 	state_t*	state;

@@ -34,6 +34,18 @@
 %type program	{ cell_id_t }
 %type cell_list	{ cell_id_t }
 
+/*
+%left BIN_OP3
+%left BIN_OP2
+%left BIN_OP1
+%left BIN_OP0
+
+%left UN_OP3
+%left UN_OP2
+%left UN_OP1
+%left UN_OP0
+*/
+
 %syntax_error {
 	int n = sizeof(yyTokenName) / sizeof(yyTokenName[0]);
 	for (int i = 0; i < n; ++i) {
@@ -69,16 +81,25 @@ sexpr		::= CELL_FRAME.				/* arguments */
 /* ( ... ) */
 sexpr(A)	::= LPAR members(B) RPAR.		{ A = list_reverse_in_place(s, B); }
 sexpr(A)	::= LBR bexpr(B) RBR.			{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
-sexpr(A)	::= LBR bexpr(B) col RBR.			{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
+sexpr(A)	::= LBR bexpr(B) col RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
 
+/*
+unop_expr	::= UN_OP ilist.
+binop_expr	::= ilist BIN_OP ilist.
+*/
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
+ilist(A)	::= array(B).				{ A = B; }
 
 list(A)		::= ilist(B).				{ A = list_new(s, B); }
 list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
 
 members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
 members(A)	::= list(B).				{ A = B; }
+/*
+members		::= unop_expr.
+members		::= binop_expr.
+*/
 
 col		::= COL.
 col		::= col COL.
@@ -87,3 +108,10 @@ bexpr(A)	::= .					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
 bexpr(A)	::= list(B).				{ A = list_new(s, list_reverse_in_place(s, B)); }
 bexpr(A)	::= bexpr(B) col list(C).		{ A = list_cons(s, list_reverse_in_place(s, C), B); }
 bexpr		::= error.				{ fprintf(stderr, "Error: unexpected token: %d\n", yyruleno); }
+
+arr_operand(A)	::= ATOM_SYMBOL(B).			{ A = B; }
+arr_operand(A)	::= ATOM_STRING(B).			{ A = B; }
+arr_operand(A)	::= sexpr(B).				{ A = B; }
+
+array(A)	::= arr_operand(B) LSQB list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, list_reverse_in_place(s, C))); }
+array(A)	::= array(B) LSQB list(C) RSQB.		{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, list_reverse_in_place(s, C))); }

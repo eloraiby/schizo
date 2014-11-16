@@ -126,6 +126,8 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 		')'						{ ADVANCE_TOKEN( RPAR );};
 		'{'						{ ADVANCE_TOKEN( LBR );};
 		'}'						{ ADVANCE_TOKEN( RBR );};
+		'['						{ ADVANCE_TOKEN( LSQB );};
+		']'						{ ADVANCE_TOKEN( RSQB );};
 		';'						{ ADVANCE_TOKEN( COL );};
 
 		'\n'						{ ++line; };
