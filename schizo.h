@@ -128,22 +128,9 @@ static INLINE cell_id_t cell_quote()		{ cell_id_t	id = { (uint32)-1 };	return id
 static INLINE cell_id_t cell_quasiquote()	{ cell_id_t	id = { (uint32)-2 };	return id;	}
 
 #define cell_from_index(s, idx)			(&(s)->gc_block.cells[(idx).index])
-
-static INLINE cell_id_t
-list_head(state_t* s,
-	  cell_id_t list)
-{
-	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->object.pair.head;
-}
-
-static INLINE cell_id_t
-list_tail(state_t* s,
-	  cell_id_t list)
-{
-	cell_t*	c	= &s->gc_block.cells[list.index];
-	return c->object.pair.tail;
-}
+#define list_head(s, list)			((s)->gc_block.cells[(list).index].object.pair.head)
+#define list_tail(s, list)			((s)->gc_block.cells[(list).index].object.pair.tail)
+#define cell_type(s, c)				((s)->gc_block.cells[(c).index].type)
 
 static INLINE cell_id_t
 index_from_cell(state_t* s,
@@ -184,6 +171,7 @@ cell_id_t	list_cons(state_t* s, cell_id_t head, cell_id_t tail);
 #define		like_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
 
 cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
+uint32		list_length(state_t* s, cell_id_t list);
 
 /* vectors */
 cell_id_t	cell_vector(state_t* s, uint32 count);

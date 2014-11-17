@@ -28,6 +28,24 @@
 %include {
 #include <stdio.h>
 #include "schizo.h"
+
+/* check if list c is an array : ...[] */
+bool
+is_list_an_array_item(state_t* s,
+		      cell_id_t c)
+{
+	if( cell_type(s, c) == CELL_PAIR ) {
+		cell_t* h = cell_from_index(s, list_head(s, c));
+		if( h->type == ATOM_SYMBOL && strcmp(h->object.symbol, "item") == 0 ) {
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return true;
+	}
+}
+
 }
 
 %type cell	{ cell_id_t }
@@ -79,9 +97,9 @@ sexpr		::= CELL_ENVIRONMENT.			/* environment */
 sexpr		::= CELL_FRAME.				/* arguments */
 
 /* ( ... ) */
-sexpr(A)	::= LPAR members(B) RPAR.		{ A = list_reverse_in_place(s, B); }
-sexpr(A)	::= LBR bexpr(B) RBR.			{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
-sexpr(A)	::= LBR bexpr(B) col RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
+sexpr(A)	::= LPAR members(B) RPAR.		{ A = B; }
+sexpr(A)	::= LBR bexpr(B) RBR.			{ A = list_cons(s, atom_new_symbol(s, "scope"), list_reverse_in_place(s, B)); }
+sexpr(A)	::= LBR bexpr(B) col RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), list_reverse_in_place(s, B)); }
 
 /*
 unop_expr	::= UN_OP ilist.
@@ -91,11 +109,23 @@ ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
 ilist(A)	::= array(B).				{ A = B; }
 
-list(A)		::= ilist(B).				{ A = list_new(s, B); }
-list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
+list(A)		::= ilist(B).				{ A = B; }
+list(A)		::= list(B) ilist(C).			{
+								/* check if list(B) is an array, in this case, create a new list regardless */
+								if( cell_type(s, B) == CELL_PAIR ) {
+									if( is_list_an_array_item(s, B)) {
+										A = list_cons(s, C, list_new(s, B));
+									} else {
+										A = list_cons(s, C, B);
+									}
+								} else {
+									A = list_cons(s, C, list_new(s, B));
+								}
+							}
+
 
 members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-members(A)	::= list(B).				{ A = B; }
+members(A)	::= list(B).				{ A = ( cell_type(s, B) == CELL_PAIR && is_list_an_array_item(s, B) == false) ? list_reverse_in_place(s, B) : B; }
 /*
 members		::= unop_expr.
 members		::= binop_expr.
@@ -104,14 +134,13 @@ members		::= binop_expr.
 col		::= COL.
 col		::= col COL.
 
-bexpr(A)	::= .					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-bexpr(A)	::= list(B).				{ A = list_new(s, list_reverse_in_place(s, B)); }
-bexpr(A)	::= bexpr(B) col list(C).		{ A = list_cons(s, list_reverse_in_place(s, C), B); }
+bexpr(A)	::= members(B).				{ A = list_new(s, B); }
+bexpr(A)	::= bexpr(B) col list(C).		{ A = list_cons(s, (cell_type(s, C) == CELL_PAIR && is_list_an_array_item(s, C) == false) ? list_reverse_in_place(s, C) : C, B); }
 bexpr		::= error.				{ fprintf(stderr, "Error: unexpected token: %d\n", yyruleno); }
 
 arr_operand(A)	::= ATOM_SYMBOL(B).			{ A = B; }
 arr_operand(A)	::= ATOM_STRING(B).			{ A = B; }
 arr_operand(A)	::= sexpr(B).				{ A = B; }
 
-array(A)	::= arr_operand(B) LSQB list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, list_reverse_in_place(s, C))); }
-array(A)	::= array(B) LSQB list(C) RSQB.		{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, list_reverse_in_place(s, C))); }
+array(A)	::= arr_operand(B) LSQB list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : list_new(s, C))); }
+array(A)	::= array(B) LSQB list(C) RSQB.		{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : list_new(s, C))); }

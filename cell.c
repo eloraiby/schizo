@@ -45,6 +45,9 @@ cell_alloc(state_t* s) {
 
 		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.pair.tail	= cell_nil();
 
+		/* first cell, is the nil cell */
+		s->gc_block.cells[0].type	= CELL_PAIR;
+
 	} else if( s->gc_block.free_list.index == NIL_CELL ) {
 
 		/* TODO: call garbage collector before trigger a reallocation */

@@ -39,8 +39,25 @@ list_cons(state_t* s,
 {
 	cell_id_t id	= list_new(s, head);
 	cell_t* ret	= &s->gc_block.cells[id.index];
+
+	assert( cell_from_index(s, tail)->type == CELL_PAIR );
+
 	ret->object.pair.tail	= tail;
 	return id;
+}
+
+uint32
+list_length(state_t *s, cell_id_t list)
+{
+	cell_id_t	curr	= list;
+	uint32		len	= 0;
+
+	while( !is_nil(curr) ) {
+		assert( cell_from_index(s, list)->type == CELL_PAIR );
+		++len;
+		curr	= list_tail(s, curr);
+	}
+	return len;
 }
 
 cell_id_t
