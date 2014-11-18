@@ -75,6 +75,7 @@ typedef struct cell_t {
 
 	union {
 		char*		symbol;
+		char*		op;
 
 		bool		boolean;
 
@@ -164,6 +165,8 @@ cell_id_t	atom_new_char(state_t* s, char c);
 cell_id_t	atom_new_sint64(state_t* s, sint64 i);
 cell_id_t	atom_new_real64(state_t* s, real64 i);
 cell_id_t	atom_new_string(state_t* s, const char* b);
+cell_id_t	atom_new_unary_op(state_t* s, const char* op);
+cell_id_t	atom_new_binary_op(state_t* s, const char* op);
 
 /* list.c */
 cell_id_t	list_new(state_t* s, cell_id_t head);

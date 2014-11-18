@@ -71,6 +71,13 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 		#'quote'						{ ADVANCE_TOKEN( QUOTE ); };
 		#"'"						{ ADVANCE_TOKEN( QUOTE ); };
 
+		'!'						{ ADVANCE( unary_op ); };
+		'++'						{ ADVANCE( unary_op ); };
+		'--'						{ ADVANCE( unary_op ); };
+
+		'+'						{ ADVANCE( binary_op ); };
+		'-'						{ ADVANCE( binary_op ); };
+
 		# Single and double literals.
 		( "'" (any - ['\\] ) "'" )			{
 									PUSH_TE();
@@ -130,6 +137,7 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 		']'						{ ADVANCE_TOKEN( RSQB );};
 		';'						{ ADVANCE_TOKEN( COL );};
 
+
 		'\n'						{ ++line; };
 
 		# Single char symbols.
@@ -156,6 +164,16 @@ copy_token(const char* ts, const char *te, char* dst) {
 static cell_id_t
 token_to_symbol(state_t* s, const char* b) {
 	return atom_new_symbol(s, b);
+}
+
+static cell_id_t
+token_to_unary_op(state_t* s, const char* op) {
+	return atom_new_unary_op(s, op);
+}
+
+static cell_id_t
+token_to_binary_op(state_t* s, const char* op) {
+	return atom_new_binary_op(s, op);
 }
 
 static cell_id_t

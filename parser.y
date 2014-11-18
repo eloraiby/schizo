@@ -98,38 +98,46 @@ sexpr		::= CELL_FRAME.				/* arguments */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR members(B) RPAR.		{ A = B; }
-sexpr(A)	::= LBR bexpr(B) RBR.			{ A = list_cons(s, atom_new_symbol(s, "scope"), list_reverse_in_place(s, B)); }
-sexpr(A)	::= LBR bexpr(B) col RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), list_reverse_in_place(s, B)); }
+sexpr(A)	::= LBR bexpr(B) RBR.			{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
+sexpr(A)	::= LBR bexpr(B) col RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), list_reverse_in_place(s, B)); }
 
-/*
-unop_expr	::= UN_OP ilist.
-binop_expr	::= ilist BIN_OP ilist.
-*/
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
 ilist(A)	::= array(B).				{ A = B; }
 
-list(A)		::= ilist(B).				{ A = B; }
-list(A)		::= list(B) ilist(C).			{
+list(A)		::= unop_expr(B).			{ A = B; }
+list(A)		::= binop_expr(B).			{ A = B; }
+
+list(A)		::= list(B) unop_expr(C).		{
 								/* check if list(B) is an array, in this case, create a new list regardless */
 								if( cell_type(s, B) == CELL_PAIR ) {
 									if( is_list_an_array_item(s, B)) {
-										A = list_cons(s, C, list_new(s, B));
+										A = list_cons(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C, list_new(s, B));
 									} else {
-										A = list_cons(s, C, B);
+										A = list_cons(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C, B);
 									}
 								} else {
-									A = list_cons(s, C, list_new(s, B));
+									A = list_cons(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C, list_new(s, B));
 								}
 							}
 
 
 members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
 members(A)	::= list(B).				{ A = ( cell_type(s, B) == CELL_PAIR && is_list_an_array_item(s, B) == false) ? list_reverse_in_place(s, B) : B; }
+
 /*
-members		::= unop_expr.
-members		::= binop_expr.
-*/
+ * From here on, starts the brackets/array extension
+ */
+
+unop_expr(A)	::= ilist(B).				{ A = B; }
+unop_expr(A)	::= ATOM_UNARY_OP(B) ilist(C).		{ A = list_cons(s, C, list_new(s, B)); }
+
+binop_expr(A)	::= unop_expr(B) ATOM_BINARY_OP(C) unop_expr(D).	{ A = list_cons(s, (cell_type(s, D) == CELL_PAIR) ? list_reverse_in_place(s, D) : D,
+											list_cons(s,
+												(cell_type(s, B) == CELL_PAIR) ? list_reverse_in_place(s, B) : B,
+												list_new(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C))); }
+
+
 
 col		::= COL.
 col		::= col COL.

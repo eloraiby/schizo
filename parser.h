@@ -14,6 +14,8 @@
 #define RPAR                           14
 #define LBR                            15
 #define RBR                            16
-#define COL                            17
-#define LSQB                           18
-#define RSQB                           19
+#define ATOM_UNARY_OP                  17
+#define ATOM_BINARY_OP                 18
+#define COL                            19
+#define LSQB                           20
+#define RSQB                           21

@@ -81,3 +81,33 @@ atom_new_string(state_t* s,
 	memcpy(ret->object.symbol, b, len + 1);
 	return id;
 }
+
+cell_id_t
+atom_new_unary_op(state_t* s,
+		  const char* op)
+{
+	size_t len	= strlen(op);
+	cell_id_t id	= cell_alloc(s);
+	cell_t*	ret	= &s->gc_block.cells[id.index];
+
+	ret->type	= ATOM_UNARY_OP;
+	ret->object.op	= (char*)(malloc(len + 1));
+	memcpy(ret->object.symbol, op, len + 1);
+	return id;
+
+}
+
+cell_id_t
+atom_new_binary_op(state_t* s,
+		   const char* op)
+{
+	size_t len	= strlen(op);
+	cell_id_t id	= cell_alloc(s);
+	cell_t*	ret	= &s->gc_block.cells[id.index];
+
+	ret->type	= ATOM_BINARY_OP;
+	ret->object.op	= (char*)(malloc(len + 1));
+	memcpy(ret->object.symbol, op, len + 1);
+	return id;
+
+}

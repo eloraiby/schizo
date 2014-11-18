@@ -45,6 +45,11 @@ main(int argc,
 		"{ a[10] + 10.5 asb }",
 		"{ 5 + (a b c)[10] }",
 		"{ a b c[10] d; ef g }",
+		"{ !a }",
+		"{ a + b }",
+		"{ !a + b }",
+		"{ a + !b }",
+		"{ !a + !b }",
 	};
 
 	state_t*	state;

@@ -17,23 +17,23 @@ State 0:
           sexpr ::= * LBR bexpr RBR
           sexpr ::= * LBR bexpr col RBR
 
-                   ATOM_SYMBOL shift  42
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  37
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  48
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  43
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
                        program accept
-                          atom shift  18
-                         sexpr shift  17
+                          atom shift  21
+                         sexpr shift  20
 
 State 1:
           atom ::= * ATOM_SYMBOL
@@ -56,10 +56,14 @@ State 1:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= * ilist
-          list ::= * list ilist
-     (22) members ::= *
+          list ::= * unop_expr
+          list ::= * binop_expr
+          list ::= * list unop_expr
+     (23) members ::= *
           members ::= * list
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+          binop_expr ::= * unop_expr ATOM_BINARY_OP unop_expr
           bexpr ::= * members
           bexpr ::= * bexpr col list
           bexpr ::= * error
@@ -69,30 +73,33 @@ State 1:
           array ::= * arr_operand LSQB list RSQB
           array ::= * array LSQB list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                         error shift  19
-                          atom shift  27
-                         sexpr shift  13
-                       members shift  20
-                         bexpr shift  10
-                         ilist shift  26
-                         array shift  12
+                 ATOM_UNARY_OP shift  11
+                         error shift  22
+                          atom shift  33
+                         sexpr shift  16
+                       members shift  23
+                         bexpr shift  12
+                         ilist shift  32
+                         array shift  15
                           list shift  8
-                   arr_operand shift  11
-                     {default} reduce 22
+                     unop_expr shift  14
+                    binop_expr shift  30
+                   arr_operand shift  13
+                     {default} reduce 23
 
 State 2:
           atom ::= * ATOM_SYMBOL
@@ -114,38 +121,45 @@ State 2:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= * ilist
-          list ::= * list ilist
-     (22) members ::= *
+          list ::= * unop_expr
+          list ::= * binop_expr
+          list ::= * list unop_expr
+     (23) members ::= *
           members ::= * list
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+          binop_expr ::= * unop_expr ATOM_BINARY_OP unop_expr
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
           array ::= * arr_operand LSQB list RSQB
           array ::= * array LSQB list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          atom shift  27
-                         sexpr shift  13
-                       members shift  14
-                         ilist shift  26
-                         array shift  12
+                 ATOM_UNARY_OP shift  11
+                          atom shift  33
+                         sexpr shift  16
+                       members shift  17
+                         ilist shift  32
+                         array shift  15
                           list shift  8
-                   arr_operand shift  11
-                     {default} reduce 22
+                     unop_expr shift  14
+                    binop_expr shift  30
+                   arr_operand shift  13
+                     {default} reduce 23
 
 State 3:
           atom ::= * ATOM_SYMBOL
@@ -167,8 +181,12 @@ State 3:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= * ilist
-          list ::= * list ilist
+          list ::= * unop_expr
+          list ::= * binop_expr
+          list ::= * list unop_expr
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+          binop_expr ::= * unop_expr ATOM_BINARY_OP unop_expr
           col ::= col * COL
           bexpr ::= bexpr col * list
           arr_operand ::= * ATOM_SYMBOL
@@ -177,28 +195,31 @@ State 3:
           array ::= * arr_operand LSQB list RSQB
           array ::= * array LSQB list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                           RBR shift  28
-                           COL shift  22
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  26
-                         array shift  12
+                           RBR shift  34
+                 ATOM_UNARY_OP shift  11
+                           COL shift  25
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
                           list shift  9
-                   arr_operand shift  11
+                     unop_expr shift  14
+                    binop_expr shift  30
+                   arr_operand shift  13
 
 State 4:
           atom ::= * ATOM_SYMBOL
@@ -219,8 +240,12 @@ State 4:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= * ilist
-          list ::= * list ilist
+          list ::= * unop_expr
+          list ::= * binop_expr
+          list ::= * list unop_expr
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+          binop_expr ::= * unop_expr ATOM_BINARY_OP unop_expr
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
@@ -228,26 +253,29 @@ State 4:
           array ::= arr_operand LSQB * list RSQB
           array ::= * array LSQB list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  26
-                         array shift  12
-                          list shift  6
-                   arr_operand shift  11
+                 ATOM_UNARY_OP shift  11
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                          list shift  7
+                     unop_expr shift  14
+                    binop_expr shift  30
+                   arr_operand shift  13
 
 State 5:
           atom ::= * ATOM_SYMBOL
@@ -268,8 +296,12 @@ State 5:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= * ilist
-          list ::= * list ilist
+          list ::= * unop_expr
+          list ::= * binop_expr
+          list ::= * list unop_expr
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+          binop_expr ::= * unop_expr ATOM_BINARY_OP unop_expr
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
@@ -277,26 +309,29 @@ State 5:
           array ::= * array LSQB list RSQB
           array ::= array LSQB * list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  26
-                         array shift  12
-                          list shift  7
-                   arr_operand shift  11
+                 ATOM_UNARY_OP shift  11
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                          list shift  6
+                     unop_expr shift  14
+                    binop_expr shift  30
+                   arr_operand shift  13
 
 State 6:
           atom ::= * ATOM_SYMBOL
@@ -317,34 +352,38 @@ State 6:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= list * ilist
+          list ::= list * unop_expr
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
           array ::= * arr_operand LSQB list RSQB
-          array ::= arr_operand LSQB list * RSQB
           array ::= * array LSQB list RSQB
+          array ::= array LSQB list * RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          RSQB shift  24
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  25
-                         array shift  12
-                   arr_operand shift  11
+                 ATOM_UNARY_OP shift  11
+                          RSQB shift  26
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                     unop_expr shift  29
+                   arr_operand shift  13
 
 State 7:
           atom ::= * ATOM_SYMBOL
@@ -365,34 +404,38 @@ State 7:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= list * ilist
+          list ::= list * unop_expr
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
           array ::= * arr_operand LSQB list RSQB
+          array ::= arr_operand LSQB list * RSQB
           array ::= * array LSQB list RSQB
-          array ::= array LSQB list * RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          RSQB shift  23
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  25
-                         array shift  12
-                   arr_operand shift  11
+                 ATOM_UNARY_OP shift  11
+                          RSQB shift  28
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                     unop_expr shift  29
+                   arr_operand shift  13
 
 State 8:
           atom ::= * ATOM_SYMBOL
@@ -413,34 +456,38 @@ State 8:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= list * ilist
-     (23) members ::= list *
+          list ::= list * unop_expr
+     (24) members ::= list *
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
           array ::= * arr_operand LSQB list RSQB
           array ::= * array LSQB list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  25
-                         array shift  12
-                   arr_operand shift  11
-                     {default} reduce 23
+                 ATOM_UNARY_OP shift  11
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                     unop_expr shift  29
+                   arr_operand shift  13
+                     {default} reduce 24
 
 State 9:
           atom ::= * ATOM_SYMBOL
@@ -461,210 +508,332 @@ State 9:
           ilist ::= * atom
           ilist ::= * sexpr
           ilist ::= * array
-          list ::= list * ilist
-     (27) bexpr ::= bexpr col list *
+          list ::= list * unop_expr
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+     (31) bexpr ::= bexpr col list *
           arr_operand ::= * ATOM_SYMBOL
           arr_operand ::= * ATOM_STRING
           arr_operand ::= * sexpr
           array ::= * arr_operand LSQB list RSQB
           array ::= * array LSQB list RSQB
 
-                   ATOM_SYMBOL shift  16
-                     ATOM_BOOL shift  41
-                     ATOM_CHAR shift  40
-                   ATOM_SINT64 shift  39
-                   ATOM_REAL64 shift  38
-                   ATOM_STRING shift  15
-                     CELL_FREE shift  36
-                     CELL_PAIR shift  35
-                   CELL_VECTOR shift  34
-                    CELL_APPLY shift  33
-              CELL_ENVIRONMENT shift  32
-                    CELL_FRAME shift  31
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
                           LPAR shift  2
                            LBR shift  1
-                          atom shift  27
-                         sexpr shift  13
-                         ilist shift  25
-                         array shift  12
-                   arr_operand shift  11
-                     {default} reduce 27
+                 ATOM_UNARY_OP shift  11
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                     unop_expr shift  29
+                   arr_operand shift  13
+                     {default} reduce 31
 
 State 10:
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          ilist ::= * array
+          unop_expr ::= * ilist
+          unop_expr ::= * ATOM_UNARY_OP ilist
+          binop_expr ::= unop_expr ATOM_BINARY_OP * unop_expr
+          arr_operand ::= * ATOM_SYMBOL
+          arr_operand ::= * ATOM_STRING
+          arr_operand ::= * sexpr
+          array ::= * arr_operand LSQB list RSQB
+          array ::= * array LSQB list RSQB
+
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
+                          LPAR shift  2
+                           LBR shift  1
+                 ATOM_UNARY_OP shift  11
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  32
+                         array shift  15
+                     unop_expr shift  27
+                   arr_operand shift  13
+
+State 11:
+          atom ::= * ATOM_SYMBOL
+          atom ::= * ATOM_BOOL
+          atom ::= * ATOM_CHAR
+          atom ::= * ATOM_SINT64
+          atom ::= * ATOM_REAL64
+          atom ::= * ATOM_STRING
+          sexpr ::= * CELL_FREE
+          sexpr ::= * CELL_PAIR
+          sexpr ::= * CELL_VECTOR
+          sexpr ::= * CELL_APPLY
+          sexpr ::= * CELL_ENVIRONMENT
+          sexpr ::= * CELL_FRAME
+          sexpr ::= * LPAR members RPAR
+          sexpr ::= * LBR bexpr RBR
+          sexpr ::= * LBR bexpr col RBR
+          ilist ::= * atom
+          ilist ::= * sexpr
+          ilist ::= * array
+          unop_expr ::= ATOM_UNARY_OP * ilist
+          arr_operand ::= * ATOM_SYMBOL
+          arr_operand ::= * ATOM_STRING
+          arr_operand ::= * sexpr
+          array ::= * arr_operand LSQB list RSQB
+          array ::= * array LSQB list RSQB
+
+                   ATOM_SYMBOL shift  19
+                     ATOM_BOOL shift  47
+                     ATOM_CHAR shift  46
+                   ATOM_SINT64 shift  45
+                   ATOM_REAL64 shift  44
+                   ATOM_STRING shift  18
+                     CELL_FREE shift  42
+                     CELL_PAIR shift  41
+                   CELL_VECTOR shift  40
+                    CELL_APPLY shift  39
+              CELL_ENVIRONMENT shift  38
+                    CELL_FRAME shift  37
+                          LPAR shift  2
+                           LBR shift  1
+                          atom shift  33
+                         sexpr shift  16
+                         ilist shift  31
+                         array shift  15
+                   arr_operand shift  13
+
+State 12:
           sexpr ::= LBR bexpr * RBR
           sexpr ::= LBR bexpr * col RBR
           col ::= * COL
           col ::= * col COL
           bexpr ::= bexpr * col list
 
-                           RBR shift  29
-                           COL shift  21
+                           RBR shift  35
+                           COL shift  24
                            col shift  3
 
-State 11:
+State 13:
           array ::= arr_operand * LSQB list RSQB
 
                           LSQB shift  4
 
-State 12:
+State 14:
+     (20) list ::= unop_expr *
+          binop_expr ::= unop_expr * ATOM_BINARY_OP unop_expr
+
+                ATOM_BINARY_OP shift  10
+                     {default} reduce 20
+
+State 15:
      (19) ilist ::= array *
           array ::= array * LSQB list RSQB
 
                           LSQB shift  5
                      {default} reduce 19
 
-State 13:
+State 16:
      (18) ilist ::= sexpr *
-     (31) arr_operand ::= sexpr *
+     (35) arr_operand ::= sexpr *
 
-                          LSQB reduce 31
+                          LSQB reduce 35
                      {default} reduce 18
 
-State 14:
+State 17:
           sexpr ::= LPAR members * RPAR
 
-                          RPAR shift  30
+                          RPAR shift  36
 
-State 15:
+State 18:
       (7) atom ::= ATOM_STRING *
-     (30) arr_operand ::= ATOM_STRING *
+     (34) arr_operand ::= ATOM_STRING *
 
-                          LSQB reduce 30
+                          LSQB reduce 34
                      {default} reduce 7
 
-State 16:
+State 19:
       (2) atom ::= ATOM_SYMBOL *
-     (29) arr_operand ::= ATOM_SYMBOL *
+     (33) arr_operand ::= ATOM_SYMBOL *
 
-                          LSQB reduce 29
+                          LSQB reduce 33
                      {default} reduce 2
 
-State 17:
+State 20:
       (1) program ::= sexpr *
 
                              $ reduce 1
 
-State 18:
+State 21:
       (0) program ::= atom *
 
                              $ reduce 0
 
-State 19:
-     (28) bexpr ::= error *
-
-                     {default} reduce 28
-
-State 20:
-     (26) bexpr ::= members *
-
-                     {default} reduce 26
-
-State 21:
-     (24) col ::= COL *
-
-                     {default} reduce 24
-
 State 22:
-     (25) col ::= col COL *
-
-                     {default} reduce 25
-
-State 23:
-     (33) array ::= array LSQB list RSQB *
-
-                     {default} reduce 33
-
-State 24:
-     (32) array ::= arr_operand LSQB list RSQB *
+     (32) bexpr ::= error *
 
                      {default} reduce 32
 
+State 23:
+     (30) bexpr ::= members *
+
+                     {default} reduce 30
+
+State 24:
+     (28) col ::= COL *
+
+                     {default} reduce 28
+
 State 25:
-     (21) list ::= list ilist *
+     (29) col ::= col COL *
+
+                     {default} reduce 29
+
+State 26:
+     (37) array ::= array LSQB list RSQB *
+
+                     {default} reduce 37
+
+State 27:
+     (27) binop_expr ::= unop_expr ATOM_BINARY_OP unop_expr *
+
+                     {default} reduce 27
+
+State 28:
+     (36) array ::= arr_operand LSQB list RSQB *
+
+                     {default} reduce 36
+
+State 29:
+     (22) list ::= list unop_expr *
+
+                     {default} reduce 22
+
+State 30:
+     (21) list ::= binop_expr *
 
                      {default} reduce 21
 
-State 26:
-     (20) list ::= ilist *
+State 31:
+     (26) unop_expr ::= ATOM_UNARY_OP ilist *
 
-                     {default} reduce 20
+                     {default} reduce 26
 
-State 27:
+State 32:
+     (25) unop_expr ::= ilist *
+
+                     {default} reduce 25
+
+State 33:
      (17) ilist ::= atom *
 
                      {default} reduce 17
 
-State 28:
+State 34:
      (16) sexpr ::= LBR bexpr col RBR *
 
                      {default} reduce 16
 
-State 29:
+State 35:
      (15) sexpr ::= LBR bexpr RBR *
 
                      {default} reduce 15
 
-State 30:
+State 36:
      (14) sexpr ::= LPAR members RPAR *
 
                      {default} reduce 14
 
-State 31:
+State 37:
      (13) sexpr ::= CELL_FRAME *
 
                      {default} reduce 13
 
-State 32:
+State 38:
      (12) sexpr ::= CELL_ENVIRONMENT *
 
                      {default} reduce 12
 
-State 33:
+State 39:
      (11) sexpr ::= CELL_APPLY *
 
                      {default} reduce 11
 
-State 34:
+State 40:
      (10) sexpr ::= CELL_VECTOR *
 
                      {default} reduce 10
 
-State 35:
+State 41:
       (9) sexpr ::= CELL_PAIR *
 
                      {default} reduce 9
 
-State 36:
+State 42:
       (8) sexpr ::= CELL_FREE *
 
                      {default} reduce 8
 
-State 37:
+State 43:
       (7) atom ::= ATOM_STRING *
 
                      {default} reduce 7
 
-State 38:
+State 44:
       (6) atom ::= ATOM_REAL64 *
 
                      {default} reduce 6
 
-State 39:
+State 45:
       (5) atom ::= ATOM_SINT64 *
 
                      {default} reduce 5
 
-State 40:
+State 46:
       (4) atom ::= ATOM_CHAR *
 
                      {default} reduce 4
 
-State 41:
+State 47:
       (3) atom ::= ATOM_BOOL *
 
                      {default} reduce 3
 
-State 42:
+State 48:
       (2) atom ::= ATOM_SYMBOL *
 
                      {default} reduce 2
@@ -688,19 +857,23 @@ Symbols:
    14: RPAR
    15: LBR
    16: RBR
-   17: COL
-   18: LSQB
-   19: RSQB
-   20: error:
-   21: cell:
-   22: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
-   23: cell_list:
-   24: atom: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING
-   25: sexpr: CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
-   26: members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
-   27: bexpr: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR COL
-   28: col: COL
-   29: ilist: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
-   30: array: ATOM_SYMBOL ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
-   31: list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
-   32: arr_operand: ATOM_SYMBOL ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   17: ATOM_UNARY_OP
+   18: ATOM_BINARY_OP
+   19: COL
+   20: LSQB
+   21: RSQB
+   22: error:
+   23: cell:
+   24: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   25: cell_list:
+   26: atom: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING
+   27: sexpr: CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   28: members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR ATOM_UNARY_OP
+   29: bexpr: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR ATOM_UNARY_OP COL
+   30: col: COL
+   31: ilist: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   32: array: ATOM_SYMBOL ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
+   33: list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR ATOM_UNARY_OP
+   34: unop_expr: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR ATOM_UNARY_OP
+   35: binop_expr: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR ATOM_UNARY_OP
+   36: arr_operand: ATOM_SYMBOL ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_APPLY CELL_ENVIRONMENT CELL_FRAME LPAR LBR
