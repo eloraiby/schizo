@@ -92,6 +92,7 @@ atom(A)		::= ATOM_STRING(B).			{ A = B; }
 sexpr		::= CELL_FREE.				/* a free cell */
 sexpr		::= CELL_PAIR.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
+sexpr		::= CELL_INDEX.				/* array accessor (index) */
 sexpr		::= CELL_APPLY.				/* syntax/closure/foreign function interface */
 sexpr		::= CELL_ENVIRONMENT.			/* environment */
 sexpr		::= CELL_FRAME.				/* arguments */
@@ -130,7 +131,18 @@ members(A)	::= list(B).				{ A = ( cell_type(s, B) == CELL_PAIR && is_list_an_ar
  */
 
 unop_expr(A)	::= ilist(B).				{ A = B; }
-unop_expr(A)	::= ATOM_UNARY_OP(B) ilist(C).		{ A = list_cons(s, C, list_new(s, B)); }
+unop_expr(A)	::= ATOM_UNARY_OP(B) ilist(C).		{ /* This code is redundant */
+								/* check if list(B) is an array, in this case, create a new list regardless */
+								if( cell_type(s, B) == CELL_PAIR ) {
+									if( is_list_an_array_item(s, B)) {
+										A = list_cons(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C, list_new(s, B));
+									} else {
+										A = list_cons(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C, B);
+									}
+								} else {
+									A = list_cons(s, (cell_type(s, C) == CELL_PAIR) ? list_reverse_in_place(s, C) : C, list_new(s, B));
+								}
+							}
 
 binop_expr(A)	::= unop_expr(B) ATOM_BINARY_OP(C) unop_expr(D).	{ A = list_cons(s, (cell_type(s, D) == CELL_PAIR) ? list_reverse_in_place(s, D) : D,
 											list_cons(s,
