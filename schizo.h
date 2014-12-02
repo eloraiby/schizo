@@ -49,9 +49,15 @@ typedef struct pair_t {
 
 /* lambda */
 typedef struct closure_t {
-	uint32		arg_count;	/* total argument count, -1 = any */
-	cell_id_t	expression;
+	cell_id_t	syms;		/* arguments */
+	cell_id_t	body;		/* closure body */
 } closure_t;
+
+/* foreign function */
+typedef struct ffi_t {
+	uint32		arg_count;	/* total argument count, -1 = any */
+	cell_id_t	symbol;
+} ffi_t;
 
 /* scope or environment */
 typedef struct environment_t {
@@ -87,6 +93,7 @@ typedef struct cell_t {
 		char*		string;
 		pair_t		pair;
 		closure_t	closure;
+		ffi_t		ffi;
 	} object;
 
 } cell_t;

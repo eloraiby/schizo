@@ -104,7 +104,7 @@ print_cell(state_t* s,
 	case ATOM_SYMBOL:
 		fprintf(stderr, "%s", c->object.symbol);
 		break;
-
+/*
 	case ATOM_UNARY_OP:
 		fprintf(stderr, "%s", c->object.op);
 		break;
@@ -112,7 +112,7 @@ print_cell(state_t* s,
 	case ATOM_BINARY_OP:
 		fprintf(stderr, "%s", c->object.op);
 		break;
-
+*/
 	case ATOM_CHAR:
 		fprintf(stderr, "'%c'", c->object.ch);
 		break;
@@ -144,6 +144,7 @@ print_cell(state_t* s,
 				if( !is_nil(n->object.pair.head) ) {
 					print_cell(s, n->object.pair.head, 1);
 				} else {
+					print_level(level + 1);
 					fprintf(stderr, "nil");
 				}
 

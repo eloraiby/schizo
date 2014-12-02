@@ -54,29 +54,20 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 	write data nofinal;
 
 	# operator char
-	op_char_left = [\+\-\*/\|\&\>\<\=\~\!\^\%\?\:]+;
-	op_char_right = '/*' | '*/' | '//';
-	op_char = ( op_char_left - op_char_right );
+	op_char_left	= [\+\-\*/\|\&\>\<\=\~\!\^\%\?\:]+;
+	op_char_right	= '/*' | '*/' | '//';
+	op_char		= ( op_char_left - op_char_right );
 	# Floating literals.
-	fract_const = digit* '.' digit+ | digit+ '.';
-	exponent = [eE] [+\-]? digit+;
+	fract_const	= digit* '.' digit+ | digit+ '.';
+	exponent	= [eE] [+\-]? digit+;
 
 	action inc_line { ++line; }
 
-	c_comment := (any | '\n'@inc_line)* :>> '*/' @{ fgoto main; };
+	c_comment	:= (any | '\n'@inc_line)* :>> '*/' @{ fgoto main; };
 
 	main := |*
 		'#t'						{ ADVANCE( boolean );};
 		'#f'						{ ADVANCE( boolean );};
-		#'quote'						{ ADVANCE_TOKEN( QUOTE ); };
-		#"'"						{ ADVANCE_TOKEN( QUOTE ); };
-
-		'!'						{ ADVANCE( unary_op ); };
-		'++'						{ ADVANCE( unary_op ); };
-		'--'						{ ADVANCE( unary_op ); };
-
-		'+'						{ ADVANCE( binary_op ); };
-		'-'						{ ADVANCE( binary_op ); };
 
 		# Single and double literals.
 		( "'" (any - ['\\] ) "'" )			{
@@ -135,8 +126,7 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 		'}'						{ ADVANCE_TOKEN( RBR );};
 		'['						{ ADVANCE_TOKEN( LSQB );};
 		']'						{ ADVANCE_TOKEN( RSQB );};
-		';'						{ ADVANCE_TOKEN( COL );};
-
+		';'						{ ADVANCE_TOKEN( SEMICOL );};
 
 		'\n'						{ ++line; };
 
@@ -166,6 +156,7 @@ token_to_symbol(state_t* s, const char* b) {
 	return atom_new_symbol(s, b);
 }
 
+/*
 static cell_id_t
 token_to_unary_op(state_t* s, const char* op) {
 	return atom_new_unary_op(s, op);
@@ -175,6 +166,7 @@ static cell_id_t
 token_to_binary_op(state_t* s, const char* op) {
 	return atom_new_binary_op(s, op);
 }
+*/
 
 static cell_id_t
 token_to_boolean(state_t* s, const char* b) {
