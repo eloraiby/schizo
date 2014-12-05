@@ -113,6 +113,7 @@ typedef cell_id_t	(*foreign_procedure_t)(state_t* sc, cell_id_t args);
 typedef cell_id_t	(*foreign_syntax_t)(state_t* sc, cell_id_t env, cell_id_t args);
 
 #define GC_REACHABLE	0x8000
+#define GC_PINNED	0x4000
 #define FOREIGN		0x0800
 #define SYNTAX		0x0400
 
@@ -190,18 +191,13 @@ index_from_cell(state_t* s,
 	return ret;
 }
 
-#define gc_mark_reachable(sc, cid)	{ \
-						cell_t*	c	= cell_from_index((sc), (cid)); \
-						c->flags	|= GC_REACHABLE; \
-					}
-
-#define gc_mark_unreachable(sc, cid)	{ \
-						cell_t* c	= cell_from_index((sc), (cid)); \
-						c->flags	&= ~GC_REACHABLE; \
-					}
-
+#define gc_mark_reachable(sc, cid)	{	cell_t*	c	= cell_from_index((sc), (cid));	c->flags	|= GC_REACHABLE;	}
+#define gc_mark_unreachable(sc, cid)	{	cell_t* c	= cell_from_index((sc), (cid)); c->flags	&= ~GC_REACHABLE; 	}
 #define gc_is_reachable(sc, cid)	((cell_from_index((sc), (cid))->flags & GC_REACHABLE) ? true : false)
 
+#define gc_pin(sc, cid)			{	cell_t*	c	= cell_from_index((sc), (cid));	c->flags	|= GC_PINNED;		}
+#define gc_unpin(sc, cid)		{	cell_t* c	= cell_from_index((sc), (cid)); c->flags	&= ~GC_PINNED; 		}
+#define gc_is_pinned(sc, cid)		((cell_from_index((sc), (cid))->flags & GC_PINNED) ? true : false)
 
 /* printing */
 void		print_cell(state_t* s, cell_id_t c, uint32 level);
@@ -233,7 +229,9 @@ void		parse(state_t* state, const char* str);
 /* states */
 state_t*	state_new();
 void		state_release(state_t* s);
-void		state_call(state_t* s, cell_id_t fn, cell_id_t args);
+
+/* eval */
+cell_id_t	eval(state_t* s, cell_id_t env, cell_id_t expr);
 
 #ifdef __cplusplus
 }
