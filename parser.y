@@ -75,17 +75,15 @@ sexpr		::= CELL_FREE.				/* a free cell */
 sexpr		::= CELL_PAIR.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_CLOSURE.			/* closure */
+sexpr		::= CELL_LAMBDA.			/* lambda */
 sexpr		::= CELL_FFI.				/* foreign function interface */
-sexpr		::= CELL_ENVIRONMENT.			/* environment/frame */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }
 sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B); }
 sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B); }
 sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"),
-									   list_cons(s, B,//( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B,
-											( cell_type(s, C) == CELL_PAIR ) ? list_reverse_in_place(s, C) : C)); }
-
+									   list_cons(s, B, ( cell_type(s, C) == CELL_PAIR ) ? list_reverse_in_place(s, C) : C)); }
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
 
@@ -95,43 +93,15 @@ list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
 se_members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
 se_members(A)	::= list(B).				{ A = list_reverse_in_place(s, B); }
 
-// ; ;;...
+/* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
 be_members(A)	::= list(B).				{ A = list_reverse_in_place(s, B); }
 
-// { ... }
+/* { ... } */
 member_list(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
 member_list(A)	::= be_members(B).			{ A = list_new(s, (list_length(s, B) == 1) ? list_head(s, B) : B); }
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(s, C) == 1) ? list_head(s, C) : C,  B); }
 
-/*
-sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), list_reverse_in_place(s, B)); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), list_reverse_in_place(s, B)); }
-
-iexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"), list_cons(s, B, C)); }
-
-ilist(A)	::= atom(B).				{ A = B; }
-ilist(A)	::= sexpr(B).				{ A = B; }
-ilist(A)	::= iexpr(B).				{ A = B; }
-
-list(A)		::= ilist(B).				{ A = B; }
-list(A)		::= list(B) ilist(C).			{ A = ( cell_type(s, B) == CELL_PAIR ) ? list_cons(s, C, B) : list_cons(s, C, list_new(s, B)); }
-
-se_members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-se_members(A)	::= list(B).				{ A = ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B; }
-
-// ; ;;...
-sc		::= SEMICOL.
-sc		::= sc SEMICOL.
-
-be_members(A)	::= list(B).				{ A = ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B; }
-
-// { ... }
-member_list(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-member_list(A)	::= be_members(B).			{ A = list_new(s, B); }
-member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, C, B); }
-*/
-
+/* TODO: operator precedence */

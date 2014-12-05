@@ -204,10 +204,9 @@ token_to_string(state_t* s, const char* b) {
 }
 
 
-state_t*
-parse(const char* str)
+void
+parse(state_t* state, const char* str)
 {
-	state_t*	state	= (state_t*)malloc(sizeof(state_t));
 	void*		parser;
 	size_t		line	= 1;
 	const char*	ts	= str;
@@ -216,8 +215,6 @@ parse(const char* str)
 	int		cs	= 0;
 	char		tmp[4096];
 	cell_id_t	nil	= { 0 };
-
-	memset(state, 0, sizeof(state_t));
 
 	parser	= parser_alloc(malloc);
 
@@ -241,7 +238,4 @@ parse(const char* str)
 	parser_advance(parser, 0, nil, state);
 
 	parser_free(parser, free);
-
-	return state;
-
 }

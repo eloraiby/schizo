@@ -8,8 +8,8 @@
 #define CELL_PAIR                       8
 #define CELL_VECTOR                     9
 #define CELL_CLOSURE                   10
-#define CELL_FFI                       11
-#define CELL_ENVIRONMENT               12
+#define CELL_LAMBDA                    11
+#define CELL_FFI                       12
 #define LPAR                           13
 #define RPAR                           14
 #define LBR                            15

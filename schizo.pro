@@ -20,10 +20,7 @@ SOURCES += \
     main.c \
     lexer.c \
     parser.c \
-    cell.c \
-    atom.c \
-    list.c \
-    environment.c
+    schizo.c
 
 lexer.target = lexer.c
 lexer.commands = ragel -C -o $$PWD/lexer.c $$PWD/lexer.rl
@@ -45,5 +42,4 @@ OTHER_FILES += \
 HEADERS += \
     parser.h \
     schizo.h \
-    vector.h \
-    platform.h
+    vector.h

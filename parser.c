@@ -284,8 +284,8 @@ void parserTrace(FILE *TraceFILE, char *zTracePrompt){
 static const char *const yyTokenName[] = {
   "$",             "ATOM_SYMBOL",   "ATOM_BOOL",     "ATOM_CHAR",   
   "ATOM_SINT64",   "ATOM_REAL64",   "ATOM_STRING",   "CELL_FREE",   
-  "CELL_PAIR",     "CELL_VECTOR",   "CELL_CLOSURE",  "CELL_FFI",    
-  "CELL_ENVIRONMENT",  "LPAR",          "RPAR",          "LBR",         
+  "CELL_PAIR",     "CELL_VECTOR",   "CELL_CLOSURE",  "CELL_LAMBDA", 
+  "CELL_FFI",      "LPAR",          "RPAR",          "LBR",         
   "RBR",           "LSQB",          "RSQB",          "SEMICOL",     
   "error",         "cell",          "program",       "cell_list",   
   "atom",          "sexpr",         "se_members",    "member_list", 
@@ -309,8 +309,8 @@ static const char *const yyRuleName[] = {
  /*   9 */ "sexpr ::= CELL_PAIR",
  /*  10 */ "sexpr ::= CELL_VECTOR",
  /*  11 */ "sexpr ::= CELL_CLOSURE",
- /*  12 */ "sexpr ::= CELL_FFI",
- /*  13 */ "sexpr ::= CELL_ENVIRONMENT",
+ /*  12 */ "sexpr ::= CELL_LAMBDA",
+ /*  13 */ "sexpr ::= CELL_FFI",
  /*  14 */ "sexpr ::= LPAR se_members RPAR",
  /*  15 */ "sexpr ::= LBR member_list RBR",
  /*  16 */ "sexpr ::= LBR member_list sc RBR",
@@ -760,49 +760,48 @@ static void yy_reduce(
       case 17: /* sexpr ::= ilist LSQB member_list RSQB */
 #line 85 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_cons(s, atom_new_symbol(s, "item"),
-									   list_cons(s, yymsp[-3].minor.yy0,//( cell_type(s, yymsp[-3].minor.yy0) == CELL_PAIR ) ? list_reverse_in_place(s, yymsp[-3].minor.yy0) : yymsp[-3].minor.yy0,
-											( cell_type(s, yymsp[-1].minor.yy0) == CELL_PAIR ) ? list_reverse_in_place(s, yymsp[-1].minor.yy0) : yymsp[-1].minor.yy0)); }
-#line 766 "/home/aifu/Projects/schizo/parser.c"
+									   list_cons(s, yymsp[-3].minor.yy0, ( cell_type(s, yymsp[-1].minor.yy0) == CELL_PAIR ) ? list_reverse_in_place(s, yymsp[-1].minor.yy0) : yymsp[-1].minor.yy0)); }
+#line 765 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 20: /* list ::= ilist */
-#line 92 "/home/aifu/Projects/schizo/parser.y"
+#line 90 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_new(s, yymsp[0].minor.yy0); }
-#line 771 "/home/aifu/Projects/schizo/parser.c"
+#line 770 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 21: /* list ::= list ilist */
-#line 93 "/home/aifu/Projects/schizo/parser.y"
+#line 91 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_cons(s, yymsp[0].minor.yy0, yymsp[-1].minor.yy0); }
-#line 776 "/home/aifu/Projects/schizo/parser.c"
+#line 775 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 22: /* se_members ::= */
       case 27: /* member_list ::= */ yytestcase(yyruleno==27);
-#line 95 "/home/aifu/Projects/schizo/parser.y"
+#line 93 "/home/aifu/Projects/schizo/parser.y"
 { cell_id_t nil = { 0 }; yygotominor.yy0 = list_new(s, nil); }
-#line 782 "/home/aifu/Projects/schizo/parser.c"
+#line 781 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 23: /* se_members ::= list */
       case 26: /* be_members ::= list */ yytestcase(yyruleno==26);
-#line 96 "/home/aifu/Projects/schizo/parser.y"
+#line 94 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_reverse_in_place(s, yymsp[0].minor.yy0); }
-#line 788 "/home/aifu/Projects/schizo/parser.c"
+#line 787 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 28: /* member_list ::= be_members */
-#line 106 "/home/aifu/Projects/schizo/parser.y"
+#line 104 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_new(s, (list_length(s, yymsp[0].minor.yy0) == 1) ? list_head(s, yymsp[0].minor.yy0) : yymsp[0].minor.yy0); }
-#line 793 "/home/aifu/Projects/schizo/parser.c"
+#line 792 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 29: /* member_list ::= member_list sc be_members */
-#line 107 "/home/aifu/Projects/schizo/parser.y"
+#line 105 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_cons(s, (list_length(s, yymsp[0].minor.yy0) == 1) ? list_head(s, yymsp[0].minor.yy0) : yymsp[0].minor.yy0,  yymsp[-2].minor.yy0); }
-#line 798 "/home/aifu/Projects/schizo/parser.c"
+#line 797 "/home/aifu/Projects/schizo/parser.c"
         break;
       default:
       /* (8) sexpr ::= CELL_FREE */ yytestcase(yyruleno==8);
       /* (9) sexpr ::= CELL_PAIR */ yytestcase(yyruleno==9);
       /* (10) sexpr ::= CELL_VECTOR */ yytestcase(yyruleno==10);
       /* (11) sexpr ::= CELL_CLOSURE */ yytestcase(yyruleno==11);
-      /* (12) sexpr ::= CELL_FFI */ yytestcase(yyruleno==12);
-      /* (13) sexpr ::= CELL_ENVIRONMENT */ yytestcase(yyruleno==13);
+      /* (12) sexpr ::= CELL_LAMBDA */ yytestcase(yyruleno==12);
+      /* (13) sexpr ::= CELL_FFI */ yytestcase(yyruleno==13);
       /* (24) sc ::= SEMICOL */ yytestcase(yyruleno==24);
       /* (25) sc ::= sc SEMICOL */ yytestcase(yyruleno==25);
         break;
@@ -873,7 +872,7 @@ static void yy_syntax_error(
 			printf("possible token: %s\n", yyTokenName[i]);
 		}
 	}
-#line 877 "/home/aifu/Projects/schizo/parser.c"
+#line 876 "/home/aifu/Projects/schizo/parser.c"
   parserARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 

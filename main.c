@@ -64,13 +64,14 @@ main(int argc,
 
 	};
 
-	state_t*	state;
+	state_t*	state	= state_new();
 
 	for(size_t i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
-		state	= parse(prog[i]);
+		parse(state, prog[i]);
 		print_cell(state, state->root, 0);
 		fprintf(stderr, "\n");
 	}
 
+	state_release(state);
 	return 0;
 }

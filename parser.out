@@ -11,8 +11,8 @@ State 0:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= * LBR member_list sc RBR
@@ -30,8 +30,8 @@ State 0:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                        program accept
@@ -50,8 +50,8 @@ State 1:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= * LBR member_list sc RBR
@@ -76,8 +76,8 @@ State 1:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                           atom shift  20
@@ -99,8 +99,8 @@ State 2:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= LBR * member_list RBR
@@ -126,8 +126,8 @@ State 2:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                           atom shift  20
@@ -149,8 +149,8 @@ State 3:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= * LBR member_list sc RBR
@@ -174,8 +174,8 @@ State 3:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                            RBR shift  23
@@ -197,8 +197,8 @@ State 4:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= * LBR member_list sc RBR
@@ -221,8 +221,8 @@ State 4:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                        SEMICOL shift  18
@@ -243,8 +243,8 @@ State 5:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= LPAR * se_members RPAR
           sexpr ::= * LBR member_list RBR
@@ -267,8 +267,8 @@ State 5:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                           atom shift  20
@@ -289,8 +289,8 @@ State 6:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= * LBR member_list sc RBR
@@ -310,8 +310,8 @@ State 6:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                           atom shift  20
@@ -330,8 +330,8 @@ State 7:
           sexpr ::= * CELL_PAIR
           sexpr ::= * CELL_VECTOR
           sexpr ::= * CELL_CLOSURE
+          sexpr ::= * CELL_LAMBDA
           sexpr ::= * CELL_FFI
-          sexpr ::= * CELL_ENVIRONMENT
           sexpr ::= * LPAR se_members RPAR
           sexpr ::= * LBR member_list RBR
           sexpr ::= * LBR member_list sc RBR
@@ -351,8 +351,8 @@ State 7:
                      CELL_PAIR shift  30
                    CELL_VECTOR shift  29
                   CELL_CLOSURE shift  28
-                      CELL_FFI shift  27
-              CELL_ENVIRONMENT shift  26
+                   CELL_LAMBDA shift  27
+                      CELL_FFI shift  26
                           LPAR shift  5
                            LBR shift  2
                           atom shift  20
@@ -470,12 +470,12 @@ State 25:
                      {default} reduce 14
 
 State 26:
-     (13) sexpr ::= CELL_ENVIRONMENT *
+     (13) sexpr ::= CELL_FFI *
 
                      {default} reduce 13
 
 State 27:
-     (12) sexpr ::= CELL_FFI *
+     (12) sexpr ::= CELL_LAMBDA *
 
                      {default} reduce 12
 
@@ -542,8 +542,8 @@ Symbols:
     8: CELL_PAIR
     9: CELL_VECTOR
    10: CELL_CLOSURE
-   11: CELL_FFI
-   12: CELL_ENVIRONMENT
+   11: CELL_LAMBDA
+   12: CELL_FFI
    13: LPAR
    14: RPAR
    15: LBR
@@ -553,13 +553,13 @@ Symbols:
    19: SEMICOL
    20: error:
    21: cell:
-   22: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR
+   22: program: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR
    23: cell_list:
    24: atom: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING
-   25: sexpr: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR
-   26: se_members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR
-   27: member_list: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR SEMICOL
+   25: sexpr: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR
+   26: se_members: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR
+   27: member_list: <lambda> ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR SEMICOL
    28: sc: SEMICOL
-   29: ilist: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR
-   30: list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR
-   31: be_members: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_FFI CELL_ENVIRONMENT LPAR LBR
+   29: ilist: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR
+   30: list: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR
+   31: be_members: ATOM_SYMBOL ATOM_BOOL ATOM_CHAR ATOM_SINT64 ATOM_REAL64 ATOM_STRING CELL_FREE CELL_PAIR CELL_VECTOR CELL_CLOSURE CELL_LAMBDA CELL_FFI LPAR LBR
