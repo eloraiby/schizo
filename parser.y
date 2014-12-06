@@ -76,6 +76,7 @@ sexpr		::= CELL_PAIR.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_CLOSURE.			/* closure */
 sexpr		::= CELL_FFI.				/* foreign function interface */
+sexpr		::= CELL_LAMBDA.			/* lambda */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }

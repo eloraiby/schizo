@@ -76,9 +76,17 @@ typedef struct cell_id_t {
 	uint32		index;
 } cell_id_t;
 
-typedef struct ret_code_t {
-	sint32		code;
-} ret_code_t;
+/* return value of an evaluation */
+typedef enum {
+	EVAL_ERROR,
+	EVAL_ENV,
+	EVAL_DONE
+} EVAL_STATE;
+
+typedef struct retval_t {
+	EVAL_STATE	state;
+	cell_id_t	val;
+} retval_t;
 
 /* lists */
 typedef struct pair_t {
@@ -231,7 +239,7 @@ state_t*	state_new();
 void		state_release(state_t* s);
 
 /* eval */
-cell_id_t	eval(state_t* s, cell_id_t env, cell_id_t expr);
+retval_t	eval(state_t* s, cell_id_t env, cell_id_t expr);
 
 #ifdef __cplusplus
 }

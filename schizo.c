@@ -110,7 +110,7 @@ print_cell(state_t* s,
 	case ATOM_SYMBOL:
 		fprintf(stderr, "%s", c->object.symbol);
 		break;
-/*
+		/*
 	case ATOM_UNARY_OP:
 		fprintf(stderr, "%s", c->object.op);
 		break;
@@ -171,13 +171,13 @@ print_cell(state_t* s,
 *******************************************************************************/
 
 #define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_id_t \
-						atom_new_ ## TYPE(state_t* s, TYPE v) { \
-							cell_id_t id	= cell_alloc(s); \
-							cell_t* ret	= &s->gc_block.cells[id.index]; \
-							ret->type	= ENUM; \
-							ret->object.FIELD	= v; \
-							return id; \
-						}
+	atom_new_ ## TYPE(state_t* s, TYPE v) { \
+	cell_id_t id	= cell_alloc(s); \
+	cell_t* ret	= &s->gc_block.cells[id.index]; \
+	ret->type	= ENUM; \
+	ret->object.FIELD	= v; \
+	return id; \
+	}
 
 cell_id_t
 atom_new_symbol(state_t* s,
@@ -373,34 +373,101 @@ lookup(state_t* s,
 	}
 }
 
-static cell_id_t
+static INLINE cell_id_t
 define_symbol(state_t* s,
 	      cell_id_t env,
 	      cell_id_t sym,
 	      cell_id_t expr)
 {
-	cell_id_t	pair	= list_cons(s, sym, expr);
+	cell_id_t pair	= list_cons(s, sym, expr);
 	return list_cons(s, pair, env);
 }
 
-cell_id_t
+static INLINE retval_t
+retval(EVAL_STATE s,
+       cell_id_t val)
+{
+	retval_t	v = { s, val };
+	return v;
+}
+
+static cell_id_t
+make_closure(state_t* s,
+	     cell_id_t env,
+	     cell_id_t args,
+	     cell_id_t body)
+{
+	cell_id_t	closure	= cell_alloc(s);
+	cell_id_t	lambda	= cell_alloc(s);
+
+	cell_t*		cl_cell	= cell_from_index(s, closure);
+	cell_t*		lam_cell	= cell_from_index(s, lambda);
+
+	lam_cell->type	= CELL_LAMBDA;
+	lam_cell->object.lambda.syms	= args;
+	lam_cell->object.lambda.body	= body;
+
+	cl_cell->type	= CELL_CLOSURE;
+	cl_cell->object.closure.lambda	= lambda;
+	cl_cell->object.closure.env	= env;
+	return closure;
+}
+
+retval_t
 eval(state_t *s,
      cell_id_t env,
      cell_id_t expr)
 {
-	cell_t*	c = cell_from_index(s, expr);
-	switch( c->type ) {
-	case ATOM_BOOL:
-	case ATOM_CHAR:
-	case ATOM_SINT64:
-	case ATOM_REAL64:
-	case ATOM_STRING:
-	case CELL_CLOSURE:
-	case CELL_FFI:
-		return expr;
+	bool		done	= false;
 
-	case ATOM_SYMBOL:
-		return lookup(s, env, cell_from_index(s, expr)->object.symbol);
+	while( !done ) {
+		cell_t*	c = cell_from_index(s, expr);
+		switch( c->type ) {
+		case ATOM_BOOL:
+		case ATOM_CHAR:
+		case ATOM_SINT64:
+		case ATOM_REAL64:
+		case ATOM_STRING:
+		case CELL_CLOSURE:
+		case CELL_FFI:
+			return retval(EVAL_DONE,
+				      expr);
 
+		case ATOM_SYMBOL:
+			return retval(EVAL_DONE,
+				      lookup(s, env, cell_from_index(s, expr)->object.symbol));
+
+		case CELL_PAIR:	{
+			cell_t*		head	= cell_from_index(s, list_head(s, expr));
+			cell_id_t	tail	= list_tail(s, expr);
+
+			switch( head->type ) {
+			case ATOM_SYMBOL: {
+				const char*	symbol	= head->object.symbol;
+				if( strcmp(symbol, "lambda") == 0 ) {
+					if( list_length(s, tail) != 2 ) {
+						fprintf(stderr, "ERROR: missing args and/or body for lambda: lambda args body\n");
+						return retval(EVAL_ERROR,
+							      cell_nil());
+					} else {
+						return retval(EVAL_DONE,
+							      make_closure(s, env, list_head(s, tail), list_head(s, list_tail(s, tail))));
+					}
+				} else if( strcmp(symbol, "define") == 0 ) {
+
+					if( list_length(s, tail) == 0 ) {
+						fprintf(stderr, "ERROR: missing body for define: define binding body\n");
+						return retval(EVAL_ERROR,
+							      cell_nil());
+					} else {
+						return retval(EVAL_ENV,
+							      define_symbol(s, env, list_head(s, expr), list_tail(s, expr)));
+					}
+				}
+			}
+			}
+		}
+
+		}
 	}
 }
