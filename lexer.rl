@@ -118,7 +118,6 @@ extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* s
 									cs	= scanner_error;
 								};
 
-
 		# Only buffer the second item, first buffered by symbol. */
 		'('						{ ADVANCE_TOKEN( LPAR );};
 		')'						{ ADVANCE_TOKEN( RPAR );};

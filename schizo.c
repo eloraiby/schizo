@@ -351,3 +351,56 @@ state_release(state_t *s)
 	free(s);
 }
 
+/*******************************************************************************
+** eval
+*******************************************************************************/
+static cell_id_t
+lookup(state_t* s,
+       cell_id_t env,
+       const char* sym)
+{
+	cell_t*	pair	= cell_from_index(s, env);
+
+	while( pair != NULL && strcmp(sym, cell_from_index(s, pair->object.pair.head)->object.symbol) != 0 ) {
+		env	= list_tail(s, env);
+		pair	= cell_from_index(s, env);
+	}
+
+	if( pair == NULL ) {
+		return cell_nil();
+	} else {
+		return pair->object.pair.tail;
+	}
+}
+
+static cell_id_t
+define_symbol(state_t* s,
+	      cell_id_t env,
+	      cell_id_t sym,
+	      cell_id_t expr)
+{
+	cell_id_t	pair	= list_cons(s, sym, expr);
+	return list_cons(s, pair, env);
+}
+
+cell_id_t
+eval(state_t *s,
+     cell_id_t env,
+     cell_id_t expr)
+{
+	cell_t*	c = cell_from_index(s, expr);
+	switch( c->type ) {
+	case ATOM_BOOL:
+	case ATOM_CHAR:
+	case ATOM_SINT64:
+	case ATOM_REAL64:
+	case ATOM_STRING:
+	case CELL_CLOSURE:
+	case CELL_FFI:
+		return expr;
+
+	case ATOM_SYMBOL:
+		return lookup(s, env, cell_from_index(s, expr)->object.symbol);
+
+	}
+}
