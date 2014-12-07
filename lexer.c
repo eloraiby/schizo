@@ -33,7 +33,7 @@
 			state->token_line	= line; \
 			copy_token(ts, te, tmp); \
 			state->current_cell	= token_to_##A(state, tmp); \
-			parser_advance(parser, state->gc_block.cells[state->current_cell.index].type, state->current_cell, state)
+			parser_advance(parser, state->current_cell->type, state->current_cell, state)
 
 #define ADVANCE_TOKEN(A)	parser_advance(parser, A, nil, state)
 
@@ -49,7 +49,7 @@
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));
-extern void	parser_advance(void *yyp, int yymajor, cell_id_t yyminor, state_t* state);
+extern void	parser_advance(void *yyp, int yymajor, cell_ptr_t yyminor, state_t* state);
 
 
 #line 56 "/home/aifu/Projects/schizo/lexer.c"
@@ -206,24 +206,24 @@ copy_token(const char* ts, const char *te, char* dst) {
 	return index;
 }
 
-static cell_id_t
+static cell_ptr_t
 token_to_symbol(state_t* s, const char* b) {
 	return atom_new_symbol(s, b);
 }
 
 /*
-static cell_id_t
+static cell_ptr_t
 token_to_unary_op(state_t* s, const char* op) {
 	return atom_new_unary_op(s, op);
 }
 
-static cell_id_t
+static cell_ptr_t
 token_to_binary_op(state_t* s, const char* op) {
 	return atom_new_binary_op(s, op);
 }
 */
 
-static cell_id_t
+static cell_ptr_t
 token_to_boolean(state_t* s, const char* b) {
 	if( !strcmp(b, "#t") ) {
 		return atom_new_boolean(s, true);
@@ -232,12 +232,12 @@ token_to_boolean(state_t* s, const char* b) {
 	}
 }
 
-static cell_id_t
+static cell_ptr_t
 token_to_char(state_t* s, const char* b) {
 	return atom_new_char(s, *b);
 }
 
-static cell_id_t
+static cell_ptr_t
 token_to_sint64(state_t* s, const char* b) {
 	sint64	v	= 0;
 	sscanf(b, "%ld", &v);
@@ -245,7 +245,7 @@ token_to_sint64(state_t* s, const char* b) {
 	return atom_new_sint64(s, v);
 }
 
-static cell_id_t
+static cell_ptr_t
 token_to_real64(state_t* s, const char* b) {
 	real64	v	= 0;
 	sscanf(b, "%lf", &v);
@@ -253,7 +253,7 @@ token_to_real64(state_t* s, const char* b) {
 	return atom_new_real64(s, v);
 }
 
-static cell_id_t
+static cell_ptr_t
 token_to_string(state_t* s, const char* b) {
 	return atom_new_string(s, b);
 }
@@ -269,7 +269,7 @@ parse(state_t* state, const char* str)
 	int		act	= 0;
 	int		cs	= 0;
 	char		tmp[4096];
-	cell_id_t	nil	= { 0 };
+	cell_ptr_t	nil	= { 0 };
 
 	parser	= parser_alloc(malloc);
 

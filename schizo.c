@@ -24,9 +24,9 @@
 /*******************************************************************************
 ** memory management
 *******************************************************************************/
-#define INITIAL_CELL_COUNT	2	/* this should be at least 2 (index 0 is reserved for NIL) */
+#define INITIAL_CELL_COUNT	128 * 1024	/* this should be at least 2 */
 
-cell_id_t
+cell_ptr_t
 cell_alloc(state_t* s) {
 	/*
 	** TODO: handle reallocation, calling garbage collector and the rest...
@@ -35,46 +35,46 @@ cell_alloc(state_t* s) {
 	if( s->gc_block.cells == NULL ) {
 		s->gc_block.count	= INITIAL_CELL_COUNT;
 		s->gc_block.free_count	= INITIAL_CELL_COUNT - 1;
-		s->gc_block.free_list	= cell_id(1);	/* 0 is reserved for the nil cell */
 		s->gc_block.cells	= (cell_t*)malloc(sizeof(cell_t) * s->gc_block.count);
 		memset(s->gc_block.cells, 0, sizeof(cell_t) * s->gc_block.free_count);
 
-		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
+		for( uint32 i = 0; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_PAIR;
-			s->gc_block.cells[i].object.pair.head	= cell_nil();
-			s->gc_block.cells[i].object.pair.tail	= cell_id(i + 1);
+			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
+			s->gc_block.cells[i].object.pair.tail	= &(s->gc_block.cells[i + 1]);
 		}
 
-		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.pair.tail	= cell_nil();
+		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.pair.tail	= NIL_CELL;
 
 		/* first cell, is the nil cell */
 		s->gc_block.cells[0].type	= CELL_PAIR;
+		s->gc_block.free_list	= s->gc_block.cells;	/* free_list is the allocated lists */
 
-	} else if( s->gc_block.free_list.index == NIL_CELL ) {
+	} else if( s->gc_block.free_list == NIL_CELL ) {
 
 		/* TODO: call garbage collector before trigger a reallocation */
-
+		uint32	old_count	= s->gc_block.count;
 		s->gc_block.free_count	= s->gc_block.count;
-		s->gc_block.free_list	= cell_id(s->gc_block.count);
 		s->gc_block.count	*= 2;
 		s->gc_block.cells	= (cell_t*)realloc(s->gc_block.cells, sizeof(cell_t) * s->gc_block.count);
+		s->gc_block.free_list	= &(s->gc_block.cells[old_count]);
 
 		if( s->gc_block.cells == NULL ) {
 			fprintf(stderr, "Fatal error: Not enough memory...\n");
 			exit(1);
 		}
 
-		for( uint32 i = s->gc_block.free_list.index; i < s->gc_block.count; ++i ) {
+		for( uint32 i = old_count; i < s->gc_block.count; ++i ) {
 			s->gc_block.cells[i].type	= CELL_PAIR;
-			s->gc_block.cells[i].object.pair.head	= cell_nil();
-			s->gc_block.cells[i].object.pair.tail	= cell_id(i + 1);
+			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
+			s->gc_block.cells[i].object.pair.tail	= &(s->gc_block.cells[i + 1]);
 		}
 
-		s->gc_block.cells[s->gc_block.count - 1].object.pair.tail	= cell_nil();
+		s->gc_block.cells[s->gc_block.count - 1].object.pair.tail	= NIL_CELL;
 	}
 
-	cell_id_t	c = s->gc_block.free_list;
-	s->gc_block.free_list	= list_tail(s, c);
+	cell_ptr_t	c = s->gc_block.free_list;
+	s->gc_block.free_list	= list_tail(c);
 	--(s->gc_block.free_count);
 	return c;
 }
@@ -92,11 +92,9 @@ print_level(uint32 level) {
 
 void
 print_cell(state_t* s,
-	   cell_id_t cid,
+	   cell_ptr_t c,
 	   uint32 level)
 {
-	cell_t*	c	= &s->gc_block.cells[cid.index];
-
 	print_level(level);
 	switch(c->type) {
 	case ATOM_BOOL:
@@ -144,9 +142,8 @@ print_cell(state_t* s,
 		}
 
 		if( !is_nil(c->object.pair.tail) ) {
-			cell_id_t id	= c->object.pair.tail;
-			while( !is_nil(id) ) {
-				cell_t* n = &s->gc_block.cells[id.index];
+			cell_ptr_t n	= c->object.pair.tail;
+			while( !is_nil(n) ) {
 				if( !is_nil(n->object.pair.head) ) {
 					print_cell(s, n->object.pair.head, 1);
 				} else {
@@ -154,7 +151,7 @@ print_cell(state_t* s,
 					fprintf(stderr, "nil");
 				}
 
-				id	= list_tail(s, id);
+				n	= list_tail(n);
 			}
 		}
 		fprintf(stderr, ")");
@@ -170,89 +167,83 @@ print_cell(state_t* s,
 ** atoms
 *******************************************************************************/
 
-#define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_id_t \
+#define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_ptr_t \
 	atom_new_ ## TYPE(state_t* s, TYPE v) { \
-	cell_id_t id	= cell_alloc(s); \
-	cell_t* ret	= &s->gc_block.cells[id.index]; \
+	cell_ptr_t ret	= cell_alloc(s); \
 	ret->type	= ENUM; \
 	ret->object.FIELD	= v; \
-	return id; \
+	return ret; \
 	}
 
-cell_id_t
+cell_ptr_t
 atom_new_symbol(state_t* s,
 		const char* b)
 {
 	size_t len	= strlen(b);
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= cell_alloc(s);
 
 	ret->type	= ATOM_SYMBOL;
 	ret->object.symbol	= (char*)(malloc(len + 1));
 	memcpy(ret->object.symbol, b, len + 1);
-	return id;
+	return ret;
 }
 
-cell_id_t
+cell_ptr_t
 atom_new_boolean(state_t* s,
 		 bool b)
 {
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= cell_alloc(s);
 	ret->type	= ATOM_BOOL;
 	ret->object.boolean	= b;
-	return id;
+	return ret;
 }
 
-cell_id_t
+cell_ptr_t
 atom_new_char(state_t* s,
 	      char c)
 {
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= cell_alloc(s);
 	ret->type	= ATOM_CHAR;
 	ret->object.ch		= c;
-	return id;
+	return ret;
 }
 
 IMPLEMENT_TYPE_CELL(sint64, s64, ATOM_SINT64)
 IMPLEMENT_TYPE_CELL(real64, r64, ATOM_REAL64)
 
-cell_id_t
+cell_ptr_t
 atom_new_string(state_t* s,
 		const char* b)
 {
 	size_t len	= strlen(b);
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= cell_alloc(s);
 
 	ret->type	= ATOM_STRING;
 	ret->object.string	= (char*)(malloc(len + 1));
 	memcpy(ret->object.string, b, len + 1);
-	return id;
+	return ret;
 }
 
-cell_id_t
+cell_ptr_t
 schizo_error(state_t* s,
 	     const char* error)
 {
 	size_t len	= strlen(error);
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= cell_alloc(s);
 
 	ret->type	= ATOM_ERROR;
 	ret->object.string	= (char*)(malloc(len + 1));
 	memcpy(ret->object.string, error, len + 1);
-	return id;
+	return ret;
 }
 
 /*
-cell_id_t
+cell_ptr_t
 atom_new_unary_op(state_t* s,
 		  const char* op)
 {
 	size_t len	= strlen(op);
-	cell_id_t id	= cell_alloc(s);
+	cell_ptr_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 
 	ret->type	= ATOM_UNARY_OP;
@@ -262,12 +253,12 @@ atom_new_unary_op(state_t* s,
 
 }
 
-cell_id_t
+cell_ptr_t
 atom_new_binary_op(state_t* s,
 		   const char* op)
 {
 	size_t len	= strlen(op);
-	cell_id_t id	= cell_alloc(s);
+	cell_ptr_t id	= cell_alloc(s);
 	cell_t*	ret	= &s->gc_block.cells[id.index];
 
 	ret->type	= ATOM_BINARY_OP;
@@ -282,219 +273,174 @@ atom_new_binary_op(state_t* s,
 ** lists
 *******************************************************************************/
 
-cell_id_t
+cell_ptr_t
 list_new(state_t* s,
-	 cell_id_t head)
+	 cell_ptr_t head)
 {
-	cell_id_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= cell_alloc(s);
 	ret->type	= CELL_PAIR;
 	ret->object.pair.head	= head;
-	ret->object.pair.tail	= cell_nil();
-	return id;
+	ret->object.pair.tail	= NIL_CELL;
+	return ret;
 }
 
-cell_id_t
+cell_ptr_t
 list_cons(state_t* s,
-	  cell_id_t head,
-	  cell_id_t tail)
+	  cell_ptr_t head,
+	  cell_ptr_t tail)
 {
-	cell_id_t id	= list_new(s, head);
-	cell_t* ret	= &s->gc_block.cells[id.index];
+	cell_ptr_t ret	= list_new(s, head);
 
-	assert( cell_from_index(s, tail)->type == CELL_PAIR );
-
+	assert( tail == NIL_CELL || tail->type == CELL_PAIR );
 	ret->object.pair.tail	= tail;
-	return id;
+
+	return ret;
 }
 
 uint32
-list_length(state_t *s, cell_id_t list)
+list_length(cell_ptr_t list)
 {
-	cell_id_t	curr	= list;
+	cell_ptr_t	curr	= list;
 	uint32		len	= 0;
 
 	while( !is_nil(curr) ) {
-		assert( cell_from_index(s, list)->type == CELL_PAIR );
+		assert( list->type == CELL_PAIR );
 		++len;
-		curr	= list_tail(s, curr);
+		curr	= list_tail(curr);
 	}
 	return len;
 }
 
-cell_id_t
-list_reverse_in_place(state_t *s,
-		      cell_id_t list)
+cell_ptr_t
+list_reverse_in_place(cell_ptr_t list)
 {
 	if( !is_nil(list) ) {
-		assert( cell_from_index(s, list)->type == CELL_PAIR );
+		assert( list->type == CELL_PAIR );
 
-		cell_t*		c	= cell_from_index(s, list);
-		cell_id_t	current	= list;
-		cell_id_t	next	= c->object.pair.tail;
+		cell_ptr_t	curr	= list;
+		cell_ptr_t	next	= list_tail(curr);
 		while( !is_nil(next) ) {
-			cell_t*		n	= cell_from_index(s, next);
-			assert( cell_from_index(s, list)->type == CELL_PAIR );
+			assert( curr->type == CELL_PAIR );
 
-			cell_id_t	tmp	= n->object.pair.tail;
+			cell_ptr_t	tmp	= list_tail(next);
 
-			n->object.pair.tail	= current;
-			c->object.pair.tail	= tmp;
-			current		= next;
+			next->object.pair.tail	= curr;
+
+			curr		= next;
 			next		= tmp;
 		}
-		return current;
+
+		list->object.pair.tail	= NIL_CELL;
+		return curr;
 	} else {
 		return list;
 	}
 }
 
-cell_id_t
+cell_ptr_t
 list_zip(state_t* s,
-	 cell_id_t l0,
-	 cell_id_t l1)
+	 cell_ptr_t l0,
+	 cell_ptr_t l1)
 {
-	cell_id_t	res	= cell_nil();
-	while( !is_nil(list_head(s, l0)) && !is_nil(list_head(s, l1)) ) {
-		res	= list_cons(s, list_make_pair(s, list_head(s, l0), list_head(s, l1)), res);
-		l0	= list_tail(s, l0);
-		l1	= list_tail(s, l1);
+	cell_ptr_t	res	= NIL_CELL;
+	while( !is_nil(list_head(l0)) && !is_nil(list_head(l1)) ) {
+		res	= list_cons(s, list_make_pair(s, list_head(l0), list_head(l1)), res);
+		l0	= list_tail(l0);
+		l1	= list_tail(l1);
 	}
 
 	if( is_nil(l0) != is_nil(l1) ) {
 		return schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other");
 	} else {
-		return list_reverse_in_place(s, res);
+		return list_reverse_in_place(res);
 	}
-}
-
-/*******************************************************************************
-** schizo state
-*******************************************************************************/
-state_t*
-state_new()
-{
-	state_t*	state	= (state_t*)malloc(sizeof(state_t));
-	memset(state, 0, sizeof(state_t));
-	return state;
-}
-
-void
-state_release(state_t *s)
-{
-	free(s);
 }
 
 /*******************************************************************************
 ** eval
 *******************************************************************************/
-static cell_id_t
-symbol_lookup(state_t* s,
-	      cell_id_t env,
-	      const char* sym)
-{
-	cell_t*	pair	= cell_from_index(s, env);
-
-	while( pair != NULL && strcmp(sym, cell_from_index(s, pair->object.pair.head)->object.symbol) != 0 ) {
-		env	= list_tail(s, env);
-		pair	= cell_from_index(s, env);
-	}
-
-	if( pair == NULL ) {
-		return cell_nil();
-	} else {
-		return pair->object.pair.tail;
-	}
-}
-
-static INLINE cell_id_t
-symbol_define(state_t* s,
-	      cell_id_t env,
-	      cell_id_t sym,
-	      cell_id_t expr)
-{
-	cell_id_t pair	= list_cons(s, sym, expr);
-	return list_cons(s, pair, env);
-}
-
 static INLINE retval_t
-retval(cell_id_t env,
-       cell_id_t exp)
+retval(cell_ptr_t env,
+       cell_ptr_t exp)
 {
 	retval_t	v = { env, exp };
 	return v;
 }
 
-static cell_id_t
-make_closure(state_t* s,
-	     cell_id_t env,
-	     cell_id_t args)
+static cell_ptr_t
+symbol_lookup(cell_ptr_t env,
+	      const char* sym)
 {
-	cell_id_t	syms	= list_head(s, args);
-	cell_id_t	body	= list_head(s, list_tail(s, args));
+	cell_ptr_t	pair	= list_head(env);
 
-	cell_id_t	closure	= cell_alloc(s);
-	cell_id_t	lambda	= cell_alloc(s);
+	while( pair != NIL_CELL && strcmp(sym, list_head(pair)->object.symbol) != 0 ) {
+		env	= list_tail(env);
+		pair	= list_head(env);
+	}
 
-	cell_t*		cl_cell		= cell_from_index(s, closure);
-	cell_t*		lam_cell	= cell_from_index(s, lambda);
-
-	lam_cell->type	= CELL_LAMBDA;
-	lam_cell->object.lambda.syms	= syms;
-	lam_cell->object.lambda.body	= body;
-
-	cl_cell->type	= CELL_CLOSURE;
-	cl_cell->object.closure.lambda	= lambda;
-	cl_cell->object.closure.env	= env;
-	return closure;
+	if( pair == NIL_CELL ) {
+		return NIL_CELL;
+	} else {
+		if( list_tail(pair) != NIL_CELL ) {
+			return list_head(list_tail(pair));
+		} else {
+			return NIL_CELL;
+		}
+	}
 }
 
-static cell_id_t
+static cell_ptr_t
 eval_list(state_t* s,
-	  cell_id_t env,
-	  cell_id_t expr)
+	  cell_ptr_t env,
+	  cell_ptr_t expr)
 {
-	cell_id_t	res	= cell_nil();
+	cell_ptr_t	res	= NIL_CELL;
 	while( !is_nil(expr) ) {
-		res	= list_cons(s, eval(s, env, list_head(s, expr)).exp, res);
-		expr	= list_tail(s, expr);
+		res	= list_cons(s, eval(s, env, list_head(expr)).exp, res);
+		expr	= list_tail(expr);
 	}
-	return list_reverse_in_place(s, res);
+	return list_reverse_in_place(res);
 }
 
 retval_t
 eval(state_t *s,
-     cell_id_t env,
-     cell_id_t exp)
+     cell_ptr_t env,
+     cell_ptr_t exp)
 {
-	while( true ) {
-		cell_t*	c = cell_from_index(s, exp);
-		switch( c->type ) {
+	while( exp != NIL_CELL ) {	/* not a NIL_CELL */
+		switch( exp->type ) {
 		case ATOM_BOOL:
 		case ATOM_CHAR:
 		case ATOM_SINT64:
 		case ATOM_REAL64:
 		case ATOM_STRING:
+		case ATOM_ERROR:
 		case CELL_CLOSURE:
 		case CELL_FFI:
+		case CELL_QUOTE:
 			return retval(env, exp);
 
 		case ATOM_SYMBOL:
-			return retval(env, symbol_lookup(s, env, cell_from_index(s, exp)->object.symbol));
+			return retval(env, symbol_lookup(env, exp->object.symbol));
 
 		case CELL_PAIR:	{
-			retval_t	val	= eval(s, env, list_head(s, exp));
+			retval_t	val	= eval(s, env, list_head(exp));
 
-			cell_t*		head	= cell_from_index(s, val.exp);
-			cell_id_t	tail	= list_tail(s, exp);
+			cell_ptr_t	head	= val.exp;
+
+			if( head == NIL_CELL ) {
+				return retval(env, NIL_CELL);
+			}
+
+			cell_ptr_t	tail	= list_tail(exp);
 
 			switch( head->type ) {
 			case CELL_FFI:
 				if( head->flags & EVAL_ARGS ) {
-					uint32	l	= list_length(s, tail);
-					if( l != head->object.ffi.arg_count ) {
+					uint32	l	= list_length(tail);
+					if( head->object.ffi.arg_count > 0 && l != head->object.ffi.arg_count ) {
 						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, head->object.ffi.arg_count);
-						return retval(env, cell_nil());
+						return retval(env, NIL_CELL);
 					} else {
 						return head->object.ffi.proc(s, env, eval_list(s, env, tail));
 					}
@@ -505,36 +451,36 @@ eval(state_t *s,
 				}
 				break;
 			case CELL_CLOSURE: {
-				cell_t*	lambda	= cell_from_index(s, head->object.closure.lambda);
+				cell_ptr_t lambda	= head->object.closure.lambda;
 				env	= head->object.closure.env;
 
 				/* evaluate the arguments and zip them */
-				if( list_length(s, tail) != list_length(s, lambda->object.lambda.syms) ) {
+				if( list_length(tail) != list_length(lambda->object.lambda.syms) ) {
 					return retval(env, schizo_error(s, "ERROR: closure arguments do not match given arguments"));
 				}
-				cell_id_t	args	= eval_list(s, env, tail);
-				cell_id_t	syms	= lambda->object.lambda.syms;
+				cell_ptr_t	args	= eval_list(s, env, tail);
+				cell_ptr_t	syms	= lambda->object.lambda.syms;
 
-				while( !is_nil(list_head(s, syms)) && !is_nil(list_head(s, args)) ) {
-					env	= list_cons(s, list_make_pair(s, list_head(s, syms), list_head(s, args)), env);
-					args	= list_tail(s, args);
-					syms	= list_tail(s, syms);
+				while( !is_nil(list_head(syms)) && !is_nil(list_head(args)) ) {
+					env	= list_cons(s, list_make_pair(s, list_head(syms), list_head(args)), env);
+					args	= list_tail(args);
+					syms	= list_tail(syms);
 				}
 
 				if( is_nil(syms) != is_nil(args) ) {
 					return retval(env, schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
 					/* all good, evaluate the body(*) */
-					cell_id_t	body	= lambda->object.lambda.body;
-					cell_id_t	next	= list_tail(s, body);
+					cell_ptr_t	body	= lambda->object.lambda.body;
+					cell_ptr_t	next	= list_tail(body);
 
-					exp	= list_head(s, body);
+					exp	= list_head(body);
 
 					while( !is_nil(next) ) {
 						retval_t r	= eval(s, env, exp);	/* never return a tail call */
 						env		= r.env;
-						exp		= list_head(s, next);
-						next		= list_tail(s, next);
+						exp		= list_head(next);
+						next		= list_tail(next);
 					}
 
 					/* now the tail call (env and exp are set) */
@@ -542,11 +488,12 @@ eval(state_t *s,
 				break;
 			}
 
-
 			default:
+				/* more error handling */
 				assert(0);
 				break;
 			}
+			break;
 		}
 
 		default:
@@ -554,4 +501,107 @@ eval(state_t *s,
 			break;
 		}
 	}
+
+	return retval(env, NIL_CELL);
+}
+
+/*******************************************************************************
+** core functions
+*******************************************************************************/
+
+/**
+ * @brief symbol_define
+ * @param s
+ * @param env
+ * @param args
+ * @return
+ */
+static retval_t
+symbol_define(state_t* s,
+	      cell_ptr_t env,
+	      cell_ptr_t args)
+{
+	cell_ptr_t sym	= list_head(args);
+	cell_ptr_t body	= list_head(list_tail(args));
+
+	cell_ptr_t pair	= list_make_pair(s, sym, body);
+	env	= list_cons(s, pair, env);
+	return retval(env, NIL_CELL);
+}
+
+/**
+ * @brief make_closure
+ * @param s
+ * @param env
+ * @param args
+ * @return
+ */
+static retval_t
+make_closure(state_t* s,
+	     cell_ptr_t env,
+	     cell_ptr_t args)
+{
+	cell_ptr_t	syms	= list_head(args);
+	cell_ptr_t	body	= list_tail(args);
+
+	cell_ptr_t	closure	= cell_alloc(s);
+	cell_ptr_t	lambda	= cell_alloc(s);
+
+	lambda->type	= CELL_LAMBDA;
+	lambda->object.lambda.syms	= syms;
+	lambda->object.lambda.body	= body;
+
+	closure->type	= CELL_CLOSURE;
+	closure->object.closure.lambda	= lambda;
+	closure->object.closure.env	= env;
+	return retval(env, closure);
+}
+
+static retval_t
+display(state_t* s,
+	cell_ptr_t env,
+	cell_ptr_t args)
+{
+	print_cell(s, args, 0);
+	return retval(env, NIL_CELL);
+}
+
+/*******************************************************************************
+** schizo state
+*******************************************************************************/
+void
+state_add_ffi(state_t *s,
+	      bool eval_args,
+	      const char* sym,
+	      ffi_call_t call,
+	      sint32 arg_count)
+{
+	cell_ptr_t	c	= atom_new_symbol(s, sym);
+	cell_ptr_t	f	= cell_alloc(s);
+	f->type	= CELL_FFI;
+	f->flags	|= eval_args ? EVAL_ARGS : 0;
+	f->object.ffi.arg_count	= arg_count;
+	f->object.ffi.proc	= call;
+
+	cell_ptr_t	p	= list_make_pair(s, c, f);
+	s->environment.env	= list_cons(s, p, s->environment.env);
+}
+
+state_t*
+state_new()
+{
+	state_t*	state	= (state_t*)malloc(sizeof(state_t));
+	memset(state, 0, sizeof(state_t));
+
+	state_add_ffi(state, false, "lambda", make_closure, -1);
+	state_add_ffi(state, false, "define", symbol_define, 2);
+	state_add_ffi(state, true, "display", display, 1);
+
+	return state;
+}
+
+void
+state_release(state_t *s)
+{
+	free(s);
 }

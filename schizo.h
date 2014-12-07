@@ -68,34 +68,35 @@ typedef uint16		CELL_TYPE;
 struct cons_t;
 struct closure_t;
 struct cell_t;
+typedef struct cell_t*	cell_ptr_t;
 
 typedef struct state_t	state_t;
 
-/* C doesn't have units of measure, fake them */
-typedef struct cell_id_t {
-	uint32		index;
-} cell_id_t;
-
 /* return value of an evaluation */
 typedef struct retval_t {
-	cell_id_t	env;
-	cell_id_t	exp;
+	cell_ptr_t	env;
+	cell_ptr_t	exp;
 } retval_t;
+
+/* quote */
+typedef struct quote_t {
+	cell_ptr_t	list;
+} quote_t;
 
 /* lists */
 typedef struct pair_t {
-	cell_id_t	tail;		/* the tail */
-	cell_id_t	head;		/* the head */
+	cell_ptr_t	tail;		/* the tail */
+	cell_ptr_t	head;		/* the head */
 } pair_t;
 
 /* lambda */
 typedef struct lambda_t {
-	cell_id_t	syms;		/* arguments */
-	cell_id_t	body;		/* closure body */
+	cell_ptr_t	syms;		/* arguments */
+	cell_ptr_t	body;		/* closure body */
 } lambda_t;
 
 /* foreign function */
-typedef retval_t (*ffi_call_t)(state_t* s, cell_id_t env, cell_id_t args);
+typedef retval_t (*ffi_call_t)(state_t* s, cell_ptr_t env, cell_ptr_t args);
 
 typedef struct ffi_t {
 	uint32		arg_count;	/* total argument count, -1 = any */
@@ -104,8 +105,8 @@ typedef struct ffi_t {
 
 /* closure */
 typedef struct closure_t {
-	cell_id_t	env;		/* captured environment */
-	cell_id_t	lambda;		/* original args and body pair */
+	cell_ptr_t	env;		/* captured environment */
+	cell_ptr_t	lambda;		/* original args and body pair */
 } closure_t;
 
 
@@ -131,6 +132,7 @@ typedef struct cell_t {
 
 		char*		string;
 		pair_t		pair;
+		quote_t		quote;
 		lambda_t	lambda;
 		closure_t	closure;
 		ffi_t		ffi;
@@ -143,16 +145,16 @@ struct state_t {
 		cell_t*		cells;
 		uint32		count;
 		uint32		free_count;
-		cell_id_t	free_list;
+		cell_ptr_t	free_list;
 	} gc_block;
 
 	struct {
-		cell_id_t	current_exp;	/* current expression pointer */
-		cell_id_t	stack;		/* current environment head */
+		cell_ptr_t	current_exp;	/* current expression pointer */
+		cell_ptr_t	env;		/* current environment head */
 	} environment;
 
-	cell_id_t	root;			/* root cell */
-	cell_id_t	current_cell;
+	cell_ptr_t	root;			/* root cell */
+	cell_ptr_t	current_cell;
 	const char*	token_start;
 	const char*	token_end;
 	uint32		token_line;
@@ -161,66 +163,47 @@ struct state_t {
 /*
  * Inline helpers
  */
-static INLINE cell_id_t
-cell_id(uint32 id)
-{
-	cell_id_t	ret = { id };
-	return ret;
-}
 
 #define NIL_CELL	0x0
-#define is_nil(c)	((c).index == NIL_CELL)
+#define is_nil(c)	((c) == NIL_CELL)
 
-static INLINE cell_id_t	cell_nil()		{ cell_id_t	id = { 0 };		return id;	}
-static INLINE cell_id_t cell_quote()		{ cell_id_t	id = { (uint32)-1 };	return id;	}
-static INLINE cell_id_t cell_quasiquote()	{ cell_id_t	id = { (uint32)-2 };	return id;	}
+#define list_head(l)				((l)->object.pair.head)
+#define list_tail(l)				((l)->object.pair.tail)
+#define cell_type(c)				((c)->type)
 
-#define cell_from_index(s, idx)			(&(s)->gc_block.cells[(idx).index])
-#define list_head(s, l)				((s)->gc_block.cells[(l).index].object.pair.head)
-#define list_tail(s, l)				((s)->gc_block.cells[(l).index].object.pair.tail)
-#define cell_type(s, c)				((s)->gc_block.cells[(c).index].type)
+#define gc_mark_reachable(c)			{	(c)->flags	|= GC_REACHABLE;	}
+#define gc_mark_unreachable(c)			{	(c)->flags	&= ~GC_REACHABLE; 	}
+#define gc_is_reachable(c)			(((cid)->flags & GC_REACHABLE) ? true : false)
 
-static INLINE cell_id_t
-index_from_cell(state_t* s,
-		cell_t* c)
-{
-	cell_id_t	ret	= { (uint32)(c - s->gc_block.cells) };
-	return ret;
-}
-
-#define gc_mark_reachable(sc, cid)	{	cell_t*	c	= cell_from_index((sc), (cid));	c->flags	|= GC_REACHABLE;	}
-#define gc_mark_unreachable(sc, cid)	{	cell_t* c	= cell_from_index((sc), (cid)); c->flags	&= ~GC_REACHABLE; 	}
-#define gc_is_reachable(sc, cid)	((cell_from_index((sc), (cid))->flags & GC_REACHABLE) ? true : false)
-
-#define gc_pin(sc, cid)			{	cell_t*	c	= cell_from_index((sc), (cid));	c->flags	|= GC_PINNED;		}
-#define gc_unpin(sc, cid)		{	cell_t* c	= cell_from_index((sc), (cid)); c->flags	&= ~GC_PINNED; 		}
-#define gc_is_pinned(sc, cid)		((cell_from_index((sc), (cid))->flags & GC_PINNED) ? true : false)
+#define gc_pin(c)				{	(c)->flags	|= GC_PINNED;		}
+#define gc_unpin(c)				{	(c)->flags	&= ~GC_PINNED; 		}
+#define gc_is_pinned(c)				(((c)->flags & GC_PINNED) ? true : false)
 
 /* printing */
-void		print_cell(state_t* s, cell_id_t c, uint32 level);
+void		print_cell(state_t* s, cell_ptr_t c, uint32 level);
 
 /* atoms */
-cell_id_t	atom_new_symbol(state_t* s, const char* sym);
-cell_id_t	atom_new_boolean(state_t* s, bool b);
-cell_id_t	atom_new_char(state_t* s, char c);
-cell_id_t	atom_new_sint64(state_t* s, sint64 i);
-cell_id_t	atom_new_real64(state_t* s, real64 i);
-cell_id_t	atom_new_string(state_t* s, const char* b);
-cell_id_t	atom_new_unary_op(state_t* s, const char* op);
-cell_id_t	atom_new_binary_op(state_t* s, const char* op);
+cell_ptr_t	atom_new_symbol(state_t* s, const char* sym);
+cell_ptr_t	atom_new_boolean(state_t* s, bool b);
+cell_ptr_t	atom_new_char(state_t* s, char c);
+cell_ptr_t	atom_new_sint64(state_t* s, sint64 i);
+cell_ptr_t	atom_new_real64(state_t* s, real64 i);
+cell_ptr_t	atom_new_string(state_t* s, const char* b);
+cell_ptr_t	atom_new_unary_op(state_t* s, const char* op);
+cell_ptr_t	atom_new_binary_op(state_t* s, const char* op);
 
-cell_id_t	schizo_error(state_t* s, const char* error);
+cell_ptr_t	schizo_error(state_t* s, const char* error);
 
 /* lists */
-cell_id_t	list_new(state_t* s, cell_id_t head);
-cell_id_t	list_cons(state_t* s, cell_id_t head, cell_id_t tail);
+cell_ptr_t	list_new(state_t* s, cell_ptr_t head);
+cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
 #define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
 
-cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
-uint32		list_length(state_t* s, cell_id_t list);
+cell_ptr_t	list_reverse_in_place(cell_ptr_t list);
+uint32		list_length(cell_ptr_t list);
 
 /* vectors */
-cell_id_t	cell_vector(state_t* s, uint32 count);
+cell_ptr_t	cell_vector(state_t* s, uint32 count);
 
 /* parser.y / lexer.rl */
 void		parse(state_t* state, const char* str);
@@ -228,9 +211,10 @@ void		parse(state_t* state, const char* str);
 /* states */
 state_t*	state_new();
 void		state_release(state_t* s);
+void		state_add_ffi(state_t* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
 
 /* eval */
-retval_t	eval(state_t* s, cell_id_t env, cell_id_t expr);
+retval_t	eval(state_t* s, cell_ptr_t env, cell_ptr_t expr);
 
 #ifdef __cplusplus
 }

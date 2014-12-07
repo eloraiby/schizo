@@ -30,7 +30,7 @@ main(int argc,
 	const char*	prog[]	= {
 		"(a)",
 		"((((a))))",
-		"(10 -10 +10)",
+		"(10 -11 +12)",
 		"(10.0 -10.1 +10.2)",
 		"(a 10 -11 true ++ - +)",
 		"(b (false -- +10 10) * & #t)",
@@ -73,5 +73,12 @@ main(int argc,
 	}
 
 	state_release(state);
+
+	state	= state_new();
+	char* example	= "((lambda () (define str \"hello\") (display str))())";
+	parse(state, example);
+	eval(state, state->environment.env, state->root);
+	state_release(state);
+
 	return 0;
 }

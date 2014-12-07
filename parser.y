@@ -22,7 +22,7 @@
 */
 %name parser
 
-%token_type	{ cell_id_t }
+%token_type	{ cell_ptr_t }
 %extra_argument { state_t* s }
 
 %include {
@@ -30,9 +30,9 @@
 #include "schizo.h"
 }
 
-%type cell	{ cell_id_t }
-%type program	{ cell_id_t }
-%type cell_list	{ cell_id_t }
+%type cell	{ cell_ptr_t }
+%type program	{ cell_ptr_t }
+%type cell_list	{ cell_ptr_t }
 
 /*
 %left BIN_OP3
@@ -77,32 +77,33 @@ sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_CLOSURE.			/* closure */
 sexpr		::= CELL_FFI.				/* foreign function interface */
 sexpr		::= CELL_LAMBDA.			/* lambda */
+sexpr		::= CELL_QUOTE.				/* quote (this should could have been replaced with objects, but will increase the complexity of the evaluator) */
 sexpr		::= ATOM_ERROR.				/* error */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(B) == CELL_PAIR ) ? list_reverse_in_place(B) : B); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(B) == CELL_PAIR ) ? list_reverse_in_place(B) : B); }
 sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"),
-									   list_cons(s, B, ( cell_type(s, C) == CELL_PAIR ) ? list_reverse_in_place(s, C) : C)); }
+									   list_cons(s, B, ( cell_type(C) == CELL_PAIR ) ? list_reverse_in_place(C) : C)); }
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
 
 list(A)		::= ilist(B).				{ A = list_new(s, B); }
 list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
 
-se_members(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-se_members(A)	::= list(B).				{ A = list_reverse_in_place(s, B); }
+se_members(A)	::=.					{ cell_ptr_t nil = { 0 }; A = list_new(s, nil); }
+se_members(A)	::= list(B).				{ A = list_reverse_in_place(B); }
 
 /* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
-be_members(A)	::= list(B).				{ A = list_reverse_in_place(s, B); }
+be_members(A)	::= list(B).				{ A = list_reverse_in_place(B); }
 
 /* { ... } */
-member_list(A)	::=.					{ cell_id_t nil = { 0 }; A = list_new(s, nil); }
-member_list(A)	::= be_members(B).			{ A = list_new(s, (list_length(s, B) == 1) ? list_head(s, B) : B); }
-member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(s, C) == 1) ? list_head(s, C) : C,  B); }
+member_list(A)	::=.					{ cell_ptr_t nil = { 0 }; A = list_new(s, nil); }
+member_list(A)	::= be_members(B).			{ A = list_new(s, (list_length(B) == 1) ? list_head(B) : B); }
+member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(C) == 1) ? list_head(C) : C,  B); }
 
 /* TODO: operator precedence */
