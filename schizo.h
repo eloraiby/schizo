@@ -77,15 +77,9 @@ typedef struct cell_id_t {
 } cell_id_t;
 
 /* return value of an evaluation */
-typedef enum {
-	EVAL_ERROR,
-	EVAL_ENV,
-	EVAL_DONE
-} EVAL_STATE;
-
 typedef struct retval_t {
-	EVAL_STATE	state;
-	cell_id_t	val;
+	cell_id_t	env;
+	cell_id_t	exp;
 } retval_t;
 
 /* lists */
@@ -101,7 +95,7 @@ typedef struct lambda_t {
 } lambda_t;
 
 /* foreign function */
-typedef cell_id_t (*ffi_call_t)(state_t* s, cell_id_t args);
+typedef retval_t (*ffi_call_t)(state_t* s, cell_id_t env, cell_id_t args);
 
 typedef struct ffi_t {
 	uint32		arg_count;	/* total argument count, -1 = any */
@@ -114,16 +108,11 @@ typedef struct closure_t {
 	cell_id_t	lambda;		/* original args and body pair */
 } closure_t;
 
-/* for a foreign procedure, the arguments are evaluated before calling the procedure */
-typedef cell_id_t	(*foreign_procedure_t)(state_t* sc, cell_id_t args);
-
-/* for a foreign syntax, the arguments are not evaluated and are left to the syntax to interpret them */
-typedef cell_id_t	(*foreign_syntax_t)(state_t* sc, cell_id_t env, cell_id_t args);
 
 #define GC_REACHABLE	0x8000
 #define GC_PINNED	0x4000
-#define FOREIGN		0x0800
-#define SYNTAX		0x0400
+#define EVAL_ARGS	0x0800		/* arguments are evaluated before call */
+
 
 typedef struct cell_t {
 	uint16		flags;
@@ -187,8 +176,8 @@ static INLINE cell_id_t cell_quote()		{ cell_id_t	id = { (uint32)-1 };	return id
 static INLINE cell_id_t cell_quasiquote()	{ cell_id_t	id = { (uint32)-2 };	return id;	}
 
 #define cell_from_index(s, idx)			(&(s)->gc_block.cells[(idx).index])
-#define list_head(s, list)			((s)->gc_block.cells[(list).index].object.pair.head)
-#define list_tail(s, list)			((s)->gc_block.cells[(list).index].object.pair.tail)
+#define list_head(s, l)				((s)->gc_block.cells[(l).index].object.pair.head)
+#define list_tail(s, l)				((s)->gc_block.cells[(l).index].object.pair.tail)
 #define cell_type(s, c)				((s)->gc_block.cells[(c).index].type)
 
 static INLINE cell_id_t
@@ -220,10 +209,12 @@ cell_id_t	atom_new_string(state_t* s, const char* b);
 cell_id_t	atom_new_unary_op(state_t* s, const char* op);
 cell_id_t	atom_new_binary_op(state_t* s, const char* op);
 
+cell_id_t	schizo_error(state_t* s, const char* error);
+
 /* lists */
 cell_id_t	list_new(state_t* s, cell_id_t head);
 cell_id_t	list_cons(state_t* s, cell_id_t head, cell_id_t tail);
-#define		like_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
+#define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
 
 cell_id_t	list_reverse_in_place(state_t* s, cell_id_t list);
 uint32		list_length(state_t* s, cell_id_t list);

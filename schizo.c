@@ -228,9 +228,24 @@ atom_new_string(state_t* s,
 
 	ret->type	= ATOM_STRING;
 	ret->object.string	= (char*)(malloc(len + 1));
-	memcpy(ret->object.symbol, b, len + 1);
+	memcpy(ret->object.string, b, len + 1);
 	return id;
 }
+
+cell_id_t
+schizo_error(state_t* s,
+	     const char* error)
+{
+	size_t len	= strlen(error);
+	cell_id_t id	= cell_alloc(s);
+	cell_t*	ret	= &s->gc_block.cells[id.index];
+
+	ret->type	= ATOM_ERROR;
+	ret->object.string	= (char*)(malloc(len + 1));
+	memcpy(ret->object.string, error, len + 1);
+	return id;
+}
+
 /*
 cell_id_t
 atom_new_unary_op(state_t* s,
@@ -334,6 +349,25 @@ list_reverse_in_place(state_t *s,
 	}
 }
 
+cell_id_t
+list_zip(state_t* s,
+	 cell_id_t l0,
+	 cell_id_t l1)
+{
+	cell_id_t	res	= cell_nil();
+	while( !is_nil(list_head(s, l0)) && !is_nil(list_head(s, l1)) ) {
+		res	= list_cons(s, list_make_pair(s, list_head(s, l0), list_head(s, l1)), res);
+		l0	= list_tail(s, l0);
+		l1	= list_tail(s, l1);
+	}
+
+	if( is_nil(l0) != is_nil(l1) ) {
+		return schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other");
+	} else {
+		return list_reverse_in_place(s, res);
+	}
+}
+
 /*******************************************************************************
 ** schizo state
 *******************************************************************************/
@@ -355,9 +389,9 @@ state_release(state_t *s)
 ** eval
 *******************************************************************************/
 static cell_id_t
-lookup(state_t* s,
-       cell_id_t env,
-       const char* sym)
+symbol_lookup(state_t* s,
+	      cell_id_t env,
+	      const char* sym)
 {
 	cell_t*	pair	= cell_from_index(s, env);
 
@@ -374,7 +408,7 @@ lookup(state_t* s,
 }
 
 static INLINE cell_id_t
-define_symbol(state_t* s,
+symbol_define(state_t* s,
 	      cell_id_t env,
 	      cell_id_t sym,
 	      cell_id_t expr)
@@ -384,27 +418,29 @@ define_symbol(state_t* s,
 }
 
 static INLINE retval_t
-retval(EVAL_STATE s,
-       cell_id_t val)
+retval(cell_id_t env,
+       cell_id_t exp)
 {
-	retval_t	v = { s, val };
+	retval_t	v = { env, exp };
 	return v;
 }
 
 static cell_id_t
 make_closure(state_t* s,
 	     cell_id_t env,
-	     cell_id_t args,
-	     cell_id_t body)
+	     cell_id_t args)
 {
+	cell_id_t	syms	= list_head(s, args);
+	cell_id_t	body	= list_head(s, list_tail(s, args));
+
 	cell_id_t	closure	= cell_alloc(s);
 	cell_id_t	lambda	= cell_alloc(s);
 
-	cell_t*		cl_cell	= cell_from_index(s, closure);
+	cell_t*		cl_cell		= cell_from_index(s, closure);
 	cell_t*		lam_cell	= cell_from_index(s, lambda);
 
 	lam_cell->type	= CELL_LAMBDA;
-	lam_cell->object.lambda.syms	= args;
+	lam_cell->object.lambda.syms	= syms;
 	lam_cell->object.lambda.body	= body;
 
 	cl_cell->type	= CELL_CLOSURE;
@@ -413,15 +449,26 @@ make_closure(state_t* s,
 	return closure;
 }
 
+static cell_id_t
+eval_list(state_t* s,
+	  cell_id_t env,
+	  cell_id_t expr)
+{
+	cell_id_t	res	= cell_nil();
+	while( !is_nil(expr) ) {
+		res	= list_cons(s, eval(s, env, list_head(s, expr)).exp, res);
+		expr	= list_tail(s, expr);
+	}
+	return list_reverse_in_place(s, res);
+}
+
 retval_t
 eval(state_t *s,
      cell_id_t env,
-     cell_id_t expr)
+     cell_id_t exp)
 {
-	bool		done	= false;
-
-	while( !done ) {
-		cell_t*	c = cell_from_index(s, expr);
+	while( true ) {
+		cell_t*	c = cell_from_index(s, exp);
 		switch( c->type ) {
 		case ATOM_BOOL:
 		case ATOM_CHAR:
@@ -430,44 +477,81 @@ eval(state_t *s,
 		case ATOM_STRING:
 		case CELL_CLOSURE:
 		case CELL_FFI:
-			return retval(EVAL_DONE,
-				      expr);
+			return retval(env, exp);
 
 		case ATOM_SYMBOL:
-			return retval(EVAL_DONE,
-				      lookup(s, env, cell_from_index(s, expr)->object.symbol));
+			return retval(env, symbol_lookup(s, env, cell_from_index(s, exp)->object.symbol));
 
 		case CELL_PAIR:	{
-			cell_t*		head	= cell_from_index(s, list_head(s, expr));
-			cell_id_t	tail	= list_tail(s, expr);
+			retval_t	val	= eval(s, env, list_head(s, exp));
+
+			cell_t*		head	= cell_from_index(s, val.exp);
+			cell_id_t	tail	= list_tail(s, exp);
 
 			switch( head->type ) {
-			case ATOM_SYMBOL: {
-				const char*	symbol	= head->object.symbol;
-				if( strcmp(symbol, "lambda") == 0 ) {
-					if( list_length(s, tail) != 2 ) {
-						fprintf(stderr, "ERROR: missing args and/or body for lambda: lambda args body\n");
-						return retval(EVAL_ERROR,
-							      cell_nil());
+			case CELL_FFI:
+				if( head->flags & EVAL_ARGS ) {
+					uint32	l	= list_length(s, tail);
+					if( l != head->object.ffi.arg_count ) {
+						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, head->object.ffi.arg_count);
+						return retval(env, cell_nil());
 					} else {
-						return retval(EVAL_DONE,
-							      make_closure(s, env, list_head(s, tail), list_head(s, list_tail(s, tail))));
+						return head->object.ffi.proc(s, env, eval_list(s, env, tail));
 					}
-				} else if( strcmp(symbol, "define") == 0 ) {
-
-					if( list_length(s, tail) == 0 ) {
-						fprintf(stderr, "ERROR: missing body for define: define binding body\n");
-						return retval(EVAL_ERROR,
-							      cell_nil());
-					} else {
-						return retval(EVAL_ENV,
-							      define_symbol(s, env, list_head(s, expr), list_tail(s, expr)));
-					}
+				} else {	/* lambda, define, if */
+					retval_t r = head->object.ffi.proc(s, env, tail);
+					env	= r.env;
+					exp	= r.exp;
 				}
+				break;
+			case CELL_CLOSURE: {
+				cell_t*	lambda	= cell_from_index(s, head->object.closure.lambda);
+				env	= head->object.closure.env;
+
+				/* evaluate the arguments and zip them */
+				if( list_length(s, tail) != list_length(s, lambda->object.lambda.syms) ) {
+					return retval(env, schizo_error(s, "ERROR: closure arguments do not match given arguments"));
+				}
+				cell_id_t	args	= eval_list(s, env, tail);
+				cell_id_t	syms	= lambda->object.lambda.syms;
+
+				while( !is_nil(list_head(s, syms)) && !is_nil(list_head(s, args)) ) {
+					env	= list_cons(s, list_make_pair(s, list_head(s, syms), list_head(s, args)), env);
+					args	= list_tail(s, args);
+					syms	= list_tail(s, syms);
+				}
+
+				if( is_nil(syms) != is_nil(args) ) {
+					return retval(env, schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
+				} else {
+					/* all good, evaluate the body(*) */
+					cell_id_t	body	= lambda->object.lambda.body;
+					cell_id_t	next	= list_tail(s, body);
+
+					exp	= list_head(s, body);
+
+					while( !is_nil(next) ) {
+						retval_t r	= eval(s, env, exp);	/* never return a tail call */
+						env		= r.env;
+						exp		= list_head(s, next);
+						next		= list_tail(s, next);
+					}
+
+					/* now the tail call (env and exp are set) */
+				}
+				break;
 			}
+
+
+			default:
+				assert(0);
+				break;
 			}
 		}
 
+		default:
+			assert( 0 );
+			break;
 		}
 	}
 }
