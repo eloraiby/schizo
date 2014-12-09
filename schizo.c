@@ -26,6 +26,83 @@
 *******************************************************************************/
 #define INITIAL_CELL_COUNT	128 * 1024	/* this should be at least 2 */
 
+static INLINE cell_ptr_t
+remap_cell_ptr(cell_ptr_t old_base,
+	       uint32 old_size,
+	       cell_ptr_t new_base,
+	       cell_ptr_t ptr)
+{
+	if( ptr >= old_base && ptr < old_base + old_size ) {
+		return (ptr - old_base) + new_base;
+	} else {
+		return ptr;
+	}
+}
+
+static INLINE void
+remap_cell(cell_ptr_t old_base,
+	   uint32 old_size,
+	   cell_ptr_t new_base,
+	   cell_ptr_t ptr)
+{
+#define REMAP(a)	new_ptr->object.a = remap_cell_ptr(old_base, old_size, new_base, ptr->object.a)
+
+	cell_ptr_t new_ptr	= remap_cell_ptr(old_base, old_size, new_base, ptr);
+	*new_ptr	= *ptr;
+
+	switch( ptr->type ) {
+	case ATOM_SYMBOL:
+	case ATOM_BOOL:
+	case ATOM_CHAR:
+	case ATOM_SINT64:
+	case ATOM_REAL64:
+	case ATOM_STRING:
+	case CELL_FFI:
+	case ATOM_ERROR:	/* ERRORS should point to another cell symbol/string ? */
+		break;
+
+	case CELL_FREE:
+	case CELL_PAIR:
+		REMAP(pair.head);
+		REMAP(pair.tail);
+		break;
+
+	case CELL_CLOSURE:
+		REMAP(closure.env);
+		REMAP(closure.lambda);
+		break;
+
+	case CELL_LAMBDA:
+		REMAP(lambda.syms);
+		REMAP(lambda.body);
+		break;
+
+	case CELL_QUOTE:
+		REMAP(quote.list);
+		break;
+	}
+
+#undef REMAP
+}
+
+/**
+ * @brief remap remap old allocation block to the new one
+ * @param old_block old block address
+ * @param old_size old block size (in cells)
+ * @param new_block new block address
+ * @param new_size new bloack size (in cells)
+ * @return
+ */
+static INLINE void
+remap(cell_ptr_t old_block,
+      uint32 old_size,
+      cell_ptr_t new_block)
+{
+	for( uint32 i = 0; i < old_size; ++i ) {
+		remap_cell(old_block, old_size, new_block, &old_block[i]);
+	}
+}
+
 cell_ptr_t
 cell_alloc(state_t* s) {
 	/*
@@ -35,11 +112,11 @@ cell_alloc(state_t* s) {
 	if( s->gc_block.cells == NULL ) {
 		s->gc_block.count	= INITIAL_CELL_COUNT;
 		s->gc_block.free_count	= INITIAL_CELL_COUNT - 1;
-		s->gc_block.cells	= (cell_t*)malloc(sizeof(cell_t) * s->gc_block.count);
+		s->gc_block.cells	= (cell_ptr_t)malloc(sizeof(cell_t) * s->gc_block.count);
 		memset(s->gc_block.cells, 0, sizeof(cell_t) * s->gc_block.free_count);
 
 		for( uint32 i = 0; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type	= CELL_PAIR;
+			s->gc_block.cells[i].type		= CELL_FREE;
 			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
 			s->gc_block.cells[i].object.pair.tail	= &(s->gc_block.cells[i + 1]);
 		}
@@ -54,18 +131,23 @@ cell_alloc(state_t* s) {
 
 		/* TODO: call garbage collector before trigger a reallocation */
 		uint32	old_count	= s->gc_block.count;
+		cell_ptr_t old_block	= s->gc_block.cells;
+
 		s->gc_block.free_count	= s->gc_block.count;
 		s->gc_block.count	*= 2;
-		s->gc_block.cells	= (cell_t*)realloc(s->gc_block.cells, sizeof(cell_t) * s->gc_block.count);
-		s->gc_block.free_list	= &(s->gc_block.cells[old_count]);
+		s->gc_block.cells	= (cell_ptr_t)realloc(s->gc_block.cells, sizeof(cell_t) * s->gc_block.count);
 
 		if( s->gc_block.cells == NULL ) {
 			fprintf(stderr, "Fatal error: Not enough memory...\n");
 			exit(1);
 		}
 
+		remap(old_block, old_count, s->gc_block.cells);
+
+		s->gc_block.free_list	= &(s->gc_block.cells[old_count]);
+
 		for( uint32 i = old_count; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type	= CELL_PAIR;
+			s->gc_block.cells[i].type		= CELL_FREE;
 			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
 			s->gc_block.cells[i].object.pair.tail	= &(s->gc_block.cells[i + 1]);
 		}
@@ -409,6 +491,7 @@ eval(state_t *s,
 {
 	while( exp != NIL_CELL ) {	/* not a NIL_CELL */
 		switch( exp->type ) {
+		/* constants */
 		case ATOM_BOOL:
 		case ATOM_CHAR:
 		case ATOM_SINT64:
@@ -420,9 +503,11 @@ eval(state_t *s,
 		case CELL_QUOTE:
 			return retval(env, exp);
 
+		/* symbols */
 		case ATOM_SYMBOL:
 			return retval(env, symbol_lookup(env, exp->object.symbol));
 
+		/* applications */
 		case CELL_PAIR:	{
 			retval_t	val	= eval(s, env, list_head(exp));
 
