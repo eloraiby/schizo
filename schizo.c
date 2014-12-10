@@ -24,7 +24,54 @@
 /*******************************************************************************
 ** memory management
 *******************************************************************************/
-#define INITIAL_CELL_COUNT	128 * 1024	/* this should be at least 2 */
+#define INITIAL_CELL_COUNT	1024 * 1024	/* this should be at least 2 */
+
+static void
+free_cell(state_t* s,
+	  cell_ptr_t ptr)
+{
+	switch( ptr->type ) {
+	case ATOM_BOOL:
+	case ATOM_CHAR:
+	case ATOM_SINT64:
+	case ATOM_REAL64:
+	case CELL_FFI:
+		break;
+	case ATOM_STRING:
+		free(ptr->object.string);
+		break;
+	case ATOM_SYMBOL:
+		free(ptr->object.symbol);
+		break;
+
+	case ATOM_ERROR:	/* ERRORS should point to another cell symbol/string ? */
+		free(ptr->object.string);
+		break;
+
+	case CELL_FREE:
+		break;
+		
+	case CELL_PAIR:
+		break;
+
+	case CELL_CLOSURE:
+		break;
+
+	case CELL_LAMBDA:
+		break;
+
+	case CELL_QUOTE:
+		break;
+	}
+
+	/* append the free cell list */
+	ptr->type		= CELL_FREE;
+	ptr->ref_count		= 0;
+	ptr->flags		= 0;
+	ptr->object.pair.head	= NIL_CELL;
+	ptr->object.pair.tail	= s->gc_block.free_list;
+	s->gc_block.free_list	= ptr;
+}
 
 static INLINE cell_ptr_t
 remap_cell_ptr(cell_ptr_t old_base,
@@ -39,7 +86,7 @@ remap_cell_ptr(cell_ptr_t old_base,
 	}
 }
 
-static INLINE void
+static void
 remap_cell(cell_ptr_t old_base,
 	   uint32 old_size,
 	   cell_ptr_t new_base,
@@ -129,36 +176,109 @@ cell_alloc(state_t* s) {
 
 	} else if( s->gc_block.free_list == NIL_CELL ) {
 
-		/* TODO: call garbage collector before trigger a reallocation */
+		/* call garbage collector before trigger a reallocation */
 		uint32	old_count	= s->gc_block.count;
 		cell_ptr_t old_block	= s->gc_block.cells;
 
-		s->gc_block.free_count	= s->gc_block.count;
-		s->gc_block.count	*= 2;
-		s->gc_block.cells	= (cell_ptr_t)realloc(s->gc_block.cells, sizeof(cell_t) * s->gc_block.count);
+		uint32 freed_count	= gc(s);
+		if( freed_count == 0 ) {
+			s->gc_block.free_count	= s->gc_block.count;
+			s->gc_block.count	*= 2;
+			s->gc_block.cells	= (cell_ptr_t)realloc(s->gc_block.cells, sizeof(cell_t) * s->gc_block.count);
 
-		if( s->gc_block.cells == NULL ) {
-			fprintf(stderr, "Fatal error: Not enough memory...\n");
-			exit(1);
+			if( s->gc_block.cells == NULL ) {
+				fprintf(stderr, "Fatal error: Not enough memory...\n");
+				exit(1);
+			}
+
+			remap(old_block, old_count, s->gc_block.cells);
+
+			s->gc_block.free_list	= &(s->gc_block.cells[old_count]);
+
+			for( uint32 i = old_count; i < s->gc_block.count; ++i ) {
+				s->gc_block.cells[i].type		= CELL_FREE;
+				s->gc_block.cells[i].object.pair.head	= NIL_CELL;
+				s->gc_block.cells[i].object.pair.tail	= &(s->gc_block.cells[i + 1]);
+			}
+
+			s->gc_block.cells[s->gc_block.count - 1].object.pair.tail	= NIL_CELL;
+		} else {
+			fprintf(stderr, "freed %u\n", freed_count);
 		}
-
-		remap(old_block, old_count, s->gc_block.cells);
-
-		s->gc_block.free_list	= &(s->gc_block.cells[old_count]);
-
-		for( uint32 i = old_count; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type		= CELL_FREE;
-			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
-			s->gc_block.cells[i].object.pair.tail	= &(s->gc_block.cells[i + 1]);
-		}
-
-		s->gc_block.cells[s->gc_block.count - 1].object.pair.tail	= NIL_CELL;
 	}
 
 	cell_ptr_t	c = s->gc_block.free_list;
 	s->gc_block.free_list	= list_tail(c);
 	--(s->gc_block.free_count);
 	return c;
+}
+
+static INLINE void
+mark_cell(cell_ptr_t cell)
+{
+	if( cell != NIL_CELL ) {
+		switch( cell->type ) {
+		case ATOM_SYMBOL:
+		case ATOM_BOOL:
+		case ATOM_CHAR:
+		case ATOM_SINT64:
+		case ATOM_REAL64:
+		case ATOM_STRING:
+		case CELL_FFI:
+		case ATOM_ERROR:	/* ERRORS should point to another cell symbol/string ? */
+			break;
+
+		case CELL_FREE:
+		case CELL_PAIR: {
+			mark_cell(cell->object.pair.head);
+			cell_ptr_t cell2	= list_tail(cell);
+			while( cell2 != NIL_CELL ) {
+				mark_cell(cell2->object.pair.head);
+				cell2	= list_tail(cell2);
+			}
+
+			break;
+		}
+
+		case CELL_CLOSURE:
+			mark_cell(cell->object.closure.env);
+			mark_cell(cell->object.closure.lambda);
+			break;
+
+		case CELL_LAMBDA:
+			mark_cell(cell->object.lambda.syms);
+			mark_cell(cell->object.lambda.body);
+			break;
+
+		case CELL_QUOTE:
+			mark_cell(cell->object.quote.list);
+			break;
+		}
+		gc_mark_reachable(cell);
+	}
+}
+
+uint32
+gc(state_t* s)
+{
+	uint32	nc	= 0;
+
+	for( uint32 i = 0; i < s->gc_block.count; ++i ) {
+		if( s->gc_block.cells[i].type != CELL_FREE ) {
+			gc_mark_unreachable(&(s->gc_block.cells[i]));
+		}
+	}
+
+	mark_cell(s->root);
+
+	for( uint32 i = 0; i < s->gc_block.count; ++i ) {
+		if( !gc_is_reachable(&(s->gc_block.cells[i])) && s->gc_block.cells[i].type != CELL_FREE ) {
+			free_cell(s, &(s->gc_block.cells[i]));
+			++nc;
+		}
+	}
+
+	return nc;
 }
 
 /*******************************************************************************
@@ -503,11 +623,11 @@ eval(state_t *s,
 		case CELL_QUOTE:
 			return retval(env, exp);
 
-		/* symbols */
+			/* symbols */
 		case ATOM_SYMBOL:
 			return retval(env, symbol_lookup(env, exp->object.symbol));
 
-		/* applications */
+			/* applications */
 		case CELL_PAIR:	{
 			retval_t	val	= eval(s, env, list_head(exp));
 

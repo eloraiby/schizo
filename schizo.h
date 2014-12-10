@@ -118,6 +118,7 @@ typedef struct closure_t {
 typedef struct cell_t {
 	uint16		flags;
 	CELL_TYPE	type;
+	uint32		ref_count;
 
 	union {
 		char*		symbol;
@@ -173,7 +174,7 @@ struct state_t {
 
 #define gc_mark_reachable(c)			{	(c)->flags	|= GC_REACHABLE;	}
 #define gc_mark_unreachable(c)			{	(c)->flags	&= ~GC_REACHABLE; 	}
-#define gc_is_reachable(c)			(((cid)->flags & GC_REACHABLE) ? true : false)
+#define gc_is_reachable(c)			(((c)->flags & GC_REACHABLE) ? true : false)
 
 #define gc_pin(c)				{	(c)->flags	|= GC_PINNED;		}
 #define gc_unpin(c)				{	(c)->flags	&= ~GC_PINNED; 		}
@@ -204,6 +205,9 @@ uint32		list_length(cell_ptr_t list);
 
 /* vectors */
 cell_ptr_t	cell_vector(state_t* s, uint32 count);
+
+/* garbage collector */
+uint32		gc(state_t* state);
 
 /* parser.y / lexer.rl */
 void		parse(state_t* state, const char* str);

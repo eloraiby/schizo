@@ -22,11 +22,18 @@
 
 #include "schizo.h"
 
+#include <sys/time.h>
+#include <stdio.h>
+#include <unistd.h>
 
 int
 main(int argc,
      char* argv[])
 {
+	struct timeval start, end;
+
+	long mtime, seconds, useconds;
+
 	const char*	prog[]	= {
 		"(a)",
 		"((((a))))",
@@ -70,7 +77,9 @@ main(int argc,
 		parse(state, prog[i]);
 		print_cell(state, state->root, 0);
 		fprintf(stderr, "\n");
+		fprintf(stderr, "freed: %u\n", gc(state));
 	}
+
 
 	state_release(state);
 
@@ -78,6 +87,15 @@ main(int argc,
 	char* example	= "((lambda () (define str \"hello\") (display str))())";
 	parse(state, example);
 	eval(state, state->environment.env, state->root);
+	gettimeofday(&start, NULL);
+	fprintf(stderr, "freed: %u\n", gc(state));
+	gettimeofday(&end, NULL);
+
+	seconds  = end.tv_sec  - start.tv_sec;
+	useconds = end.tv_usec - start.tv_usec;
+
+	mtime = (long)(((seconds) * 1000 + useconds/1000.0) + 0.5);
+	fprintf(stderr, "took %ld ms to scan memory\n", mtime);
 	state_release(state);
 
 	return 0;
