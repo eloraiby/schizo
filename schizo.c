@@ -216,7 +216,7 @@ cell_alloc(state_t* s) {
 static INLINE void
 mark_cell(cell_ptr_t cell)
 {
-	if( cell != NIL_CELL ) {
+	if( cell != NIL_CELL && !gc_is_reachable(cell) ) {
 		switch( cell->type ) {
 		case ATOM_SYMBOL:
 		case ATOM_BOOL:
