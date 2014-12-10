@@ -24,7 +24,7 @@
 /*******************************************************************************
 ** memory management
 *******************************************************************************/
-#define INITIAL_CELL_COUNT	1024 * 1024	/* this should be at least 2 */
+#define INITIAL_CELL_COUNT	128 * 1024	/* this should be at least 2 */
 
 static void
 free_cell(state_t* s,
@@ -180,7 +180,9 @@ cell_alloc(state_t* s) {
 		uint32	old_count	= s->gc_block.count;
 		cell_ptr_t old_block	= s->gc_block.cells;
 
-		uint32 freed_count	= gc(s);
+		/* only garbage collect if we finished parsing */
+		uint32 freed_count	= s->root ? gc(s) : 0;
+
 		if( freed_count == 0 ) {
 			s->gc_block.free_count	= s->gc_block.count;
 			s->gc_block.count	*= 2;

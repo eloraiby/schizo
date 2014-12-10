@@ -215,6 +215,8 @@ parse(state_t* state, const char* str)
 	char		tmp[4096];
 	cell_ptr_t	nil	= { 0 };
 
+	state->root	= NIL_CELL;
+
 	parser	= parser_alloc(malloc);
 
 	memset(tmp, 0, sizeof(tmp));
