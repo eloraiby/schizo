@@ -232,7 +232,7 @@ mark_cell(cell_ptr_t cell)
 		case CELL_PAIR: {
 			mark_cell(cell->object.pair.head);
 			cell_ptr_t cell2	= list_tail(cell);
-			while( cell2 != NIL_CELL ) {
+			while( cell2 != NIL_CELL && !gc_is_reachable(cell2) ) {
 				mark_cell(cell2->object.pair.head);
 				cell2	= list_tail(cell2);
 			}
