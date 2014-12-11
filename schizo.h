@@ -96,7 +96,7 @@ typedef struct lambda_t {
 } lambda_t;
 
 /* foreign function */
-typedef retval_t (*ffi_call_t)(state_t* s, cell_ptr_t env, cell_ptr_t args);
+typedef cell_ptr_t (*ffi_call_t)(state_t* s, cell_ptr_t args);
 
 typedef struct ffi_t {
 	uint32		arg_count;	/* total argument count, -1 = any */
@@ -151,8 +151,9 @@ struct state_t {
 
 	struct {
 		cell_ptr_t	current_exp;	/* current expression pointer */
-		cell_ptr_t	env;		/* current environment head */
-	} environment;
+		cell_ptr_t	current_env;	/* current environment head */
+		cell_ptr_t	env_stack;	/* environment stack */
+	} registers;
 
 	cell_ptr_t	root;			/* root cell */
 	cell_ptr_t	current_cell;
@@ -217,8 +218,12 @@ state_t*	state_new();
 void		state_release(state_t* s);
 void		state_add_ffi(state_t* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
 
+/* environment */
+void		environment_push(state_t* s);
+void		environment_pop(state_t* s);
+
 /* eval */
-retval_t	eval(state_t* s, cell_ptr_t env, cell_ptr_t expr);
+cell_ptr_t	eval(state_t* s, cell_ptr_t expr);
 
 #ifdef __cplusplus
 }

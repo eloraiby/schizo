@@ -86,7 +86,7 @@ main(int argc,
 	state	= state_new();
 	char* example	= "((lambda () (define str \"hello\") (display str))())";
 	parse(state, example);
-	eval(state, state->environment.env, state->root);
+	eval(state, state->root);
 	gettimeofday(&start, NULL);
 	fprintf(stderr, "freed: %u\n", gc(state));
 	gettimeofday(&end, NULL);

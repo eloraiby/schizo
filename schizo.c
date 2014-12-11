@@ -563,14 +563,6 @@ list_zip(state_t* s,
 /*******************************************************************************
 ** eval
 *******************************************************************************/
-static INLINE retval_t
-retval(cell_ptr_t env,
-       cell_ptr_t exp)
-{
-	retval_t	v = { env, exp };
-	return v;
-}
-
 static cell_ptr_t
 symbol_lookup(cell_ptr_t env,
 	      const char* sym)
@@ -595,20 +587,18 @@ symbol_lookup(cell_ptr_t env,
 
 static cell_ptr_t
 eval_list(state_t* s,
-	  cell_ptr_t env,
 	  cell_ptr_t expr)
 {
 	cell_ptr_t	res	= NIL_CELL;
 	while( !is_nil(expr) ) {
-		res	= list_cons(s, eval(s, env, list_head(expr)).exp, res);
+		res	= list_cons(s, eval(s, list_head(expr)), res);
 		expr	= list_tail(expr);
 	}
 	return list_reverse_in_place(res);
 }
 
-retval_t
+cell_ptr_t
 eval(state_t *s,
-     cell_ptr_t env,
      cell_ptr_t exp)
 {
 	while( exp != NIL_CELL ) {	/* not a NIL_CELL */
@@ -623,20 +613,18 @@ eval(state_t *s,
 		case CELL_CLOSURE:
 		case CELL_FFI:
 		case CELL_QUOTE:
-			return retval(env, exp);
+			return exp;
 
 			/* symbols */
 		case ATOM_SYMBOL:
-			return retval(env, symbol_lookup(env, exp->object.symbol));
+			return symbol_lookup(s->registers.current_env, exp->object.symbol);
 
 			/* applications */
 		case CELL_PAIR:	{
-			retval_t	val	= eval(s, env, list_head(exp));
-
-			cell_ptr_t	head	= val.exp;
+			cell_ptr_t	head	= eval(s, list_head(exp));
 
 			if( head == NIL_CELL ) {
-				return retval(env, NIL_CELL);
+				return NIL_CELL;
 			}
 
 			cell_ptr_t	tail	= list_tail(exp);
@@ -647,35 +635,36 @@ eval(state_t *s,
 					uint32	l	= list_length(tail);
 					if( head->object.ffi.arg_count > 0 && l != head->object.ffi.arg_count ) {
 						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, head->object.ffi.arg_count);
-						return retval(env, NIL_CELL);
+						return NIL_CELL;
 					} else {
-						return head->object.ffi.proc(s, env, eval_list(s, env, tail));
+						return head->object.ffi.proc(s, eval_list(s, tail));
 					}
 				} else {	/* lambda, define, if */
-					retval_t r = head->object.ffi.proc(s, env, tail);
-					env	= r.env;
-					exp	= r.exp;
+					exp	= head->object.ffi.proc(s, tail);
 				}
 				break;
 			case CELL_CLOSURE: {
 				cell_ptr_t lambda	= head->object.closure.lambda;
-				env	= head->object.closure.env;
+
+				//environment_push(s);
+
+				s->registers.current_env	= head->object.closure.env;
 
 				/* evaluate the arguments and zip them */
 				if( list_length(tail) != list_length(lambda->object.lambda.syms) ) {
-					return retval(env, schizo_error(s, "ERROR: closure arguments do not match given arguments"));
+					return schizo_error(s, "ERROR: closure arguments do not match given arguments");
 				}
-				cell_ptr_t	args	= eval_list(s, env, tail);
+				cell_ptr_t	args	= eval_list(s, tail);
 				cell_ptr_t	syms	= lambda->object.lambda.syms;
 
 				while( !is_nil(list_head(syms)) && !is_nil(list_head(args)) ) {
-					env	= list_cons(s, list_make_pair(s, list_head(syms), list_head(args)), env);
+					s->registers.current_env	= list_cons(s, list_make_pair(s, list_head(syms), list_head(args)), s->registers.current_env);
 					args	= list_tail(args);
 					syms	= list_tail(syms);
 				}
 
 				if( is_nil(syms) != is_nil(args) ) {
-					return retval(env, schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
+					return schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other");
 				} else {
 					/* all good, evaluate the body(*) */
 					cell_ptr_t	body	= lambda->object.lambda.body;
@@ -684,10 +673,9 @@ eval(state_t *s,
 					exp	= list_head(body);
 
 					while( !is_nil(next) ) {
-						retval_t r	= eval(s, env, exp);	/* never return a tail call */
-						env		= r.env;
-						exp		= list_head(next);
-						next		= list_tail(next);
+						exp	= eval(s, exp);	/* never return a tail call */
+						exp	= list_head(next);
+						next	= list_tail(next);
 					}
 
 					/* now the tail call (env and exp are set) */
@@ -709,7 +697,8 @@ eval(state_t *s,
 		}
 	}
 
-	return retval(env, NIL_CELL);
+	/* if expression is NIL_CELL */
+	return NIL_CELL;
 }
 
 /*******************************************************************************
@@ -723,17 +712,16 @@ eval(state_t *s,
  * @param args
  * @return
  */
-static retval_t
+static cell_ptr_t
 symbol_define(state_t* s,
-	      cell_ptr_t env,
 	      cell_ptr_t args)
 {
 	cell_ptr_t sym	= list_head(args);
 	cell_ptr_t body	= list_head(list_tail(args));
 
 	cell_ptr_t pair	= list_make_pair(s, sym, body);
-	env	= list_cons(s, pair, env);
-	return retval(env, NIL_CELL);
+	s->registers.current_env	= list_cons(s, pair, s->registers.current_env);
+	return NIL_CELL;
 }
 
 /**
@@ -743,9 +731,8 @@ symbol_define(state_t* s,
  * @param args
  * @return
  */
-static retval_t
+static cell_ptr_t
 make_closure(state_t* s,
-	     cell_ptr_t env,
 	     cell_ptr_t args)
 {
 	cell_ptr_t	syms	= list_head(args);
@@ -760,17 +747,16 @@ make_closure(state_t* s,
 
 	closure->type	= CELL_CLOSURE;
 	closure->object.closure.lambda	= lambda;
-	closure->object.closure.env	= env;
-	return retval(env, closure);
+	closure->object.closure.env	= s->registers.current_env;
+	return closure;
 }
 
-static retval_t
+static cell_ptr_t
 display(state_t* s,
-	cell_ptr_t env,
 	cell_ptr_t args)
 {
 	print_cell(s, args, 0);
-	return retval(env, NIL_CELL);
+	return NIL_CELL;
 }
 
 /*******************************************************************************
@@ -790,8 +776,8 @@ state_add_ffi(state_t *s,
 	f->object.ffi.arg_count	= arg_count;
 	f->object.ffi.proc	= call;
 
-	cell_ptr_t	p	= list_make_pair(s, c, f);
-	s->environment.env	= list_cons(s, p, s->environment.env);
+	cell_ptr_t	p		= list_make_pair(s, c, f);
+	s->registers.current_env	= list_cons(s, p, s->registers.current_env);
 }
 
 state_t*
