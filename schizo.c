@@ -580,7 +580,11 @@ symbol_lookup(cell_ptr_t env,
 
 	while( pair != NIL_CELL && strcmp(sym, list_head(pair)->object.symbol) != 0 ) {
 		env	= list_tail(env);
-		pair	= list_head(env);
+		if( env != NIL_CELL ) {
+			pair	= list_head(env);
+		} else {
+			pair	= NIL_CELL;
+		}
 	}
 
 	if( pair == NIL_CELL ) {
@@ -619,6 +623,19 @@ eval_list(state_t* s,
 	return list_reverse_in_place(res);
 }
 
+static INLINE void
+bind(state_t* s,
+     cell_ptr_t b)
+{
+	if( b->type == CELL_BIND ) {
+		cell_ptr_t	sympair = b->object.bindings;
+		while( sympair != NIL_CELL ) {
+			s->registers.current_env = list_cons(s, sympair, s->registers.current_env);
+			sympair	= list_tail(sympair);
+		}
+	}
+}
+
 #define RETURN(EXP)	retval = EXP; pop_env(s); return retval
 
 cell_ptr_t
@@ -641,14 +658,12 @@ eval(state_t *s,
 		case CELL_CLOSURE:
 		case CELL_FFI:
 		case CELL_QUOTE:
+		case CELL_BIND:
 			RETURN(exp);
 
 		/* symbols */
 		case ATOM_SYMBOL:
 			RETURN(symbol_lookup(s->registers.current_env, exp->object.symbol));
-
-		/* symbol binding */
-		case CELL_BIND:
 
 		/* applications */
 		case CELL_PAIR:	{
@@ -704,7 +719,8 @@ eval(state_t *s,
 					exp	= list_head(body);
 
 					while( !is_nil(next) ) {
-						exp	= eval(s, exp);	/* never return a tail call */
+						bind(s, eval(s, exp));	/* never return a tail call */
+
 						exp	= list_head(next);
 						next	= list_tail(next);
 					}
@@ -751,8 +767,9 @@ symbol_define(state_t* s,
 	cell_ptr_t body	= list_head(list_tail(args));
 
 	cell_ptr_t pair	= list_make_pair(s, sym, body);
-	s->registers.current_env	= list_cons(s, pair, s->registers.current_env);
-	return NIL_CELL;
+	cell_ptr_t ret	= cell_new_bind_list(s);
+	ret->object.bindings	= list_cons(s, pair, ret->object.bindings);
+	return ret;
 }
 
 /**
