@@ -578,6 +578,7 @@ symbol_lookup(cell_ptr_t env,
 {
 	cell_ptr_t	pair	= list_head(env);
 
+
 	while( pair != NIL_CELL && strcmp(sym, list_head(pair)->object.symbol) != 0 ) {
 		env	= list_tail(env);
 		if( env != NIL_CELL ) {
@@ -630,9 +631,19 @@ bind(state_t* s,
 	if( b->type == CELL_BIND ) {
 		cell_ptr_t	sympair = b->object.bindings;
 		while( sympair != NIL_CELL ) {
-			s->registers.current_env = list_cons(s, sympair, s->registers.current_env);
+			s->registers.current_env = list_cons(s, list_head(sympair), s->registers.current_env);
 			sympair	= list_tail(sympair);
 		}
+	}
+}
+
+static void
+print_env(state_t* s)
+{
+	cell_ptr_t l	= s->registers.current_env;
+	while( l != NIL_CELL ) {
+		fprintf(stderr, "* %s\n", list_head(list_head(l))->object.symbol);
+		l	= list_tail(l);
 	}
 }
 
@@ -647,6 +658,7 @@ eval(state_t *s,
 	push_env(s);	/* save the environment before doing anything */
 
 	while( exp != NIL_CELL ) {	/* not a NIL_CELL */
+		print_env(s);
 		switch( exp->type ) {
 		/* constants */
 		case ATOM_BOOL:
@@ -719,7 +731,8 @@ eval(state_t *s,
 					exp	= list_head(body);
 
 					while( !is_nil(next) ) {
-						bind(s, eval(s, exp));	/* never return a tail call */
+						print_env(s);
+						bind(s, eval(s, exp));	/* eval and bind */
 
 						exp	= list_head(next);
 						next	= list_tail(next);
