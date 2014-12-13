@@ -627,7 +627,8 @@ eval(state_t *s,
 {
 	cell_ptr_t	retval	= NIL_CELL;
 
-	push_env(s);
+	push_env(s);	/* save the environment before doing anything */
+
 	while( exp != NIL_CELL ) {	/* not a NIL_CELL */
 		switch( exp->type ) {
 		/* constants */
@@ -826,5 +827,10 @@ state_new()
 void
 state_release(state_t *s)
 {
+	if( s->gc_block.cells ) {
+		/* TODO: release all cells individually */
+		free(s->gc_block.cells);
+	}
+
 	free(s);
 }
