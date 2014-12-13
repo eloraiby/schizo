@@ -72,12 +72,6 @@ typedef struct cell_t*	cell_ptr_t;
 
 typedef struct state_t	state_t;
 
-/* return value of an evaluation */
-typedef struct retval_t {
-	cell_ptr_t	env;
-	cell_ptr_t	exp;
-} retval_t;
-
 /* quote */
 typedef struct quote_t {
 	cell_ptr_t	list;
@@ -135,6 +129,7 @@ typedef struct cell_t {
 		pair_t		pair;
 		quote_t		quote;
 		lambda_t	lambda;
+		cell_ptr_t	bindings;	/* list of bindings */
 		closure_t	closure;
 		ffi_t		ffi;
 	} object;

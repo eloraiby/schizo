@@ -78,6 +78,7 @@ sexpr		::= CELL_CLOSURE.			/* closure */
 sexpr		::= CELL_FFI.				/* foreign function interface */
 sexpr		::= CELL_LAMBDA.			/* lambda */
 sexpr		::= CELL_QUOTE.				/* quote (this should could have been replaced with objects, but will increase the complexity of the evaluator) */
+sexpr		::= CELL_BIND.				/* bind symbol */
 sexpr		::= ATOM_ERROR.				/* error */
 
 /* ( ... ) */

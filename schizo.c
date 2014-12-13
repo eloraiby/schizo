@@ -441,6 +441,15 @@ schizo_error(state_t* s,
 	return ret;
 }
 
+cell_ptr_t
+cell_new_bind_list(state_t* s)
+{
+	cell_ptr_t ret	= cell_alloc(s);
+	ret->type	= CELL_BIND;
+	ret->object.bindings	= NIL_CELL;
+	return ret;
+}
+
 /*
 cell_ptr_t
 atom_new_unary_op(state_t* s,
@@ -585,6 +594,19 @@ symbol_lookup(cell_ptr_t env,
 	}
 }
 
+static INLINE void
+push_env(state_t* s)
+{
+	s->registers.env_stack = list_cons(s, s->registers.current_env, s->registers.env_stack);
+}
+
+static INLINE void
+pop_env(state_t* s)
+{
+	s->registers.env_stack = list_tail(s->registers.env_stack);
+}
+
+
 static cell_ptr_t
 eval_list(state_t* s,
 	  cell_ptr_t expr)
@@ -597,10 +619,15 @@ eval_list(state_t* s,
 	return list_reverse_in_place(res);
 }
 
+#define RETURN(EXP)	retval = EXP; pop_env(s); return retval
+
 cell_ptr_t
 eval(state_t *s,
      cell_ptr_t exp)
 {
+	cell_ptr_t	retval	= NIL_CELL;
+
+	push_env(s);
 	while( exp != NIL_CELL ) {	/* not a NIL_CELL */
 		switch( exp->type ) {
 		/* constants */
@@ -613,18 +640,21 @@ eval(state_t *s,
 		case CELL_CLOSURE:
 		case CELL_FFI:
 		case CELL_QUOTE:
-			return exp;
+			RETURN(exp);
 
-			/* symbols */
+		/* symbols */
 		case ATOM_SYMBOL:
-			return symbol_lookup(s->registers.current_env, exp->object.symbol);
+			RETURN(symbol_lookup(s->registers.current_env, exp->object.symbol));
 
-			/* applications */
+		/* symbol binding */
+		case CELL_BIND:
+
+		/* applications */
 		case CELL_PAIR:	{
 			cell_ptr_t	head	= eval(s, list_head(exp));
 
 			if( head == NIL_CELL ) {
-				return NIL_CELL;
+				RETURN(NIL_CELL);
 			}
 
 			cell_ptr_t	tail	= list_tail(exp);
@@ -635,9 +665,9 @@ eval(state_t *s,
 					uint32	l	= list_length(tail);
 					if( head->object.ffi.arg_count > 0 && l != head->object.ffi.arg_count ) {
 						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, head->object.ffi.arg_count);
-						return NIL_CELL;
+						RETURN(NIL_CELL);
 					} else {
-						return head->object.ffi.proc(s, eval_list(s, tail));
+						RETURN(head->object.ffi.proc(s, eval_list(s, tail)));
 					}
 				} else {	/* lambda, define, if */
 					exp	= head->object.ffi.proc(s, tail);
@@ -652,7 +682,7 @@ eval(state_t *s,
 
 				/* evaluate the arguments and zip them */
 				if( list_length(tail) != list_length(lambda->object.lambda.syms) ) {
-					return schizo_error(s, "ERROR: closure arguments do not match given arguments");
+					RETURN(schizo_error(s, "ERROR: closure arguments do not match given arguments"));
 				}
 				cell_ptr_t	args	= eval_list(s, tail);
 				cell_ptr_t	syms	= lambda->object.lambda.syms;
@@ -664,7 +694,7 @@ eval(state_t *s,
 				}
 
 				if( is_nil(syms) != is_nil(args) ) {
-					return schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other");
+					RETURN(schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
 					/* all good, evaluate the body(*) */
 					cell_ptr_t	body	= lambda->object.lambda.body;
@@ -698,7 +728,7 @@ eval(state_t *s,
 	}
 
 	/* if expression is NIL_CELL */
-	return NIL_CELL;
+	RETURN(NIL_CELL);
 }
 
 /*******************************************************************************
