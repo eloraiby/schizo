@@ -85,7 +85,7 @@ main(int argc,
 	state_release(state);
 
 	state	= state_new();
-	char* example	= "((lambda () (define str \"hello\") (display str))())";
+	char* example	= "((lambda () (define str \"hello\") (define b #t) (if b (display \"true\") else (display \"false\")))())";
 	parse(state, example);
 	eval(state, state->root);
 	gettimeofday(&start, NULL);
