@@ -777,6 +777,40 @@ make_closure(state_t* s,
 }
 
 static cell_ptr_t
+if_else(state_t* s,
+	cell_ptr_t args)
+{
+	cell_ptr_t	cond	= NIL_CELL;
+	cell_ptr_t	exp0	= NIL_CELL;
+	cell_ptr_t	elsym	= NIL_CELL;
+	cell_ptr_t	exp1	= NIL_CELL;
+
+	if( list_length(s, args) != 4 ) {
+		return schizo_error(s, "ERROR in \"if\" usage: if cond exp0 else exp1");
+	}
+
+	cond	= list_head(s, args);
+	exp0	= list_head(s, list_tail(s, args));
+	elsym	= list_head(s, list_tail(s, list_tail(s, args)));
+	exp1	= list_head(s, list_tail(s, list_tail(s, list_tail(s, args))));
+
+	if( cell_type(s, elsym) == ATOM_SYMBOL && strcmp(index_to_cell(s, elsym)->object.symbol, "else") == 0 ) {
+		cell_ptr_t b	= eval(s, cond);
+		if( cell_type(s, b) != ATOM_BOOL ) {
+			return schizo_error(s, "ERROR: if requires condition to be boolean");
+		}
+
+		if( index_to_cell(s, b)->object.boolean ) {
+			return exp0;
+		} else {
+			return exp1;
+		}
+	} else {
+		return schizo_error(s, "ERROR: if requires \"else\" keyword: if cond exp0 else exp1");
+	}
+}
+
+static cell_ptr_t
 display(state_t* s,
 	cell_ptr_t args)
 {
@@ -813,9 +847,10 @@ state_new()
 	state_t*	state	= (state_t*)malloc(sizeof(state_t));
 	memset(state, 0, sizeof(state_t));
 
-	state_add_ffi(state, false, "lambda", make_closure, -1);
-	state_add_ffi(state, false, "define", symbol_define, 2);
-	state_add_ffi(state, true, "display", display, 1);
+	state_add_ffi(state, false, "lambda",  make_closure, -1);
+	state_add_ffi(state, false, "define",  symbol_define, 2);
+	state_add_ffi(state, true,  "display", display,       1);
+	state_add_ffi(state, false, "if",      if_else,       4);
 
 	return state;
 }
