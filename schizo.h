@@ -68,7 +68,13 @@ typedef uint16		CELL_TYPE;
 struct cons_t;
 struct closure_t;
 struct cell_t;
-typedef struct cell_t*	cell_ptr_t;
+
+/* strong typing int with unit of measures */
+typedef struct cell_ptr_t {
+	uint32		index;
+} cell_ptr_t;
+
+static INLINE cell_ptr_t	cell_ptr(uint32 idx)	{ cell_ptr_t ret = { idx }; return ret; }
 
 typedef struct state_t	state_t;
 
@@ -161,20 +167,27 @@ struct state_t {
  * Inline helpers
  */
 
-#define NIL_CELL	0x0
-#define is_nil(c)	((c) == NIL_CELL)
+#define NIL_CELL	cell_ptr(0x0)
 
-#define list_head(l)				((l)->object.pair.head)
-#define list_tail(l)				((l)->object.pair.tail)
-#define cell_type(c)				((c)->type)
+#define is_nil(c)	((c).index == NIL_CELL.index)
 
-#define gc_mark_reachable(c)			{	(c)->flags	|= GC_REACHABLE;	}
-#define gc_mark_unreachable(c)			{	(c)->flags	&= ~GC_REACHABLE; 	}
-#define gc_is_reachable(c)			(((c)->flags & GC_REACHABLE) ? true : false)
+#define cell_type(s, c)				(index_to_cell(s, c)->type)
+
+static INLINE cell_t*		index_to_cell(state_t* s, cell_ptr_t c)	{ return &(s->gc_block.cells[c.index]);		}
+static INLINE cell_ptr_t	cell_to_index(state_t* s, cell_t* c)	{ cell_ptr_t ret = { (uint32)(c - s->gc_block.cells) }; return ret; 	}
+
+static INLINE cell_ptr_t	list_head(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.head; }
+static INLINE cell_ptr_t	list_tail(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.tail; }
+
+
+#define gc_mark_reachable(s, c)			{	index_to_cell(s, c)->flags	|= GC_REACHABLE;	}
+#define gc_mark_unreachable(s, c)		{	index_to_cell(s, c)->flags	&= ~GC_REACHABLE; 	}
+#define gc_is_reachable(s, c)			((index_to_cell(s, c)->flags & GC_REACHABLE) ? true : false)
 
 #define gc_pin(c)				{	(c)->flags	|= GC_PINNED;		}
 #define gc_unpin(c)				{	(c)->flags	&= ~GC_PINNED; 		}
 #define gc_is_pinned(c)				(((c)->flags & GC_PINNED) ? true : false)
+
 
 /* printing */
 void		print_cell(state_t* s, cell_ptr_t c, uint32 level);
@@ -196,8 +209,8 @@ cell_ptr_t	list_new(state_t* s, cell_ptr_t head);
 cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
 #define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
 
-cell_ptr_t	list_reverse_in_place(cell_ptr_t list);
-uint32		list_length(cell_ptr_t list);
+cell_ptr_t	list_reverse_in_place(state_t* s, cell_ptr_t list);
+uint32		list_length(state_t* s, cell_ptr_t list);
 
 /* vectors */
 cell_ptr_t	cell_vector(state_t* s, uint32 count);

@@ -30,7 +30,6 @@
 #include "schizo.h"
 }
 
-%type cell	{ cell_ptr_t }
 %type program	{ cell_ptr_t }
 %type cell_list	{ cell_ptr_t }
 
@@ -83,28 +82,28 @@ sexpr		::= ATOM_ERROR.				/* error */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(B) == CELL_PAIR ) ? list_reverse_in_place(B) : B); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(B) == CELL_PAIR ) ? list_reverse_in_place(B) : B); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse_in_place(s, B) : B); }
 sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"),
-									   list_cons(s, B, ( cell_type(C) == CELL_PAIR ) ? list_reverse_in_place(C) : C)); }
+									   list_cons(s, B, ( cell_type(s, C) == CELL_PAIR ) ? list_reverse_in_place(s, C) : C)); }
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
 
 list(A)		::= ilist(B).				{ A = list_new(s, B); }
 list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
 
-se_members(A)	::=.					{ cell_ptr_t nil = { 0 }; A = list_new(s, nil); }
-se_members(A)	::= list(B).				{ A = list_reverse_in_place(B); }
+se_members(A)	::=.					{ A = list_new(s, NIL_CELL); }
+se_members(A)	::= list(B).				{ A = list_reverse_in_place(s, B); }
 
 /* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
-be_members(A)	::= list(B).				{ A = list_reverse_in_place(B); }
+be_members(A)	::= list(B).				{ A = list_reverse_in_place(s, B); }
 
 /* { ... } */
-member_list(A)	::=.					{ cell_ptr_t nil = { 0 }; A = list_new(s, nil); }
-member_list(A)	::= be_members(B).			{ A = list_new(s, (list_length(B) == 1) ? list_head(B) : B); }
-member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(C) == 1) ? list_head(C) : C,  B); }
+member_list(A)	::=.					{ A = list_new(s, NIL_CELL); }
+member_list(A)	::= be_members(B).			{ A = list_new(s, (list_length(s, B) == 1) ? list_head(s, B) : B); }
+member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(s, C) == 1) ? list_head(s, C) : C,  B); }
 
 /* TODO: operator precedence */

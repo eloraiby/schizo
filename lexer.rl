@@ -31,9 +31,9 @@
 			state->token_line	= line; \
 			copy_token(ts, te, tmp); \
 			state->current_cell	= token_to_##A(state, tmp); \
-			parser_advance(parser, state->current_cell->type, state->current_cell, state)
+			parser_advance(parser, index_to_cell(state, state->current_cell)->type, state->current_cell, state)
 
-#define ADVANCE_TOKEN(A)	parser_advance(parser, A, nil, state)
+#define ADVANCE_TOKEN(A)	parser_advance(parser, A, NIL_CELL, state)
 
 #define PUSH_TE()	const char* tmp_te = te
 #define POP_TE()	te	= tmp_te
@@ -236,7 +236,7 @@ parse(state_t* state, const char* str)
 		exit(1);
 	}
 
-	parser_advance(parser, 0, nil, state);
+	parser_advance(parser, 0, NIL_CELL, state);
 
 	parser_free(parser, free);
 }
