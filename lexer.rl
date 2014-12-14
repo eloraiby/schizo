@@ -213,7 +213,6 @@ parse(state_t* state, const char* str)
 	int		act	= 0;
 	int		cs	= 0;
 	char		tmp[4096];
-	cell_ptr_t	nil	= { 0 };
 
 	state->root	= NIL_CELL;
 

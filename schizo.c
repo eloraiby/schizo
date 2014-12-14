@@ -798,7 +798,7 @@ state_add_ffi(state_t *s,
 	cell_ptr_t	_f	= cell_alloc(s);
 	cell_t*		f	= index_to_cell(s, _f);
 
-	f->type	= CELL_FFI;
+	f->type		= CELL_FFI;
 	f->flags	|= eval_args ? EVAL_ARGS : 0;
 	f->object.ffi.arg_count	= arg_count;
 	f->object.ffi.proc	= call;

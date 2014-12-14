@@ -269,7 +269,6 @@ parse(state_t* state, const char* str)
 	int		act	= 0;
 	int		cs	= 0;
 	char		tmp[4096];
-	cell_ptr_t	nil	= { 0 };
 
 	state->root	= NIL_CELL;
 
@@ -278,7 +277,7 @@ parse(state_t* state, const char* str)
 	memset(tmp, 0, sizeof(tmp));
 
 	
-#line 282 "/home/aifu/Projects/schizo/lexer.c"
+#line 281 "/home/aifu/Projects/schizo/lexer.c"
 	{
 	cs = scanner_start;
 	ts = 0;
@@ -286,14 +285,14 @@ parse(state_t* state, const char* str)
 	act = 0;
 	}
 
-#line 225 "/home/aifu/Projects/schizo/lexer.rl"
+#line 224 "/home/aifu/Projects/schizo/lexer.rl"
 
 	const char*	p = str;
 	const char*	pe = p + strlen(str) + 1;
 	const char*	eof = 0;
 
 	
-#line 297 "/home/aifu/Projects/schizo/lexer.c"
+#line 296 "/home/aifu/Projects/schizo/lexer.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -314,7 +313,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 318 "/home/aifu/Projects/schizo/lexer.c"
+#line 317 "/home/aifu/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -558,7 +557,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 562 "/home/aifu/Projects/schizo/lexer.c"
+#line 561 "/home/aifu/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -571,7 +570,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 575 "/home/aifu/Projects/schizo/lexer.c"
+#line 574 "/home/aifu/Projects/schizo/lexer.c"
 		}
 	}
 
@@ -591,7 +590,7 @@ _again:
 	_out: {}
 	}
 
-#line 231 "/home/aifu/Projects/schizo/lexer.rl"
+#line 230 "/home/aifu/Projects/schizo/lexer.rl"
 
 	/* Check if we failed. */
 	if ( cs == scanner_error ) {
