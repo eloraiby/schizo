@@ -21,6 +21,9 @@
 #include "schizo.h"
 #include <stdio.h>
 
+/* little helpers */
+#define ITC(A)			index_to_cell(s, A)
+
 /*******************************************************************************
 ** memory management
 *******************************************************************************/
@@ -30,7 +33,7 @@ static void
 free_cell(state_t* s,
 	  cell_ptr_t ptr)
 {
-	cell_t*	p	= index_to_cell(s, ptr);
+	cell_t*	p	= ITC(ptr);
 
 	switch( p->type ) {
 	case ATOM_BOOL:
@@ -149,7 +152,7 @@ static INLINE void
 mark_cell(state_t* s, cell_ptr_t cell)
 {
 	if( !is_nil(cell) && !gc_is_reachable(s, cell) ) {
-		cell_t*		c	= index_to_cell(s, cell);
+		cell_t*		c	= ITC(cell);
 		cell_ptr_t	cell2	= NIL_CELL;
 
 		gc_mark_reachable(s, cell);
@@ -176,7 +179,7 @@ mark_cell(state_t* s, cell_ptr_t cell)
 			assert( c->object.pair.head.index != cell.index );
 			while( !is_nil(cell2) && !gc_is_reachable(s, cell2) ) {
 				gc_mark_reachable(s, cell2);
-				mark_cell(s, index_to_cell(s, cell2)->object.pair.head);
+				mark_cell(s, ITC(cell2)->object.pair.head);
 				cell2	= list_tail(s, cell2);
 			}
 
@@ -253,7 +256,7 @@ print_cell(state_t* s,
 	   cell_ptr_t cell,
 	   uint32 level)
 {
-	cell_t* c	= index_to_cell(s, cell);
+	cell_t* c	= ITC(cell);
 	print_level(level);
 	switch( c->type ) {
 	case ATOM_BOOL:
@@ -327,8 +330,8 @@ print_cell(state_t* s,
 #define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_ptr_t \
 	atom_new_ ## TYPE(state_t* s, TYPE v) { \
 	cell_ptr_t r	= cell_alloc(s); \
-	index_to_cell(s, r)->type	= ENUM; \
-	index_to_cell(s, r)->object.FIELD	= v; \
+	ITC(r)->type	= ENUM; \
+	ITC(r)->object.FIELD	= v; \
 	return r; \
 	}
 
@@ -339,9 +342,9 @@ atom_new_symbol(state_t* s,
 	size_t len	= strlen(b);
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= ATOM_SYMBOL;
-	index_to_cell(s, r)->object.symbol	= (char*)(malloc(len + 1));
-	memcpy(index_to_cell(s, r)->object.symbol, b, len + 1);
+	ITC(r)->type	= ATOM_SYMBOL;
+	ITC(r)->object.symbol	= (char*)(malloc(len + 1));
+	memcpy(ITC(r)->object.symbol, b, len + 1);
 	return r;
 }
 
@@ -351,8 +354,8 @@ atom_new_boolean(state_t* s,
 {
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= ATOM_BOOL;
-	index_to_cell(s, r)->object.boolean	= b;
+	ITC(r)->type	= ATOM_BOOL;
+	ITC(r)->object.boolean	= b;
 	return r;
 }
 
@@ -362,8 +365,8 @@ atom_new_char(state_t* s,
 {
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= ATOM_CHAR;
-	index_to_cell(s, r)->object.ch	= c;
+	ITC(r)->type	= ATOM_CHAR;
+	ITC(r)->object.ch	= c;
 	return r;
 }
 
@@ -377,9 +380,9 @@ atom_new_string(state_t* s,
 	size_t len	= strlen(b);
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= ATOM_STRING;
-	index_to_cell(s, r)->object.string	= (char*)(malloc(len + 1));
-	memcpy(index_to_cell(s, r)->object.string, b, len + 1);
+	ITC(r)->type	= ATOM_STRING;
+	ITC(r)->object.string	= (char*)(malloc(len + 1));
+	memcpy(ITC(r)->object.string, b, len + 1);
 	return r;
 }
 
@@ -390,9 +393,9 @@ schizo_error(state_t* s,
 	size_t len	= strlen(error);
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= ATOM_ERROR;
-	index_to_cell(s, r)->object.string	= (char*)(malloc(len + 1));
-	memcpy(index_to_cell(s, r)->object.string, error, len + 1);
+	ITC(r)->type	= ATOM_ERROR;
+	ITC(r)->object.string	= (char*)(malloc(len + 1));
+	memcpy(ITC(r)->object.string, error, len + 1);
 	return r;
 }
 
@@ -401,8 +404,8 @@ cell_new_bind_list(state_t* s)
 {
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= CELL_BIND;
-	index_to_cell(s, r)->object.bindings	= NIL_CELL;
+	ITC(r)->type	= CELL_BIND;
+	ITC(r)->object.bindings	= NIL_CELL;
 	return r;
 }
 
@@ -448,9 +451,9 @@ list_new(state_t* s,
 {
 	cell_ptr_t r	= cell_alloc(s);
 
-	index_to_cell(s, r)->type	= CELL_PAIR;
-	index_to_cell(s, r)->object.pair.head	= head;
-	index_to_cell(s, r)->object.pair.tail	= NIL_CELL;
+	ITC(r)->type	= CELL_PAIR;
+	ITC(r)->object.pair.head	= head;
+	ITC(r)->object.pair.tail	= NIL_CELL;
 	return r;
 }
 
@@ -463,7 +466,7 @@ list_cons(state_t* s,
 
 	assert( is_nil(tail) || cell_type(s, tail) == CELL_PAIR );
 
-	index_to_cell(s, r)->object.pair.tail	= tail;
+	ITC(r)->object.pair.tail	= tail;
 
 	return r;
 }
@@ -500,13 +503,13 @@ list_reverse_in_place(state_t* s, cell_ptr_t list)
 
 			tmp		= list_tail(s, next);
 
-			index_to_cell(s, next)->object.pair.tail	= curr;
+			ITC(next)->object.pair.tail	= curr;
 
 			curr		= next;
 			next		= tmp;
 		}
 
-		index_to_cell(s, list)->object.pair.tail	= NIL_CELL;
+		ITC(list)->object.pair.tail	= NIL_CELL;
 		return curr;
 	} else {
 		return list;
@@ -542,7 +545,7 @@ symbol_lookup(state_t* s,
 {
 	cell_ptr_t	pair	= list_head(s, env);
 
-	while( !is_nil(pair) && strcmp(sym, index_to_cell(s, list_head(s, pair))->object.symbol) != 0 ) {
+	while( !is_nil(pair) && strcmp(sym, ITC(list_head(s, pair))->object.symbol) != 0 ) {
 		env	= list_tail(s, env);
 		if( !is_nil(env) ) {
 			pair	= list_head(s, env);
@@ -592,7 +595,7 @@ bind(state_t* s,
      cell_ptr_t b)
 {
 	if( cell_type(s, b) == CELL_BIND ) {
-		cell_ptr_t	sympair = index_to_cell(s, b)->object.bindings;
+		cell_ptr_t	sympair = ITC(b)->object.bindings;
 		while( !is_nil(sympair) ) {
 			s->registers.current_env = list_cons(s, list_head(s, sympair), s->registers.current_env);
 			sympair	= list_tail(s, sympair);
@@ -640,7 +643,7 @@ eval(state_t *s,
 
 		/* symbols */
 		case ATOM_SYMBOL:
-			RETURN(symbol_lookup(s, s->registers.current_env, index_to_cell(s, exp)->object.symbol));
+			RETURN(symbol_lookup(s, s->registers.current_env, ITC(exp)->object.symbol));
 
 		/* applications */
 		case CELL_PAIR:	{
@@ -655,31 +658,31 @@ eval(state_t *s,
 
 			switch( cell_type(s, head) ) {
 			case CELL_FFI:
-				if( index_to_cell(s, head)->flags & EVAL_ARGS ) {
+				if( ITC(head)->flags & EVAL_ARGS ) {
 					uint32	l	= list_length(s, tail);
-					if( index_to_cell(s, head)->object.ffi.arg_count > 0 && l != index_to_cell(s, head)->object.ffi.arg_count ) {
-						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, index_to_cell(s, head)->object.ffi.arg_count);
+					if( ITC(head)->object.ffi.arg_count > 0 && l != ITC(head)->object.ffi.arg_count ) {
+						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, ITC(head)->object.ffi.arg_count);
 						RETURN(NIL_CELL);
 					} else {
-						RETURN(index_to_cell(s, head)->object.ffi.proc(s, eval_list(s, tail)));
+						RETURN(ITC(head)->object.ffi.proc(s, eval_list(s, tail)));
 					}
 				} else {	/* lambda, define, if */
-					exp	= index_to_cell(s, head)->object.ffi.proc(s, tail);
+					exp	= ITC(head)->object.ffi.proc(s, tail);
 				}
 				break;
 			case CELL_CLOSURE: {
 				cell_ptr_t	args	= NIL_CELL;
 				cell_ptr_t	syms	= NIL_CELL;
-				cell_ptr_t	lambda	= index_to_cell(s, head)->object.closure.lambda;
+				cell_ptr_t	lambda	= ITC(head)->object.closure.lambda;
 
-				s->registers.current_env	= index_to_cell(s, head)->object.closure.env;
+				s->registers.current_env	= ITC(head)->object.closure.env;
 
 				/* evaluate the arguments and zip them */
-				if( list_length(s, tail) != list_length(s, index_to_cell(s, lambda)->object.lambda.syms) ) {
+				if( list_length(s, tail) != list_length(s, ITC(lambda)->object.lambda.syms) ) {
 					RETURN(schizo_error(s, "ERROR: closure arguments do not match given arguments"));
 				}
 				args	= eval_list(s, tail);
-				syms	= index_to_cell(s, lambda)->object.lambda.syms;
+				syms	= ITC(lambda)->object.lambda.syms;
 
 				while( !is_nil(list_head(s, syms)) && !is_nil(list_head(s, args)) ) {
 					s->registers.current_env	= list_cons(s, list_make_pair(s, list_head(s, syms), list_head(s, args)), s->registers.current_env);
@@ -691,7 +694,7 @@ eval(state_t *s,
 					RETURN(schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
 					/* all good, evaluate the body(*) */
-					cell_ptr_t	body	= index_to_cell(s, lambda)->object.lambda.body;
+					cell_ptr_t	body	= ITC(lambda)->object.lambda.body;
 					cell_ptr_t	next	= list_tail(s, body);
 
 					exp	= list_head(s, body);
@@ -747,7 +750,7 @@ symbol_define(state_t* s,
 
 	cell_ptr_t pair	= list_make_pair(s, sym, body);
 	cell_ptr_t ret	= cell_new_bind_list(s);
-	index_to_cell(s, ret)->object.bindings	= list_cons(s, pair, index_to_cell(s, ret)->object.bindings);
+	ITC(ret)->object.bindings	= list_cons(s, pair, ITC(ret)->object.bindings);
 	return ret;
 }
 
@@ -768,13 +771,13 @@ make_closure(state_t* s,
 	cell_ptr_t	closure	= cell_alloc(s);
 	cell_ptr_t	lambda	= cell_alloc(s);
 
-	index_to_cell(s, lambda)->type	= CELL_LAMBDA;
-	index_to_cell(s, lambda)->object.lambda.syms	= syms;
-	index_to_cell(s, lambda)->object.lambda.body	= body;
+	ITC(lambda)->type	= CELL_LAMBDA;
+	ITC(lambda)->object.lambda.syms	= syms;
+	ITC(lambda)->object.lambda.body	= body;
 
-	index_to_cell(s, closure)->type	= CELL_CLOSURE;
-	index_to_cell(s, closure)->object.closure.lambda	= lambda;
-	index_to_cell(s, closure)->object.closure.env		= s->registers.current_env;
+	ITC(closure)->type	= CELL_CLOSURE;
+	ITC(closure)->object.closure.lambda	= lambda;
+	ITC(closure)->object.closure.env	= s->registers.current_env;
 	return closure;
 }
 
@@ -796,13 +799,13 @@ if_else(state_t* s,
 	elsym	= list_head(s, list_tail(s, list_tail(s, args)));
 	exp1	= list_head(s, list_tail(s, list_tail(s, list_tail(s, args))));
 
-	if( cell_type(s, elsym) == ATOM_SYMBOL && strcmp(index_to_cell(s, elsym)->object.symbol, "else") == 0 ) {
+	if( cell_type(s, elsym) == ATOM_SYMBOL && strcmp(ITC(elsym)->object.symbol, "else") == 0 ) {
 		cell_ptr_t b	= eval(s, cond);
 		if( cell_type(s, b) != ATOM_BOOL ) {
 			return schizo_error(s, "ERROR: if requires condition to be boolean");
 		}
 
-		if( index_to_cell(s, b)->object.boolean ) {
+		if( ITC(b)->object.boolean ) {
 			return exp0;
 		} else {
 			return exp1;
@@ -834,10 +837,10 @@ state_add_ffi(state_t *s,
 	cell_ptr_t	_s	= atom_new_symbol(s, sym);
 	cell_ptr_t	f	= cell_alloc(s);
 
-	index_to_cell(s, f)->type		= CELL_FFI;
-	index_to_cell(s, f)->flags	|= eval_args ? EVAL_ARGS : 0;
-	index_to_cell(s, f)->object.ffi.arg_count	= arg_count;
-	index_to_cell(s, f)->object.ffi.proc	= call;
+	ITC(f)->type	= CELL_FFI;
+	ITC(f)->flags	|= eval_args ? EVAL_ARGS : 0;
+	ITC(f)->object.ffi.arg_count	= arg_count;
+	ITC(f)->object.ffi.proc	= call;
 
 	p		= list_make_pair(s, _s, f);
 	s->registers.current_env	= list_cons(s, p, s->registers.current_env);
