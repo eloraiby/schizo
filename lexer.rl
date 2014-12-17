@@ -111,7 +111,7 @@ extern void	parser_advance(void *yyp, int yymajor, cell_ptr_t yyminor, state_t* 
 		( [+\-]? ( '0' | [1-9] [0-9]* ) [a-zA-Z_]+ )	{
 									fprintf(stderr, "Error: invalid number:\n    ");
 
-									for( const char* i = ts; i < te; ++i ) {
+									for( i = ts; i < te; ++i ) {
 										fprintf(stderr, "%c", *i);
 									}
 									fprintf(stderr, "\n");
@@ -210,6 +210,12 @@ parse(state_t* state, const char* str)
 	size_t		line	= 1;
 	const char*	ts	= str;
 	const char*	te	= str;
+	const char*	i	= NULL;
+
+	const char*	p	= str;
+	const char*	pe	= p + strlen(str) + 1;
+	const char*	eof	= NULL;
+
 	int		act	= 0;
 	int		cs	= 0;
 	char		tmp[4096];
@@ -221,10 +227,6 @@ parse(state_t* state, const char* str)
 	memset(tmp, 0, sizeof(tmp));
 
 	%% write init;
-
-	const char*	p = str;
-	const char*	pe = p + strlen(str) + 1;
-	const char*	eof = 0;
 
 	%% write exec;
 

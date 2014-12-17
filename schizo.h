@@ -29,7 +29,7 @@
 
 /* platform related */
 #ifdef __GNUC__
-#	define INLINE inline __attribute__ ((__unused__))
+#	define INLINE __inline__ __attribute__ ((__unused__))
 #	define UNUSED __attribute__ ((__unused__))
 #else
 #	define INLINE __inline
@@ -74,7 +74,7 @@ typedef struct cell_ptr_t {
 	uint32		index;
 } cell_ptr_t;
 
-static INLINE cell_ptr_t	cell_ptr(uint32 idx)	{ cell_ptr_t ret = { idx }; return ret; }
+static INLINE cell_ptr_t	cell_ptr(uint32 idx)	{ cell_ptr_t ret; ret.index = idx; return ret; }
 
 typedef struct state_t	state_t;
 
@@ -174,13 +174,13 @@ struct state_t {
 #define cell_type(s, c)				(index_to_cell(s, c)->type)
 
 static INLINE cell_t*		index_to_cell(state_t* s, cell_ptr_t c)	{ return &(s->gc_block.cells[c.index]);		}
-static INLINE cell_ptr_t	cell_to_index(state_t* s, cell_t* c)	{ cell_ptr_t ret = { (uint32)(c - s->gc_block.cells) }; return ret; 	}
+static INLINE cell_ptr_t	cell_to_index(state_t* s, cell_t* c)	{ cell_ptr_t ret; ret.index = (uint32)(c - s->gc_block.cells); return ret; 	}
 
 static INLINE cell_ptr_t	list_head(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.head; }
 static INLINE cell_ptr_t	list_tail(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.tail; }
 
 
-#define gc_mark_reachable(s, c)			{	index_to_cell(s, c)->flags	|= GC_REACHABLE;	}
+#define gc_mark_reachable(s, c)			{	index_to_cell(s, c)->flags	|= GC_REACHABLE;	fprintf(stderr, "reached: %u\n", c.index); }
 #define gc_mark_unreachable(s, c)		{	index_to_cell(s, c)->flags	&= ~GC_REACHABLE; 	}
 #define gc_is_reachable(s, c)			((index_to_cell(s, c)->flags & GC_REACHABLE) ? true : false)
 

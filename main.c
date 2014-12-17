@@ -34,8 +34,8 @@ main(int argc,
 
 	long mtime, seconds, useconds;
 
-	const char*	prog[]	= {
-		"(a)",
+	const char*	prog[]	= { ""
+/*		"(a)",
 		"((((a))))",
 		"(10 -11 +12)",
 		"(10.0 -10.1 +10.2)",
@@ -69,12 +69,14 @@ main(int argc,
 		"{ a + !b }",
 		"{ !a + !b }",
 
-
+*/
 	};
 
+	char*		example	= "((lambda () (define str \"hello\") (define b #t) (if b (display \"true\") else (display \"false\")))())";
+	size_t		i	= 0;
 	state_t*	state	= state_new();
 
-	for(size_t i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
+	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		parse(state, prog[i]);
 		print_cell(state, state->root, 0);
 		fprintf(stderr, "\n");
@@ -85,7 +87,6 @@ main(int argc,
 	state_release(state);
 
 	state	= state_new();
-	char* example	= "((lambda () (define str \"hello\") (define b #t) (if b (display \"true\") else (display \"false\")))())";
 	parse(state, example);
 	eval(state, state->root);
 	gettimeofday(&start, NULL);
