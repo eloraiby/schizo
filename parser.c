@@ -287,8 +287,8 @@ void parserTrace(FILE *TraceFILE, char *zTracePrompt){
 static const char *const yyTokenName[] = {
   "$",             "ATOM_SYMBOL",   "ATOM_BOOL",     "ATOM_CHAR",   
   "ATOM_SINT64",   "ATOM_REAL64",   "ATOM_STRING",   "CELL_FREE",   
-  "CELL_PAIR",     "CELL_VECTOR",   "CELL_CLOSURE",  "CELL_FFI",    
-  "CELL_LAMBDA",   "CELL_QUOTE",    "CELL_BIND",     "ATOM_ERROR",  
+  "CELL_PAIR",     "CELL_VECTOR",   "OP_CLOSURE",    "OP_FFI",      
+  "CELL_LAMBDA",   "CELL_QUOTE",    "OP_BIND",       "ATOM_ERROR",  
   "LPAR",          "RPAR",          "LBR",           "RBR",         
   "LSQB",          "RSQB",          "SEMICOL",       "error",       
   "program",       "cell_list",     "atom",          "sexpr",       
@@ -312,11 +312,11 @@ static const char *const yyRuleName[] = {
  /*   8 */ "sexpr ::= CELL_FREE",
  /*   9 */ "sexpr ::= CELL_PAIR",
  /*  10 */ "sexpr ::= CELL_VECTOR",
- /*  11 */ "sexpr ::= CELL_CLOSURE",
- /*  12 */ "sexpr ::= CELL_FFI",
+ /*  11 */ "sexpr ::= OP_CLOSURE",
+ /*  12 */ "sexpr ::= OP_FFI",
  /*  13 */ "sexpr ::= CELL_LAMBDA",
  /*  14 */ "sexpr ::= CELL_QUOTE",
- /*  15 */ "sexpr ::= CELL_BIND",
+ /*  15 */ "sexpr ::= OP_BIND",
  /*  16 */ "sexpr ::= ATOM_ERROR",
  /*  17 */ "sexpr ::= LPAR se_members RPAR",
  /*  18 */ "sexpr ::= LBR member_list RBR",
@@ -737,7 +737,7 @@ static void yy_reduce(
       case 0: /* program ::= atom */
       case 1: /* program ::= sexpr */ yytestcase(yyruleno==1);
 #line 62 "/home/aifu/Projects/schizo/parser.y"
-{ s->root = yymsp[0].minor.yy0; }
+{ set_cell(s, s->root, yymsp[0].minor.yy0); }
 #line 742 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 2: /* atom ::= ATOM_SYMBOL */
@@ -759,18 +759,18 @@ static void yy_reduce(
         break;
       case 18: /* sexpr ::= LBR member_list RBR */
 #line 86 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, yymsp[-1].minor.yy0) == CELL_PAIR ) ? list_reverse_in_place(s, yymsp[-1].minor.yy0) : yymsp[-1].minor.yy0); }
+{ yygotominor.yy0 = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, yymsp[-1].minor.yy0) == CELL_PAIR ) ? list_reverse(s, yymsp[-1].minor.yy0) : yymsp[-1].minor.yy0); }
 #line 764 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 19: /* sexpr ::= LBR member_list sc RBR */
 #line 87 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, yymsp[-2].minor.yy0) == CELL_PAIR ) ? list_reverse_in_place(s, yymsp[-2].minor.yy0) : yymsp[-2].minor.yy0); }
+{ yygotominor.yy0 = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, yymsp[-2].minor.yy0) == CELL_PAIR ) ? list_reverse(s, yymsp[-2].minor.yy0) : yymsp[-2].minor.yy0); }
 #line 769 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 20: /* sexpr ::= ilist LSQB member_list RSQB */
 #line 88 "/home/aifu/Projects/schizo/parser.y"
 { yygotominor.yy0 = list_cons(s, atom_new_symbol(s, "item"),
-									   list_cons(s, yymsp[-3].minor.yy0, ( cell_type(s, yymsp[-1].minor.yy0) == CELL_PAIR ) ? list_reverse_in_place(s, yymsp[-1].minor.yy0) : yymsp[-1].minor.yy0)); }
+									   list_cons(s, yymsp[-3].minor.yy0, ( cell_type(s, yymsp[-1].minor.yy0) == CELL_PAIR ) ? list_reverse(s, yymsp[-1].minor.yy0) : yymsp[-1].minor.yy0)); }
 #line 775 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 23: /* list ::= ilist */
@@ -792,7 +792,7 @@ static void yy_reduce(
       case 26: /* se_members ::= list */
       case 29: /* be_members ::= list */ yytestcase(yyruleno==29);
 #line 97 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = list_reverse_in_place(s, yymsp[0].minor.yy0); }
+{ yygotominor.yy0 = list_reverse(s, yymsp[0].minor.yy0); }
 #line 797 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 31: /* member_list ::= be_members */
@@ -809,11 +809,11 @@ static void yy_reduce(
       /* (8) sexpr ::= CELL_FREE */ yytestcase(yyruleno==8);
       /* (9) sexpr ::= CELL_PAIR */ yytestcase(yyruleno==9);
       /* (10) sexpr ::= CELL_VECTOR */ yytestcase(yyruleno==10);
-      /* (11) sexpr ::= CELL_CLOSURE */ yytestcase(yyruleno==11);
-      /* (12) sexpr ::= CELL_FFI */ yytestcase(yyruleno==12);
+      /* (11) sexpr ::= OP_CLOSURE */ yytestcase(yyruleno==11);
+      /* (12) sexpr ::= OP_FFI */ yytestcase(yyruleno==12);
       /* (13) sexpr ::= CELL_LAMBDA */ yytestcase(yyruleno==13);
       /* (14) sexpr ::= CELL_QUOTE */ yytestcase(yyruleno==14);
-      /* (15) sexpr ::= CELL_BIND */ yytestcase(yyruleno==15);
+      /* (15) sexpr ::= OP_BIND */ yytestcase(yyruleno==15);
       /* (16) sexpr ::= ATOM_ERROR */ yytestcase(yyruleno==16);
       /* (27) sc ::= SEMICOL */ yytestcase(yyruleno==27);
       /* (28) sc ::= sc SEMICOL */ yytestcase(yyruleno==28);

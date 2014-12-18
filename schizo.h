@@ -99,7 +99,8 @@ typedef struct lambda_t {
 typedef cell_ptr_t (*ffi_call_t)(state_t* s, cell_ptr_t args);
 
 typedef struct ffi_t {
-	uint32		arg_count;	/* total argument count, -1 = any */
+	uint16		flags;
+	sint16		arg_count;	/* total argument count, -1 = any */
 	ffi_call_t	proc;		/* the procedure */
 } ffi_t;
 
@@ -110,13 +111,10 @@ typedef struct closure_t {
 } closure_t;
 
 
-#define GC_REACHABLE	0x8000
-#define GC_PINNED	0x4000
-#define EVAL_ARGS	0x0800		/* arguments are evaluated before call */
-
+#define EVAL_ARGS	0x8000		/* arguments are evaluated before call */
+#define ARGS_ANY	-1		/* any number of argument */
 
 typedef struct cell_t {
-	uint16		flags;
 	CELL_TYPE	type;
 	uint32		ref_count;
 
@@ -180,15 +178,6 @@ static INLINE cell_ptr_t	list_head(state_t* s, cell_ptr_t l) { assert(cell_type(
 static INLINE cell_ptr_t	list_tail(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.tail; }
 
 
-#define gc_mark_reachable(s, c)			{	index_to_cell(s, c)->flags	|= GC_REACHABLE;	fprintf(stderr, "reached: %u\n", c.index); }
-#define gc_mark_unreachable(s, c)		{	index_to_cell(s, c)->flags	&= ~GC_REACHABLE; 	}
-#define gc_is_reachable(s, c)			((index_to_cell(s, c)->flags & GC_REACHABLE) ? true : false)
-
-#define gc_pin(c)				{	(c)->flags	|= GC_PINNED;		}
-#define gc_unpin(c)				{	(c)->flags	&= ~GC_PINNED; 		}
-#define gc_is_pinned(c)				(((c)->flags & GC_PINNED) ? true : false)
-
-
 /* printing */
 void		print_cell(state_t* s, cell_ptr_t c, uint32 level);
 
@@ -203,20 +192,61 @@ cell_ptr_t	atom_new_unary_op(state_t* s, const char* op);
 cell_ptr_t	atom_new_binary_op(state_t* s, const char* op);
 
 cell_ptr_t	schizo_error(state_t* s, const char* error);
+void		free_cell(state_t* s, cell_ptr_t ptr);
+
+static INLINE uint32
+__inc_ref_count(state_t* s,
+	      cell_ptr_t c)
+{
+	if( !is_nil(c) ) {
+		assert(index_to_cell(s, c)->ref_count <= 0xFFFFFFFF);
+		++(index_to_cell(s, c)->ref_count);
+		return index_to_cell(s, c)->ref_count;
+	} else {
+		return 0;
+	}
+}
+
+static INLINE uint32
+__dec_ref_count(state_t* s,
+	      cell_ptr_t c)
+{
+	if( !is_nil(c) ) {
+		assert(index_to_cell(s, c)->ref_count > 0);
+		--(index_to_cell(s, c)->ref_count);
+		if( index_to_cell(s, c)->ref_count == 0 ) {
+			free_cell(s, c);
+		}
+		return index_to_cell(s, c)->ref_count;
+	} else {
+		return 0;
+	}
+	return 0;
+}
+
+/*
+** set a cell: FIRST increase THEN decrease the counters.
+**	The order must be respected, especially for cases like set_cell(s, a, list_tail(s, a))
+**	where decreasing the ref count first, would cause the destruction of the tail!
+*/
+#define set_cell(s, c, v)	{ \
+					cell_ptr_t ev = v; \
+					assert( is_nil(c) || c.index != ev.index ); \
+					__inc_ref_count(s, ev); \
+					__dec_ref_count(s, c); \
+					c	= ev; \
+				}
 
 /* lists */
 cell_ptr_t	list_new(state_t* s, cell_ptr_t head);
 cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
 #define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
 
-cell_ptr_t	list_reverse_in_place(state_t* s, cell_ptr_t list);
+cell_ptr_t	list_reverse(state_t* s, cell_ptr_t list);
 uint32		list_length(state_t* s, cell_ptr_t list);
 
 /* vectors */
 cell_ptr_t	cell_vector(state_t* s, uint32 count);
-
-/* garbage collector */
-uint32		gc(state_t* state);
 
 /* parser.y / lexer.rl */
 void		parse(state_t* state, const char* str);
@@ -225,10 +255,6 @@ void		parse(state_t* state, const char* str);
 state_t*	state_new();
 void		state_release(state_t* s);
 void		state_add_ffi(state_t* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
-
-/* environment */
-void		environment_push(state_t* s);
-void		environment_pop(state_t* s);
 
 /* eval */
 cell_ptr_t	eval(state_t* s, cell_ptr_t expr);

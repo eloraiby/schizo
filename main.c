@@ -73,24 +73,23 @@ main(int argc,
 	};
 
 	char*		example	= "((lambda () (define str \"hello\") (define b #t) (if b (display \"true\") else (display \"false\")))())";
+	/* char*		example	= "((lambda () (define str \"hello\") (display str))())"; */
 	size_t		i	= 0;
 	state_t*	state	= state_new();
-
+/*
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		parse(state, prog[i]);
 		print_cell(state, state->root, 0);
 		fprintf(stderr, "\n");
-		fprintf(stderr, "freed: %u\n", gc(state));
 	}
 
 
 	state_release(state);
 
 	state	= state_new();
-	parse(state, example);
+*/	parse(state, example);
 	eval(state, state->root);
 	gettimeofday(&start, NULL);
-	fprintf(stderr, "freed: %u\n", gc(state));
 	gettimeofday(&end, NULL);
 
 	seconds  = end.tv_sec  - start.tv_sec;

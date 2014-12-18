@@ -7,11 +7,11 @@
 #define CELL_FREE                       7
 #define CELL_PAIR                       8
 #define CELL_VECTOR                     9
-#define CELL_CLOSURE                   10
-#define CELL_FFI                       11
+#define OP_CLOSURE                     10
+#define OP_FFI                         11
 #define CELL_LAMBDA                    12
 #define CELL_QUOTE                     13
-#define CELL_BIND                      14
+#define OP_BIND                        14
 #define ATOM_ERROR                     15
 #define LPAR                           16
 #define RPAR                           17
