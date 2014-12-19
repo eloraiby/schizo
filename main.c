@@ -34,49 +34,72 @@ main(int argc,
 
 	long mtime, seconds, useconds;
 
-	const char*	prog[]	= { ""
-/*		"(a)",
-		"((((a))))",
-		"(10 -11 +12)",
-		"(10.0 -10.1 +10.2)",
-		"(a 10 -11 true ++ - +)",
-		"(b (false -- +10 10) * & #t)",
-		"((a b c) (d e f g))",
-		"{ }",
-		"{}",
-		"{ a b c; 1 2 3 }",
-		"{ a b c; 1 2 3; 4 5 6 }",
-		"{ a b c; 1 2 3;;; d e f}",
-		"{ a b c; 1 2 3; 4 5 6;;; }",
-		"{ a }",
-		"{ a b }",
-		"{ a; b }",
-		"{ a; b c }",
-		"{ if (a == b) { do this } else {do that}}",
-		"{ a[10] }",
-		"{ a[10][11] }",
-		"{ a[10]; b[11]; c[x + y + z] }",
-		"{ a[10][11] b[11]; c[x + y + z] }",
-		"( a[10] )",
-		"( a[10][11] )",
-		"{ (a b c)[10] }",
-		"{ a[10] + 10.5 asb }",
-		"{ 5 + (a b c)[10] }",
-		"{ a b c[10] d; ef g }",
-		"{ !a }",
-		"{ a + b }",
-		"{ !a + b }",
-		"{ a + !b }",
-		"{ !a + !b }",
+	const char*	prog[]	= { "()",
+				    "(a)",
+				    "((((a))))",
+				    "(10 -11 +12)",
+				    "(10.0 -10.1 +10.2)",
+				    "(a 10 -11 true ++ - +)",
+				    "(b (false -- +10 10) * & #t)",
+				    "((a b c) (d e f g))",
+				    "{ }",
+				    "{}",
+				    "{ a b c; 1 2 3 }",
+				    "{ a b c; 1 2 3; 4 5 6 }",
+				    "{ a b c; 1 2 3;;; d e f}",
+				    "{ a b c; 1 2 3; 4 5 6;;; }",
+				    "{ a }",
+				    "{ a b }",
+				    "{ a; b }",
+				    "{ a; b c }",
+				    "{ if (a == b) { do this } else {do that}}",
+				    "{ a[10] }",
+				    "{ a[10][11] }",
+				    "{ a[10]; b[11]; c[x + y + z] }",
+				    "{ a[10][11] b[11]; c[x + y + z] }",
+				    "( a[10] )",
+				    "( a[10][11] )",
+				    "{ (a b c)[10] }",
+				    "{ a[10] + 10.5 asb }",
+				    "{ 5 + (a b c)[10] }",
+				    "{ a b c[10] d; ef g }",
+				    "{ !a }",
+				    "{ a + b }",
+				    "{ !a + b }",
+				    "{ a + !b }",
+				    "{ !a + !b }",
 
-*/
+				    "("\
+				    "  (lambda ()" \
+				    "          (define str \"hello\")" \
+				    "          (define b #t)" \
+				    "          (if b" \
+				    "              (display \"true\")" \
+				    "           else" \
+				    "              (display \"false\")" \
+				    "          )" \
+				    "  )" \
+				    "  ()" \
+				    ")"
 	};
 
-	char*		example	= "((lambda () (define str \"hello\") (define b #t) (if b (display \"true\") else (display \"false\")))())";
+	char*		example	= "("\
+				  "  (lambda ()" \
+				  "          (define str \"hello\")" \
+				  "          (define b #t)" \
+				  "          (if b" \
+				  "              (display \"true\")" \
+				  "           else" \
+				  "              (display \"false\")" \
+				  "          )" \
+				  "  )" \
+				  "  ()" \
+				  ")";
+
 	/* char*		example	= "((lambda () (define str \"hello\") (display str))())"; */
 	size_t		i	= 0;
 	state_t*	state	= state_new();
-/*
+
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		parse(state, prog[i]);
 		print_cell(state, state->root, 0);
@@ -87,7 +110,7 @@ main(int argc,
 	state_release(state);
 
 	state	= state_new();
-*/	parse(state, example);
+	parse(state, example);
 	eval(state, state->root);
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);

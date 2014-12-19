@@ -194,20 +194,18 @@ cell_ptr_t	atom_new_binary_op(state_t* s, const char* op);
 cell_ptr_t	schizo_error(state_t* s, const char* error);
 void		free_cell(state_t* s, cell_ptr_t ptr);
 
-static INLINE uint32
+static INLINE cell_ptr_t
 __inc_ref_count(state_t* s,
 	      cell_ptr_t c)
 {
 	if( !is_nil(c) ) {
 		assert(index_to_cell(s, c)->ref_count <= 0xFFFFFFFF);
 		++(index_to_cell(s, c)->ref_count);
-		return index_to_cell(s, c)->ref_count;
-	} else {
-		return 0;
 	}
+	return c;
 }
 
-static INLINE uint32
+static INLINE cell_ptr_t
 __dec_ref_count(state_t* s,
 	      cell_ptr_t c)
 {
@@ -217,11 +215,8 @@ __dec_ref_count(state_t* s,
 		if( index_to_cell(s, c)->ref_count == 0 ) {
 			free_cell(s, c);
 		}
-		return index_to_cell(s, c)->ref_count;
-	} else {
-		return 0;
 	}
-	return 0;
+	return c;
 }
 
 /*
@@ -229,7 +224,7 @@ __dec_ref_count(state_t* s,
 **	The order must be respected, especially for cases like set_cell(s, a, list_tail(s, a))
 **	where decreasing the ref count first, would cause the destruction of the tail!
 */
-#define set_cell(s, c, v)	{ \
+#define set_cell(c, v)		{ \
 					cell_ptr_t ev = v; \
 					assert( is_nil(c) || c.index != ev.index ); \
 					__inc_ref_count(s, ev); \
@@ -237,10 +232,12 @@ __dec_ref_count(state_t* s,
 					c	= ev; \
 				}
 
+#define grab(c)			__inc_ref_count(s, c)
+#define release(c)		__dec_ref_count(s, c)
+
 /* lists */
-cell_ptr_t	list_new(state_t* s, cell_ptr_t head);
 cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
-#define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_new((s), (snd))))
+#define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_cons((s), (snd), NIL_CELL)))
 
 cell_ptr_t	list_reverse(state_t* s, cell_ptr_t list);
 uint32		list_length(state_t* s, cell_ptr_t list);

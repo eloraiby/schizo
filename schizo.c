@@ -50,28 +50,28 @@ free_cell(state_t* s,
 		break;
 
 	case CELL_PAIR:
-		set_cell(s, p->object.pair.head, NIL_CELL);
+		release(p->object.pair.head);
 
 		/* TODO: prevent recursive call and stack overflow from successive list calls */
-		set_cell(s, p->object.pair.tail, NIL_CELL);
+		release(p->object.pair.tail);
 		break;
 
 	case OP_CLOSURE:
-		set_cell(s, p->object.closure.env, NIL_CELL);
-		set_cell(s, p->object.closure.lambda, NIL_CELL);
+		release(p->object.closure.env);
+		release(p->object.closure.lambda);
 		break;
 
 	case CELL_LAMBDA:
-		set_cell(s, p->object.lambda.syms, NIL_CELL);
-		set_cell(s, p->object.lambda.body, NIL_CELL);
+		release(p->object.lambda.syms);
+		release(p->object.lambda.body);
 		break;
 
 	case CELL_QUOTE:
-		set_cell(s, p->object.quote.list, NIL_CELL);
+		release(p->object.quote.list);
 		break;
 
 	case OP_BIND:
-		set_cell(s, p->object.bindings, NIL_CELL);
+		release(p->object.bindings);
 		break;
 
 	case ATOM_STRING:
@@ -376,27 +376,22 @@ atom_new_binary_op(state_t* s,
 *******************************************************************************/
 
 cell_ptr_t
-list_new(state_t* s,
-	 cell_ptr_t head)
-{
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= CELL_PAIR;
-	set_cell(s, ITC(r)->object.pair.head, head);
-	set_cell(s, ITC(r)->object.pair.tail, NIL_CELL);
-	return r;
-}
-
-cell_ptr_t
 list_cons(state_t* s,
 	  cell_ptr_t head,
 	  cell_ptr_t tail)
 {
-	cell_ptr_t r	= list_new(s, head);
+	cell_ptr_t r	= cell_alloc(s);
+
+	grab(head);
+	grab(tail);
+
+	ITC(r)->type	= CELL_PAIR;
+	ITC(r)->object.pair.head	= head;
+	ITC(r)->object.pair.tail	= NIL_CELL;
 
 	assert( is_nil(tail) || cell_type(s, tail) == CELL_PAIR );
 
-	set_cell(s, ITC(r)->object.pair.tail, tail);
+	ITC(r)->object.pair.tail	= tail;
 
 	return r;
 }
@@ -419,10 +414,10 @@ cell_ptr_t
 list_reverse(state_t* s,
 	     cell_ptr_t list)
 {
-	cell_ptr_t	nl	= list_new(s, NIL_CELL);
+	cell_ptr_t	nl	= NIL_CELL;
 
 	while( !is_nil(list) ) {
-		set_cell(s, nl, list_cons(s, list_head(s, list), nl));
+		nl	= list_cons(s, list_head(s, list), nl);
 		list	= list_tail(s, list);
 	}
 
@@ -521,13 +516,13 @@ symbol_lookup(state_t* s,
 static INLINE void
 push_env(state_t* s)
 {
-	set_cell(s, s->registers.env_stack, list_cons(s, s->registers.current_env, s->registers.env_stack));
+	set_cell(s->registers.env_stack, list_cons(s, s->registers.current_env, s->registers.env_stack));
 }
 
 static INLINE void
 pop_env(state_t* s)
 {
-	set_cell(s, s->registers.env_stack, list_tail(s, s->registers.env_stack));
+	set_cell(s->registers.env_stack, list_tail(s, s->registers.env_stack));
 }
 
 static cell_ptr_t
@@ -549,7 +544,7 @@ bind(state_t* s,
 	if( cell_type(s, b) == OP_BIND ) {
 		cell_ptr_t	sympair = ITC(b)->object.bindings;
 		while( !is_nil(sympair) ) {
-			set_cell(s, s->registers.current_env, list_cons(s, list_head(s, sympair), s->registers.current_env));
+			set_cell(s->registers.current_env, list_cons(s, list_head(s, sympair), s->registers.current_env));
 			sympair	= list_tail(s, sympair);
 		}
 	}
@@ -567,7 +562,7 @@ print_env(state_t* s)
 }
 */
 
-#define RETURN(EXP)	retval = EXP; pop_env(s); return retval
+#define RETURN(EXP)	retval = EXP; pop_env(s); set_cell(exp, NIL_CELL); return retval
 
 cell_ptr_t
 eval(state_t *s,
@@ -595,7 +590,7 @@ eval(state_t *s,
 
 		/* symbols */
 		case ATOM_SYMBOL:
-			fprintf(stderr, "SYMBOL LOOKUP: %s\n", ITC(exp)->object.symbol);
+			/*fprintf(stderr, "SYMBOL LOOKUP: %s\n", ITC(exp)->object.symbol);*/
 			RETURN(symbol_lookup(s, s->registers.current_env, ITC(exp)->object.symbol));
 
 		/* applications */
@@ -603,14 +598,18 @@ eval(state_t *s,
 			cell_ptr_t	head	= NIL_CELL;
 			cell_ptr_t	tail	= NIL_CELL;
 
-			set_cell(s, head, eval(s, list_head(s, exp)));
+			__inc_ref_count(s, list_head(s, exp));	/* NOT NEEDED ? */
+			set_cell(head, eval(s, list_head(s, exp)));
+			__dec_ref_count(s, list_head(s, exp));
 
 			if( is_nil(head) ) {
-				set_cell(s, head, NIL_CELL);
+				set_cell(head, NIL_CELL);
 				RETURN(NIL_CELL);
 			}
 
-			set_cell(s, tail, list_tail(s, exp));
+			__inc_ref_count(s, list_tail(s, exp));	/* NOT NEEDED ? */
+			set_cell(tail, list_tail(s, exp));
+			__dec_ref_count(s, list_tail(s, exp));
 
 			switch( cell_type(s, head) ) {
 			case OP_FFI:
@@ -620,20 +619,24 @@ eval(state_t *s,
 					assert( l < 0x7FFF );
 					if( ITC(head)->object.ffi.arg_count > 0 && (sint16)l != ITC(head)->object.ffi.arg_count ) {
 						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, ITC(head)->object.ffi.arg_count);
-						set_cell(s, tail, NIL_CELL);
-						set_cell(s, head, NIL_CELL);
+						set_cell(tail, NIL_CELL);
+						set_cell(head, NIL_CELL);
 						RETURN(NIL_CELL);
 					} else {
-						cell_ptr_t	t	= eval_list(s, tail);
-						cell_ptr_t	r	= ITC(head)->object.ffi.proc(s, t);
-						set_cell(s, tail, NIL_CELL);
-						set_cell(s, head, NIL_CELL);
+						cell_ptr_t	t	= NIL_CELL;
+						cell_ptr_t	r	= NIL_CELL;
+						set_cell(t, eval_list(s, tail));
+						r	= ITC(head)->object.ffi.proc(s, t);
+
+						set_cell(t, NIL_CELL);
+						set_cell(tail, NIL_CELL);
+						set_cell(head, NIL_CELL);
 						RETURN(r);
 					}
 				} else {	/* lambda, define, if */
-					exp	= ITC(head)->object.ffi.proc(s, tail);
-					set_cell(s, tail, NIL_CELL);
-					set_cell(s, head, NIL_CELL);
+					set_cell(exp, ITC(head)->object.ffi.proc(s, tail));
+					set_cell(tail, NIL_CELL);
+					set_cell(head, NIL_CELL);
 				}
 				break;
 			case OP_CLOSURE: {
@@ -641,30 +644,33 @@ eval(state_t *s,
 				cell_ptr_t	syms	= NIL_CELL;
 				cell_ptr_t	lambda	= NIL_CELL;
 
-				set_cell(s, lambda, ITC(head)->object.closure.lambda);
+				/*print_cell(s, tail, 0);*/
 
-				set_cell(s, s->registers.current_env, ITC(head)->object.closure.env);
+				set_cell(lambda, ITC(head)->object.closure.lambda);
+				if( s->registers.current_env.index != ITC(head)->object.closure.env.index ) {
+					set_cell(s->registers.current_env, ITC(head)->object.closure.env);
+				}
 
 				/* evaluate the arguments and zip them */
 				if( list_length(s, tail) != list_length(s, ITC(lambda)->object.lambda.syms) ) {
 					RETURN(schizo_error(s, "ERROR: closure arguments do not match given arguments"));
 				}
 
-				set_cell(s, args, eval_list(s, tail));
-				set_cell(s, syms, ITC(lambda)->object.lambda.syms);
+				set_cell(args, eval_list(s, tail));
+				set_cell(syms, ITC(lambda)->object.lambda.syms);
 
 				while( !is_nil(list_head(s, syms)) && !is_nil(list_head(s, args)) ) {
-					set_cell(s, s->registers.current_env, list_cons(s, list_make_pair(s, list_head(s, syms), list_head(s, args)), s->registers.current_env));
-					set_cell(s, args, list_tail(s, args));
-					set_cell(s, syms, list_tail(s, syms));
+					set_cell(s->registers.current_env, list_cons(s, list_make_pair(s, list_head(s, syms), list_head(s, args)), s->registers.current_env));
+					set_cell(args, list_tail(s, args));
+					set_cell(syms, list_tail(s, syms));
 				}
 
 				if( is_nil(syms) != is_nil(args) ) {
-					set_cell(s, syms, NIL_CELL);
-					set_cell(s, args, NIL_CELL);
+					set_cell(syms, NIL_CELL);
+					set_cell(args, NIL_CELL);
 
-					set_cell(s, tail, NIL_CELL);
-					set_cell(s, head, NIL_CELL);
+					set_cell(tail, NIL_CELL);
+					set_cell(head, NIL_CELL);
 
 					RETURN(schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
@@ -672,28 +678,28 @@ eval(state_t *s,
 					cell_ptr_t	body	= NIL_CELL;
 					cell_ptr_t	next	= NIL_CELL;
 
-					set_cell(s, body, ITC(lambda)->object.lambda.body);
-					set_cell(s, next, list_tail(s, body));
+					set_cell(body, ITC(lambda)->object.lambda.body);
+					set_cell(next, list_tail(s, body));
 
-					set_cell(s, exp, list_head(s, body));
+					set_cell(exp, list_head(s, body));
 
 					while( !is_nil(next) ) {
 						/* print_env(s); */
 						bind(s, eval(s, exp));	/* eval and bind */
 
-						set_cell(s, exp, list_head(s, next));
-						set_cell(s, next, list_tail(s, next));
+						set_cell(exp, list_head(s, next));
+						set_cell(next, list_tail(s, next));
 					}
 
 					/* now the tail call (env and exp are set) */
-					set_cell(s, body, NIL_CELL);
-					set_cell(s, next, NIL_CELL);
+					set_cell(body, NIL_CELL);
+					set_cell(next, NIL_CELL);
 
-					set_cell(s, syms, NIL_CELL);
-					set_cell(s, args, NIL_CELL);
+					set_cell(syms, NIL_CELL);
+					set_cell(args, NIL_CELL);
 
-					set_cell(s, tail, NIL_CELL);
-					set_cell(s, head, NIL_CELL);
+					set_cell(tail, NIL_CELL);
+					set_cell(head, NIL_CELL);
 				}
 				break;
 			}
@@ -737,7 +743,7 @@ symbol_define(state_t* s,
 	cell_ptr_t pair	= list_make_pair(s, sym, body);
 
 	cell_ptr_t ret	= cell_new_bind_list(s);
-	set_cell(s, ITC(ret)->object.bindings, list_cons(s, pair, ITC(ret)->object.bindings));
+	set_cell(ITC(ret)->object.bindings, list_cons(s, pair, ITC(ret)->object.bindings));
 
 	return ret;
 }
@@ -762,12 +768,12 @@ make_closure(state_t* s,
 
 
 	ITC(lambda)->type	= CELL_LAMBDA;
-	set_cell(s, ITC(lambda)->object.lambda.syms, syms);
-	set_cell(s, ITC(lambda)->object.lambda.body, body);
+	set_cell(ITC(lambda)->object.lambda.syms, syms);
+	set_cell(ITC(lambda)->object.lambda.body, body);
 
 	ITC(closure)->type	= OP_CLOSURE;
-	set_cell(s, ITC(closure)->object.closure.lambda, lambda);
-	set_cell(s, ITC(closure)->object.closure.env, s->registers.current_env);
+	set_cell(ITC(closure)->object.closure.lambda, lambda);
+	set_cell(ITC(closure)->object.closure.env, s->registers.current_env);
 	return closure;
 }
 
@@ -833,7 +839,7 @@ state_add_ffi(state_t *s,
 	ITC(f)->object.ffi.proc	= call;
 
 	p		= list_make_pair(s, _s, f);
-	set_cell(s, s->registers.current_env, list_cons(s, p, s->registers.current_env));
+	set_cell(s->registers.current_env, list_cons(s, p, s->registers.current_env));
 }
 
 state_t*
@@ -856,10 +862,10 @@ state_release(state_t *s)
 	uint32	i = 0;
 	if( s->gc_block.cells ) {
 		/* release all cells individually */
-		set_cell(s, s->root, NIL_CELL);
-		set_cell(s, s->registers.current_env, NIL_CELL);
-		set_cell(s, s->registers.current_exp, NIL_CELL);
-		set_cell(s, s->registers.env_stack, NIL_CELL);
+		set_cell(s->root, NIL_CELL);
+		set_cell(s->registers.current_env, NIL_CELL);
+		set_cell(s->registers.current_exp, NIL_CELL);
+		set_cell(s->registers.env_stack, NIL_CELL);
 
 		assert( s->gc_block.free_count = s->gc_block.count );
 

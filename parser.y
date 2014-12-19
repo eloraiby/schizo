@@ -59,8 +59,8 @@
 %start_symbol program
 
 /* a program is a cell */
-program		::= atom(B).				{ set_cell(s, s->root, B); }
-program		::= sexpr(B).				{ set_cell(s, s->root, B); }
+program		::= atom(B).				{ set_cell(s->root, B); }
+program		::= sexpr(B).				{ set_cell(s->root, B); }
 
 /* literals */
 atom(A)		::= ATOM_SYMBOL(B).			{ A = B; }
@@ -90,10 +90,10 @@ sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symb
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
 
-list(A)		::= ilist(B).				{ A = list_new(s, B); }
+list(A)		::= ilist(B).				{ A = list_cons(s, B, NIL_CELL); }
 list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
 
-se_members(A)	::=.					{ A = list_new(s, NIL_CELL); }
+se_members(A)	::=.					{ A = list_cons(s, NIL_CELL, NIL_CELL); }
 se_members(A)	::= list(B).				{ A = list_reverse(s, B); }
 
 /* ; ;;... */
@@ -103,8 +103,8 @@ sc		::= sc SEMICOL.
 be_members(A)	::= list(B).				{ A = list_reverse(s, B); }
 
 /* { ... } */
-member_list(A)	::=.					{ A = list_new(s, NIL_CELL); }
-member_list(A)	::= be_members(B).			{ A = list_new(s, (list_length(s, B) == 1) ? list_head(s, B) : B); }
+member_list(A)	::=.					{ A = list_cons(s, NIL_CELL, NIL_CELL); }
+member_list(A)	::= be_members(B).			{ A = list_cons(s, (list_length(s, B) == 1) ? list_head(s, B) : B, NIL_CELL); }
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(s, C) == 1) ? list_head(s, C) : C,  B); }
 
 /* TODO: operator precedence */

@@ -737,7 +737,7 @@ static void yy_reduce(
       case 0: /* program ::= atom */
       case 1: /* program ::= sexpr */ yytestcase(yyruleno==1);
 #line 62 "/home/aifu/Projects/schizo/parser.y"
-{ set_cell(s, s->root, yymsp[0].minor.yy0); }
+{ set_cell(s->root, yymsp[0].minor.yy0); }
 #line 742 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 2: /* atom ::= ATOM_SYMBOL */
@@ -775,7 +775,7 @@ static void yy_reduce(
         break;
       case 23: /* list ::= ilist */
 #line 93 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = list_new(s, yymsp[0].minor.yy0); }
+{ yygotominor.yy0 = list_cons(s, yymsp[0].minor.yy0, NIL_CELL); }
 #line 780 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 24: /* list ::= list ilist */
@@ -786,7 +786,7 @@ static void yy_reduce(
       case 25: /* se_members ::= */
       case 30: /* member_list ::= */ yytestcase(yyruleno==30);
 #line 96 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = list_new(s, NIL_CELL); }
+{ yygotominor.yy0 = list_cons(s, NIL_CELL, NIL_CELL); }
 #line 791 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 26: /* se_members ::= list */
@@ -797,7 +797,7 @@ static void yy_reduce(
         break;
       case 31: /* member_list ::= be_members */
 #line 107 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = list_new(s, (list_length(s, yymsp[0].minor.yy0) == 1) ? list_head(s, yymsp[0].minor.yy0) : yymsp[0].minor.yy0); }
+{ yygotominor.yy0 = list_cons(s, (list_length(s, yymsp[0].minor.yy0) == 1) ? list_head(s, yymsp[0].minor.yy0) : yymsp[0].minor.yy0, NIL_CELL); }
 #line 802 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 32: /* member_list ::= member_list sc be_members */
