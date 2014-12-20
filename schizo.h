@@ -149,9 +149,11 @@ struct state_t {
 	} gc_block;
 
 	struct {
-		cell_ptr_t	current_exp;	/* current expression pointer */
+		cell_ptr_t	current_exp;	/* current expression/operator pointer */
 		cell_ptr_t	current_env;	/* current environment head */
+		cell_ptr_t	exp_stack;	/* expression/operator to execute */
 		cell_ptr_t	env_stack;	/* environment stack */
+		cell_ptr_t	ret_val;	/* return value */
 	} registers;
 
 	cell_ptr_t	root;			/* root cell */

@@ -93,7 +93,7 @@ ilist(A)	::= sexpr(B).				{ A = B; }
 list(A)		::= ilist(B).				{ A = list_cons(s, B, NIL_CELL); }
 list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
 
-se_members(A)	::=.					{ A = list_cons(s, NIL_CELL, NIL_CELL); }
+se_members(A)	::=.					{ A = NIL_CELL; }
 se_members(A)	::= list(B).				{ A = list_reverse(s, B); }
 
 /* ; ;;... */
@@ -103,7 +103,7 @@ sc		::= sc SEMICOL.
 be_members(A)	::= list(B).				{ A = list_reverse(s, B); }
 
 /* { ... } */
-member_list(A)	::=.					{ A = list_cons(s, NIL_CELL, NIL_CELL); }
+member_list(A)	::=.					{ A = NIL_CELL; }
 member_list(A)	::= be_members(B).			{ A = list_cons(s, (list_length(s, B) == 1) ? list_head(s, B) : B, NIL_CELL); }
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(s, C) == 1) ? list_head(s, C) : C,  B); }
 

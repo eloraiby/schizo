@@ -382,16 +382,15 @@ list_cons(state_t* s,
 {
 	cell_ptr_t r	= cell_alloc(s);
 
-	grab(head);
-	grab(tail);
-
 	ITC(r)->type	= CELL_PAIR;
-	ITC(r)->object.pair.head	= head;
+
+	set_cell(ITC(r)->object.pair.head, head);
+
 	ITC(r)->object.pair.tail	= NIL_CELL;
 
 	assert( is_nil(tail) || cell_type(s, tail) == CELL_PAIR );
 
-	ITC(r)->object.pair.tail	= tail;
+	set_cell(ITC(r)->object.pair.tail, tail);
 
 	return r;
 }
@@ -590,7 +589,7 @@ eval(state_t *s,
 
 		/* symbols */
 		case ATOM_SYMBOL:
-			/*fprintf(stderr, "SYMBOL LOOKUP: %s\n", ITC(exp)->object.symbol);*/
+			fprintf(stderr, "SYMBOL LOOKUP: %s\n", ITC(exp)->object.symbol);
 			RETURN(symbol_lookup(s, s->registers.current_env, ITC(exp)->object.symbol));
 
 		/* applications */
@@ -598,18 +597,17 @@ eval(state_t *s,
 			cell_ptr_t	head	= NIL_CELL;
 			cell_ptr_t	tail	= NIL_CELL;
 
-			__inc_ref_count(s, list_head(s, exp));	/* NOT NEEDED ? */
-			set_cell(head, eval(s, list_head(s, exp)));
-			__dec_ref_count(s, list_head(s, exp));
+			set_cell(head, list_head(s, exp));	/* NOT NEEDED ? */
+			grab(head);
+			set_cell(head, eval(s, head));
+			release(head);
 
 			if( is_nil(head) ) {
 				set_cell(head, NIL_CELL);
 				RETURN(NIL_CELL);
 			}
 
-			__inc_ref_count(s, list_tail(s, exp));	/* NOT NEEDED ? */
-			set_cell(tail, list_tail(s, exp));
-			__dec_ref_count(s, list_tail(s, exp));
+			set_cell(tail, list_tail(s, exp));	/* NOT NEEDED ? */
 
 			switch( cell_type(s, head) ) {
 			case OP_FFI:
@@ -706,6 +704,7 @@ eval(state_t *s,
 
 			default:
 				/* more error handling */
+				fprintf(stderr, "Unexpected type: %u\n", cell_type(s, head));
 				assert(0);
 				break;
 			}

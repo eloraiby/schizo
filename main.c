@@ -98,20 +98,20 @@ main(int argc,
 
 	/* char*		example	= "((lambda () (define str \"hello\") (display str))())"; */
 	size_t		i	= 0;
-	state_t*	state	= state_new();
+	state_t*	s	= state_new();
 
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
-		parse(state, prog[i]);
-		print_cell(state, state->root, 0);
+		parse(s, prog[i]);
+		print_cell(s, s->root, 0);
 		fprintf(stderr, "\n");
 	}
 
 
-	state_release(state);
+	state_release(s);
 
-	state	= state_new();
-	parse(state, example);
-	eval(state, state->root);
+	s	= state_new();
+	parse(s, example);
+	rc_call(eval, s->root);
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);
 
@@ -120,7 +120,7 @@ main(int argc,
 
 	mtime = (long)(((seconds) * 1000 + useconds/1000.0) + 0.5);
 	fprintf(stderr, "took %ld ms to scan memory\n", mtime);
-	state_release(state);
+	state_release(s);
 
 	return 0;
 }
