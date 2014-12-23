@@ -42,7 +42,7 @@ free_cell(state_t* s,
 	case ATOM_CHAR:
 	case ATOM_SINT64:
 	case ATOM_REAL64:
-	case OP_FFI:
+	case OP_APPLY_FFI:
 		break;
 
 	case CELL_FREE:
@@ -56,7 +56,7 @@ free_cell(state_t* s,
 		release(p->object.pair.tail);
 		break;
 
-	case OP_CLOSURE:
+	case OP_APPLY_CLOSURE:
 		release(p->object.closure.env);
 		release(p->object.closure.lambda);
 		break;
@@ -382,13 +382,13 @@ list_cons(state_t* s,
 {
 	cell_ptr_t r	= cell_alloc(s);
 
+	assert( is_nil(tail) || cell_type(s, tail) == CELL_PAIR );
+
 	ITC(r)->type	= CELL_PAIR;
 
 	set_cell(ITC(r)->object.pair.head, head);
 
 	ITC(r)->object.pair.tail	= NIL_CELL;
-
-	assert( is_nil(tail) || cell_type(s, tail) == CELL_PAIR );
 
 	set_cell(ITC(r)->object.pair.tail, tail);
 
@@ -487,9 +487,9 @@ list_zip(state_t* s,
 *******************************************************************************/
 static cell_ptr_t
 symbol_lookup(state_t* s,
-	      cell_ptr_t env,
 	      const char* sym)
 {
+	cell_ptr_t	env	= list_head(s, s->registers.env_stack);
 	cell_ptr_t	pair	= list_head(s, env);
 
 	while( !is_nil(pair) && strcmp(sym, ITC(list_head(s, pair))->object.symbol) != 0 ) {
@@ -513,15 +513,29 @@ symbol_lookup(state_t* s,
 }
 
 static INLINE void
-push_env(state_t* s)
+push_env(state_t* s,
+	 cell_ptr_t env)
 {
-	set_cell(s->registers.env_stack, list_cons(s, s->registers.current_env, s->registers.env_stack));
+	set_cell(s->registers.env_stack, list_cons(s, env, s->registers.env_stack));
 }
 
 static INLINE void
 pop_env(state_t* s)
 {
 	set_cell(s->registers.env_stack, list_tail(s, s->registers.env_stack));
+}
+
+static INLINE void
+push_exp(state_t* s,
+	 cell_ptr_t exp)
+{
+	set_cell(s->registers.exp_stack, list_cons(s, exp, s->registers.exp_stack));
+}
+
+static INLINE void
+pop_exp(state_t* s)
+{
+	set_cell(s->registers.exp_stack, list_tail(s, s->registers.exp_stack));
 }
 
 static cell_ptr_t
@@ -537,16 +551,20 @@ eval_list(state_t* s,
 }
 
 static INLINE void
-bind(state_t* s,
-     cell_ptr_t b)
+op_bind(state_t* s,
+	cell_ptr_t b)
 {
+	cell_ptr_t	env	= list_head(s, s->registers.env_stack);
+
 	if( cell_type(s, b) == OP_BIND ) {
 		cell_ptr_t	sympair = ITC(b)->object.bindings;
 		while( !is_nil(sympair) ) {
-			set_cell(s->registers.current_env, list_cons(s, list_head(s, sympair), s->registers.current_env));
+			set_cell(env, list_cons(s, list_head(s, sympair), env));
 			sympair	= list_tail(s, sympair);
 		}
 	}
+
+	ITC(s->registers.env_stack)->object.pair.head = env;
 }
 
 /*
@@ -561,15 +579,11 @@ print_env(state_t* s)
 }
 */
 
-#define RETURN(EXP)	retval = EXP; pop_env(s); set_cell(exp, NIL_CELL); return retval
+#define RETURN(EXP)	set_cell(s->registers.ret_val, EXP); set_cell(exp, NIL_CELL);
 
 cell_ptr_t
-eval(state_t *s,
-     cell_ptr_t exp)
+eval(state_t* s)
 {
-	cell_ptr_t	retval	= NIL_CELL;
-
-	push_env(s);	/* save the environment before doing anything */
 
 	while( !is_nil(exp) ) {	/* not a NIL_CELL */
 		/* print_env(s); */
@@ -581,8 +595,8 @@ eval(state_t *s,
 		case ATOM_REAL64:
 		case ATOM_STRING:
 		case ATOM_ERROR:
-		case OP_CLOSURE:
-		case OP_FFI:
+		case OP_APPLY_CLOSURE:
+		case OP_APPLY_FFI:
 		case CELL_QUOTE:
 		case OP_BIND:
 			RETURN(exp);
@@ -621,12 +635,15 @@ eval(state_t *s,
 						set_cell(head, NIL_CELL);
 						RETURN(NIL_CELL);
 					} else {
-						cell_ptr_t	t	= NIL_CELL;
 						cell_ptr_t	r	= NIL_CELL;
-						set_cell(t, eval_list(s, tail));
-						r	= ITC(head)->object.ffi.proc(s, t);
 
-						set_cell(t, NIL_CELL);
+						set_cell(s->registers.current_exp, eval_list(s, tail));
+
+						push_exp(s);
+						ITC(head)->object.ffi.proc(s);
+						set_cell(r, s->registers.ret_val);
+						pop_exp(s);
+
 						set_cell(tail, NIL_CELL);
 						set_cell(head, NIL_CELL);
 						RETURN(r);
@@ -861,7 +878,7 @@ state_release(state_t *s)
 	uint32	i = 0;
 	if( s->gc_block.cells ) {
 		/* release all cells individually */
-		set_cell(s->root, NIL_CELL);
+		set_cell(s->parser.root, NIL_CELL);
 		set_cell(s->registers.current_env, NIL_CELL);
 		set_cell(s->registers.current_exp, NIL_CELL);
 		set_cell(s->registers.env_stack, NIL_CELL);

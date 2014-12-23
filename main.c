@@ -102,7 +102,7 @@ main(int argc,
 
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		parse(s, prog[i]);
-		print_cell(s, s->root, 0);
+		print_cell(s, s->parser.root, 0);
 		fprintf(stderr, "\n");
 	}
 
@@ -111,7 +111,8 @@ main(int argc,
 
 	s	= state_new();
 	parse(s, example);
-	rc_call(eval, s->root);
+	set_cell(s->registers.exp_stack, s->parser.root);
+	eval(s);
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);
 

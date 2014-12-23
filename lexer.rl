@@ -26,12 +26,12 @@
 
 #include "schizo.h"
 
-#define ADVANCE(A)	state->token_start	= ts; \
-			state->token_end	= te; \
-			state->token_line	= line; \
+#define ADVANCE(A)	state->parser.token_start	= ts; \
+			state->parser.token_end	= te; \
+			state->parser.token_line	= line; \
 			copy_token(ts, te, tmp); \
-			state->current_cell	= token_to_##A(state, tmp); \
-			parser_advance(parser, index_to_cell(state, state->current_cell)->type, state->current_cell, state)
+			state->parser.current_cell	= token_to_##A(state, tmp); \
+			parser_advance(parser, index_to_cell(state, state->parser.current_cell)->type, state->parser.current_cell, state)
 
 #define ADVANCE_TOKEN(A)	parser_advance(parser, A, NIL_CELL, state)
 
@@ -220,7 +220,7 @@ parse(state_t* state, const char* str)
 	int		cs	= 0;
 	char		tmp[4096];
 
-	state->root	= NIL_CELL;
+	state->parser.root	= NIL_CELL;
 
 	parser	= parser_alloc(malloc);
 

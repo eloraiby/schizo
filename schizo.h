@@ -96,7 +96,7 @@ typedef struct lambda_t {
 } lambda_t;
 
 /* foreign function */
-typedef cell_ptr_t (*ffi_call_t)(state_t* s, cell_ptr_t args);
+typedef void (*ffi_call_t)(state_t* s);
 
 typedef struct ffi_t {
 	uint16		flags;
@@ -149,18 +149,22 @@ struct state_t {
 	} gc_block;
 
 	struct {
-		cell_ptr_t	current_exp;	/* current expression/operator pointer */
-		cell_ptr_t	current_env;	/* current environment head */
 		cell_ptr_t	exp_stack;	/* expression/operator to execute */
 		cell_ptr_t	env_stack;	/* environment stack */
+
+		/* volatile registers */
+		cell_ptr_t	current_env;	/* current environment */
+		cell_ptr_t	current_exp;	/* current exp + args */
 		cell_ptr_t	ret_val;	/* return value */
 	} registers;
 
-	cell_ptr_t	root;			/* root cell */
-	cell_ptr_t	current_cell;
-	const char*	token_start;
-	const char*	token_end;
-	uint32		token_line;
+	struct {
+		cell_ptr_t	root;		/* root cell */
+		cell_ptr_t	current_cell;
+		const char*	token_start;
+		const char*	token_end;
+		uint32		token_line;
+	} parser;
 };
 
 /*
@@ -237,6 +241,30 @@ __dec_ref_count(state_t* s,
 #define grab(c)			__inc_ref_count(s, c)
 #define release(c)		__dec_ref_count(s, c)
 
+#define __get_fst(_1, _2)		_1
+#define __get_snd(_1, _2)		_2
+
+#define __get_fst_snd_name(NAME)	NAME
+
+#define get_fst(...)			__get_fst_snd_name(__get_fst) __VA_ARGS__
+#define get_snd(...)			__get_fst_snd_name(__get_snd) __VA_ARGS__
+
+#define bind(A, B)			(A, B)
+
+#define let_in(P, E)			{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); E; set_cell(get_fst(P), NIL_CELL); }
+
+#define let_multi_0(P, E)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); E; set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_1(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_0(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_2(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_1(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_3(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_2(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_4(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_3(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_5(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_4(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_6(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_5(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_7(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_6(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+
+#define let_multi_NAME(_0, _1, _2, _3, _4, _5, _6, _7, MSSING_SCOPE, NAME, ...)	NAME
+#define let_multi(...)			let_multi_NAME(__VA_ARGS__, let_multi_7, let_multi_6, let_multi_5, let_multi_4, let_multi_3, let_multi_2, let_multi_1, let_multi_0)(__VA_ARGS__)
+
 /* lists */
 cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
 #define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_cons((s), (snd), NIL_CELL)))
@@ -256,7 +284,7 @@ void		state_release(state_t* s);
 void		state_add_ffi(state_t* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
 
 /* eval */
-cell_ptr_t	eval(state_t* s, cell_ptr_t expr);
+cell_ptr_t	eval(state_t* s);
 
 #ifdef __cplusplus
 }

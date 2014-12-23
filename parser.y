@@ -59,8 +59,8 @@
 %start_symbol program
 
 /* a program is a cell */
-program		::= atom(B).				{ set_cell(s->root, B); }
-program		::= sexpr(B).				{ set_cell(s->root, B); }
+program		::= atom(B).				{ set_cell(s->parser.root, B); }
+program		::= sexpr(B).				{ set_cell(s->parser.root, B); }
 
 /* literals */
 atom(A)		::= ATOM_SYMBOL(B).			{ A = B; }
@@ -70,22 +70,25 @@ atom(A)		::= ATOM_SINT64(B).			{ A = B; }
 atom(A)		::= ATOM_REAL64(B).			{ A = B; }
 atom(A)		::= ATOM_STRING(B).			{ A = B; }
 
-/* NEVER USED in the parser: these are a hack to have the token ids */
+/* NEVER USED in the parser: with these, lemon will also generates the ids automatically, so the enums are continious */
+sexpr		::= ATOM_ERROR.				/* error */
 sexpr		::= CELL_FREE.				/* a free cell */
 sexpr		::= CELL_PAIR.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
-sexpr		::= OP_CLOSURE.				/* closure */
-sexpr		::= OP_FFI.				/* foreign function interface */
 sexpr		::= CELL_LAMBDA.			/* lambda */
 sexpr		::= CELL_QUOTE.				/* quote (this should could have been replaced with objects, but will increase the complexity of the evaluator) */
-sexpr		::= OP_BIND.				/* bind symbol */
-sexpr		::= ATOM_ERROR.				/* error */
+
+sexpr		::= OP_APPLY_CLOSURE.			/* closure */
+sexpr		::= OP_APPLY_FFI.			/* foreign function interface */
+sexpr		::= OP_BIND.				/* bind symbols */
+sexpr		::= OP_EVAL_EXPR.			/* eval expression */
+sexpr		::= OP_EVAL_ARGS.			/* eval operator arguments */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse(s, B) : B); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "scope"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse(s, B) : B); }
-sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "item"),
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse(s, B) : B); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse(s, B) : B); }
+sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "vector.get"),
 									   list_cons(s, B, ( cell_type(s, C) == CELL_PAIR ) ? list_reverse(s, C) : C)); }
 ilist(A)	::= atom(B).				{ A = B; }
 ilist(A)	::= sexpr(B).				{ A = B; }
