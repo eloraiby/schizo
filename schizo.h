@@ -251,19 +251,19 @@ __dec_ref_count(state_t* s,
 
 #define bind(A, B)			(A, B)
 
-#define let_in(P, E)			{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); E; set_cell(get_fst(P), NIL_CELL); }
+#define let(P, E)			{ cell_ptr_t	get_fst(P)	= grab(get_snd(P)); E; release(get_fst(P)); }
 
-#define let_multi_0(P, E)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); E; set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_1(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_0(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_2(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_1(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_3(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_2(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_4(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_3(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_5(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_4(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_6(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_5(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
-#define let_multi_7(P, ...)		{ cell_ptr_t	get_fst(P)	= get_snd(P); grab(get_fst(P)); let_multi_6(__VA_ARGS__) set_cell(get_fst(P), NIL_CELL); }
+#define let_multi_0(P, E)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); E; release(get_fst(P));
+#define let_multi_1(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_0(__VA_ARGS__) release(get_fst(P));
+#define let_multi_2(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_1(__VA_ARGS__) release(get_fst(P));
+#define let_multi_3(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_2(__VA_ARGS__) release(get_fst(P));
+#define let_multi_4(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_3(__VA_ARGS__) release(get_fst(P));
+#define let_multi_5(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_4(__VA_ARGS__) release(get_fst(P));
+#define let_multi_6(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_5(__VA_ARGS__) release(get_fst(P));
+#define let_multi_7(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_6(__VA_ARGS__) release(get_fst(P));
 
-#define let_multi_NAME(_0, _1, _2, _3, _4, _5, _6, _7, MSSING_SCOPE, NAME, ...)	NAME
-#define let_multi(...)			let_multi_NAME(__VA_ARGS__, let_multi_7, let_multi_6, let_multi_5, let_multi_4, let_multi_3, let_multi_2, let_multi_1, let_multi_0)(__VA_ARGS__)
+#define __get_multi_name__(_0, _1, _2, _3, _4, _5, _6, _7, MSSING_SCOPE, NAME, ...)	NAME
+#define let_multi(...)			{ __get_multi_name__(__VA_ARGS__, let_multi_7, let_multi_6, let_multi_5, let_multi_4, let_multi_3, let_multi_2, let_multi_1, let_multi_0)(__VA_ARGS__) }
 
 /* lists */
 cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
