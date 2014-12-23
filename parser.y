@@ -26,7 +26,6 @@
 %extra_argument { state_t* s }
 
 %include {
-#include <stdio.h>
 #include "schizo.h"
 }
 
@@ -72,7 +71,6 @@ atom(A)		::= ATOM_STRING(B).			{ A = B; }
 
 /* NEVER USED in the parser: with these, lemon will also generates the ids automatically, so the enums are continious */
 sexpr		::= ATOM_ERROR.				/* error */
-sexpr		::= CELL_FREE.				/* a free cell */
 sexpr		::= CELL_PAIR.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_LAMBDA.			/* lambda */

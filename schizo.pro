@@ -12,28 +12,29 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-QMAKE_CC	= clang
-QMAKE_CFLAGS	+= -std=c89 -Wno-variadic-macros -fvisibility=hidden -fvisibility-inlines-hidden -fvisibility-inlines-hidden -pedantic -ffunction-sections -fdata-sections
-QMAKE_LIBS	+= -ldl
+QMAKE_CXX	= clang
+QMAKE_CXXFLAGS	+= -std=c++11 -fvisibility=hidden -fvisibility-inlines-hidden -fvisibility-inlines-hidden -pedantic -ffunction-sections -fdata-sections
+QMAKE_LIBS	+= -ldl -lm
 QMAKE_LFLAGS	+= -Wl,--gc-sections
+QMAKE_LINK	= gcc
 
 SOURCES += \
-    main.c \
-    lexer.c \
-    parser.c \
-    schizo.c
+    lexer.cpp \
+    main.cpp \
+    parser.cpp \
+    schizo.cpp
 
-lexer.target = lexer.c
-lexer.commands = ragel -C -o $$PWD/lexer.c $$PWD/lexer.rl
+lexer.target = lexer.cpp
+lexer.commands = ragel -C -o $$PWD/lexer.cpp $$PWD/lexer.rl
 lexer.depends =
 
-parser.target = parser.c
-parser.commands = lemon -T$$PWD/lempar.c_template $$PWD/parser.y
+parser.target = parser.cpp
+parser.commands = lemon -T$$PWD/lempar.c_template $$PWD/parser.y && mv $$PWD/parser.c $$PWD/parser.cpp
 parser.depends =
 
 QMAKE_EXTRA_TARGETS	+= lexer parser
 
-PRE_TARGETDEPS	+= lexer.c parser.c
+PRE_TARGETDEPS	+= lexer.cpp parser.cpp
 
 OTHER_FILES += \
     parser.y \

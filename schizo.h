@@ -36,13 +36,7 @@
 #	define UNUSED
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#else
-typedef	unsigned char	bool;
-#	define false	(0)
-#	define true	(!false)
-#endif
+namespace schizo {
 
 typedef int8_t		sint8;
 typedef int16_t		sint16;
@@ -60,107 +54,374 @@ typedef double		real64;
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 #define MAX(a, b)	((a) < (b) ? (a) : (b))
 
-/* schizo related */
+//
+//  intrusive_ptr.hpp
+//
+//  Copyright (c) 2001, 2002 Peter Dimov
+//
+// Distributed under the Boost Software License, Version 1.0. (See
+// accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+//  See http://www.boost.org/libs/smart_ptr/intrusive_ptr.html for documentation.
+//
+//
+//  intrusive_ptr
+//
+//  A smart pointer that uses intrusive reference counting.
+//
+//  Relies on unqualified calls to
+//
+//      void intrusive_ptr_add_ref(T * p);
+//      void intrusive_ptr_release(T * p);
+//
+//          (p != 0)
+//
+//  The object is responsible for destroying itself.
+//
 
-typedef uint16		CELL_TYPE;
+namespace raja
+{
+template<class T>
+class intrusive_ptr
+{
+private:
+
+	typedef intrusive_ptr this_type;
+
+public:
+
+	typedef T element_type;
+
+	intrusive_ptr(): px( 0 )
+	{
+	}
+
+	intrusive_ptr( T * p, bool add_ref = true ): px( p )
+	{
+		if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
+	}
+
+	template<class U>
+	intrusive_ptr( intrusive_ptr<U> const & rhs )
+		: px( rhs.get() )
+	{
+		if( px != 0 ) intrusive_ptr_add_ref( px );
+	}
+
+	intrusive_ptr(intrusive_ptr const & rhs): px( rhs.px )
+	{
+		if( px != 0 ) intrusive_ptr_add_ref( px );
+	}
+
+	~intrusive_ptr()
+	{
+		if( px != 0 ) intrusive_ptr_release( px );
+	}
+
+	template<class U> intrusive_ptr & operator=(intrusive_ptr<U> const & rhs)
+	{
+		this_type(rhs).swap(*this);
+		return *this;
+	}
+
+	// Move support
+
+//	intrusive_ptr(intrusive_ptr && rhs): px( rhs.px )
+//	{
+//		rhs.px = 0;
+//	}
+
+//	intrusive_ptr & operator=(intrusive_ptr && rhs)
+//	{
+//		this_type( static_cast< intrusive_ptr && >( rhs ) ).swap(*this);
+//		return *this;
+//	}
+
+	intrusive_ptr & operator=(intrusive_ptr const & rhs)
+	{
+		this_type(rhs).swap(*this);
+		return *this;
+	}
+
+	intrusive_ptr & operator=(T * rhs)
+	{
+		this_type(rhs).swap(*this);
+		return *this;
+	}
+
+	void reset()
+	{
+		this_type().swap( *this );
+	}
+
+	void reset( T * rhs )
+	{
+		this_type( rhs ).swap( *this );
+	}
+
+	T * get() const
+	{
+		return px;
+	}
+
+	T & operator*() const
+	{
+		if( px == nullptr )
+			throw "pointer is null";
+		return *px;
+	}
+
+	T * operator->() const
+	{
+		if( px == nullptr )
+			throw "pointer is null";
+		return px;
+	}
+
+	typedef T * this_type::*unspecified_bool_type;
+
+	operator unspecified_bool_type() const // never throws
+	{
+		return px == 0? 0: &this_type::px;
+	}
+
+	// operator! is redundant, but some compilers need it
+	bool operator! () const // never throws
+	{
+		return px == 0;
+	}
+
+	void swap(intrusive_ptr & rhs)
+	{
+		T * tmp = px;
+		px = rhs.px;
+		rhs.px = tmp;
+	}
+
+// will create a pointer ambiguous
+//	operator T*()
+//	{
+//		return px;
+//	}
+
+private:
+
+	T * px;
+};
+
+template<class T, class U> inline bool operator==(intrusive_ptr<T> const & a, intrusive_ptr<U> const & b)
+{
+	return a.get() == b.get();
+}
+
+template<class T, class U> inline bool operator!=(intrusive_ptr<T> const & a, intrusive_ptr<U> const & b)
+{
+	return a.get() != b.get();
+}
+
+template<class T, class U> inline bool operator==(intrusive_ptr<T> const & a, U * b)
+{
+	return a.get() == b;
+}
+
+template<class T, class U> inline bool operator!=(intrusive_ptr<T> const & a, U * b)
+{
+	return a.get() != b;
+}
+
+template<class T, class U> inline bool operator==(T * a, intrusive_ptr<U> const & b)
+{
+	return a == b.get();
+}
+
+template<class T, class U> inline bool operator!=(T * a, intrusive_ptr<U> const & b)
+{
+	return a != b.get();
+}
+
+#if __GNUC__ == 2 && __GNUC_MINOR__ <= 96
+
+// Resolve the ambiguity between our op!= and the one in rel_ops
+
+template<class T> inline bool operator!=(intrusive_ptr<T> const & a, intrusive_ptr<T> const & b)
+{
+	return a.get() != b.get();
+}
+
+#endif
+
+template<class T> inline bool operator<(intrusive_ptr<T> const & a, intrusive_ptr<T> const & b)
+{
+	return static_cast<size_t>(a.get()) <  static_cast<size_t>(b.get());
+}
+
+template<class T> void swap(intrusive_ptr<T> & lhs, intrusive_ptr<T> & rhs)
+{
+	lhs.swap(rhs);
+}
+
+// mem_fn support
+
+template<class T> T * get_pointer(intrusive_ptr<T> const & p)
+{
+	return p.get();
+}
+
+template<class T, class U> intrusive_ptr<T> static_pointer_cast(intrusive_ptr<U> const & p)
+{
+	return static_cast<T *>(p.get());
+}
+
+template<class T, class U> intrusive_ptr<T> const_pointer_cast(intrusive_ptr<U> const & p)
+{
+	return const_cast<T *>(p.get());
+}
+
+template<class T, class U> intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const & p)
+{
+	return dynamic_cast<T *>(p.get());
+}
 
 
-struct cons_t;
-struct closure_t;
-struct cell_t;
+struct state;
+struct cell;
 
-/* strong typing int with unit of measures */
-typedef struct cell_ptr_t {
-	uint32		index;
-} cell_ptr_t;
+struct cell {
+	typedef intrusive_ptr<cell>	iptr;
 
-static INLINE cell_ptr_t	cell_ptr(uint32 idx)	{ cell_ptr_t ret; ret.index = idx; return ret; }
+	uint32		type() const		{ return type_; }
 
-typedef struct state_t	state_t;
+			cell(uint32 type) : ref_count_(0), type_(type)	{}
+	virtual		~cell()	= 0;
 
-/* quote */
-typedef struct quote_t {
-	cell_ptr_t	list;
-} quote_t;
+	void* operator	new(size_t s)		{ return malloc(s); }
+	void operator	delete(void* p)		{ free(p); }
 
-/* lists */
-typedef struct pair_t {
-	cell_ptr_t	tail;		/* the tail */
-	cell_ptr_t	head;		/* the head */
-} pair_t;
+	inline size_t	get_ref_count() const	{ return ref_count_; }
 
-/* lambda */
-typedef struct lambda_t {
-	cell_ptr_t	syms;		/* arguments */
-	cell_ptr_t	body;		/* closure body */
-} lambda_t;
+	friend inline void	intrusive_ptr_add_ref(cell* p) {
+		// increment reference count of object *p
+		++(p->ref_count_);
+	}
 
-/* foreign function */
-typedef void (*ffi_call_t)(state_t* s);
+	friend inline void	intrusive_ptr_release(cell* p) {
+		// decrement reference count, and delete object when reference count reaches 0
+		if( --(p->ref_count_) == 0 )
+			delete p;
+	}
 
-typedef struct ffi_t {
+	friend inline void	intrusive_decrement_ref_count(cell* p) {
+		--p->ref_count_;
+	}
+
+protected:
+	uint32		ref_count_;
+	uint32		type_;
+};	// cell
+
+// string
+struct string_cell : public cell {
+	string_cell(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str))))	{ memcpy(string_, str, strlen(str)); }
+	virtual		~string_cell() override	{ free(string_); }
+
+	const char*	value() const		{ return string_; }
+
+protected:
+	char*		string_;
+};
+
+struct bool_cell : public cell {
+	bool_cell(bool b) : cell(ATOM_BOOL), b_(b)	{}
+	virtual		~bool_cell() override	{}
+
+	bool		value() const		{ return b_; }
+
+protected:
+	bool		b_;
+};
+
+struct char_cell : public cell {
+	char_cell(char ch) : cell(ATOM_CHAR), ch_(ch)	{}
+	virtual		~char_cell() override	{}
+
+	bool		value() const		{ return ch_; }
+
+protected:
+	bool		ch_;
+};
+
+// symbol
+struct symbol : public cell {
+	symbol(const char* sym) : cell(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym))))	{ memcpy(sym_, sym, strlen(sym)); }
+	virtual		~symbol() override	{ free(sym_); }
+
+	const char*	value() const		{ return sym_; }
+
+private:
+	char*		sym_;
+};
+
+// lists
+struct pair : public cell {
+	pair(iptr head, iptr tail) : cell(CELL_PAIR), head_(head), tail_(tail)	{}
+	virtual		~pair() override	{}
+
+	iptr		head() const		{ return head_; }
+	iptr		tail() const		{ return tail_; }
+
+private:
+	iptr		head_;		/* the head */
+	iptr		tail_;		/* the tail */
+};
+
+// lambda
+struct lambda : public cell {
+	iptr		syms;		/* arguments */
+	iptr		body;		/* closure body */
+};
+
+// foreign function
+typedef void (*ffi_call_t)(state* s);
+
+struct ffi : public cell {
 	uint16		flags;
 	sint16		arg_count;	/* total argument count, -1 = any */
 	ffi_call_t	proc;		/* the procedure */
-} ffi_t;
+};
 
-/* closure */
-typedef struct closure_t {
-	cell_ptr_t	env;		/* captured environment */
-	cell_ptr_t	lambda;		/* original args and body pair */
-} closure_t;
+// closure
+struct closure : public cell {
+	iptr		env;		/* captured environment */
+	iptr		lambda;		/* original args and body pair */
+};
+
+
+cell(sint64 i) : ref_count_(0), type_(ATOM_SINT64), obj_(i)	{}
+cell(real64 r) : ref_count_(0), type_(ATOM_REAL64), obj_(r)	{}
+cell(lambda l) : ref_count_(0), type_(CELL_LAMBDA), obj_(l)	{}
+cell(iptr bindings) : ref_count_(0), type_(OP_BIND), obj_(bindings)	{}
+cell(closure cl) : ref_count_(0), type_(OP_APPLY_CLOSURE), obj_(cl)	{}
+cell(ffi fn) : ref_count_(0), type_(OP_APPLY_FFI), obj_(fn)	{}
 
 
 #define EVAL_ARGS	0x8000		/* arguments are evaluated before call */
 #define ARGS_ANY	-1		/* any number of argument */
 
-typedef struct cell_t {
-	CELL_TYPE	type;
-	uint32		ref_count;
-
-	union {
-		char*		symbol;
-		char*		op;
-
-		bool		boolean;
-
-		char		ch;
-
-		sint64		s64;
-		real64		r64;
-
-		char*		string;
-		pair_t		pair;
-		quote_t		quote;
-		lambda_t	lambda;
-		cell_ptr_t	bindings;	/* list of bindings */
-		closure_t	closure;
-		ffi_t		ffi;
-	} object;
-
-} cell_t;
-
-struct state_t {
-	struct gc_block_t {
-		cell_t*		cells;
-		uint32		count;
-		uint32		free_count;
-		cell_ptr_t	free_list;
-	} gc_block;
-
+struct state {
 	struct {
-		cell_ptr_t	exp_stack;	/* expression/operator to execute */
-		cell_ptr_t	env_stack;	/* environment stack */
+		cell::iptr	exp_stack;	/* expression/operator to execute */
+		cell::iptr	env_stack;	/* environment stack */
 
 		/* volatile registers */
-		cell_ptr_t	current_env;	/* current environment */
-		cell_ptr_t	current_exp;	/* current exp + args */
-		cell_ptr_t	ret_val;	/* return value */
+		cell::iptr	current_env;	/* current environment */
+		cell::iptr	current_exp;	/* current exp + args */
+		cell::iptr	ret_val;	/* return value */
 	} registers;
 
 	struct {
-		cell_ptr_t	root;		/* root cell */
-		cell_ptr_t	current_cell;
+		cell::iptr	root;		/* root cell */
+		cell::iptr	current_cell;
 		const char*	token_start;
 		const char*	token_end;
 		uint32		token_line;
@@ -175,95 +436,15 @@ struct state_t {
 
 #define is_nil(c)	((c).index == NIL_CELL.index)
 
-#define cell_type(s, c)				(index_to_cell(s, c)->type)
-
-static INLINE cell_t*		index_to_cell(state_t* s, cell_ptr_t c)	{ return &(s->gc_block.cells[c.index]);		}
-static INLINE cell_ptr_t	cell_to_index(state_t* s, cell_t* c)	{ cell_ptr_t ret; ret.index = (uint32)(c - s->gc_block.cells); return ret; 	}
-
-static INLINE cell_ptr_t	list_head(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.head; }
-static INLINE cell_ptr_t	list_tail(state_t* s, cell_ptr_t l) { assert(cell_type(s, l) == CELL_PAIR || cell_type(s, l) == CELL_FREE); return index_to_cell(s, l)->object.pair.tail; }
+static INLINE cell::iptr	list_head(cell::iptr l) { assert(l->type() == CELL_PAIR || l->type() == CELL_FREE); return l->get_pair().head; }
+static INLINE cell::iptr	list_tail(cell::iptr l) { assert(l->type() == CELL_PAIR || l->type() == CELL_FREE); return l->get_pair().tail; }
 
 
 /* printing */
-void		print_cell(state_t* s, cell_ptr_t c, uint32 level);
+void		print_cell(cell::iptr c, uint32 level);
 
 /* atoms */
-cell_ptr_t	atom_new_symbol(state_t* s, const char* sym);
-cell_ptr_t	atom_new_boolean(state_t* s, bool b);
-cell_ptr_t	atom_new_char(state_t* s, char c);
-cell_ptr_t	atom_new_sint64(state_t* s, sint64 i);
-cell_ptr_t	atom_new_real64(state_t* s, real64 i);
-cell_ptr_t	atom_new_string(state_t* s, const char* b);
-cell_ptr_t	atom_new_unary_op(state_t* s, const char* op);
-cell_ptr_t	atom_new_binary_op(state_t* s, const char* op);
-
-cell_ptr_t	schizo_error(state_t* s, const char* error);
-void		free_cell(state_t* s, cell_ptr_t ptr);
-
-static INLINE cell_ptr_t
-__inc_ref_count(state_t* s,
-	      cell_ptr_t c)
-{
-	if( !is_nil(c) ) {
-		assert(index_to_cell(s, c)->ref_count <= 0xFFFFFFFF);
-		++(index_to_cell(s, c)->ref_count);
-	}
-	return c;
-}
-
-static INLINE cell_ptr_t
-__dec_ref_count(state_t* s,
-	      cell_ptr_t c)
-{
-	if( !is_nil(c) ) {
-		assert(index_to_cell(s, c)->ref_count > 0);
-		--(index_to_cell(s, c)->ref_count);
-		if( index_to_cell(s, c)->ref_count == 0 ) {
-			free_cell(s, c);
-		}
-	}
-	return c;
-}
-
-/*
-** set a cell: FIRST increase THEN decrease the counters.
-**	The order must be respected, especially for cases like set_cell(s, a, list_tail(s, a))
-**	where decreasing the ref count first, would cause the destruction of the tail!
-*/
-#define set_cell(c, v)		{ \
-					cell_ptr_t ev = v; \
-					assert( is_nil(c) || c.index != ev.index ); \
-					__inc_ref_count(s, ev); \
-					__dec_ref_count(s, c); \
-					c	= ev; \
-				}
-
-#define grab(c)			__inc_ref_count(s, c)
-#define release(c)		__dec_ref_count(s, c)
-
-#define __get_fst(_1, _2)		_1
-#define __get_snd(_1, _2)		_2
-
-#define __get_fst_snd_name(NAME)	NAME
-
-#define get_fst(...)			__get_fst_snd_name(__get_fst) __VA_ARGS__
-#define get_snd(...)			__get_fst_snd_name(__get_snd) __VA_ARGS__
-
-#define bind(A, B)			(A, B)
-
-#define let(P, E)			{ cell_ptr_t	get_fst(P)	= grab(get_snd(P)); E; release(get_fst(P)); }
-
-#define let_multi_0(P, E)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); E; release(get_fst(P));
-#define let_multi_1(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_0(__VA_ARGS__) release(get_fst(P));
-#define let_multi_2(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_1(__VA_ARGS__) release(get_fst(P));
-#define let_multi_3(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_2(__VA_ARGS__) release(get_fst(P));
-#define let_multi_4(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_3(__VA_ARGS__) release(get_fst(P));
-#define let_multi_5(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_4(__VA_ARGS__) release(get_fst(P));
-#define let_multi_6(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_5(__VA_ARGS__) release(get_fst(P));
-#define let_multi_7(P, ...)		cell_ptr_t	get_fst(P)	= grab(get_snd(P)); let_multi_6(__VA_ARGS__) release(get_fst(P));
-
-#define __get_multi_name__(_0, _1, _2, _3, _4, _5, _6, _7, MSSING_SCOPE, NAME, ...)	NAME
-#define let_multi(...)			{ __get_multi_name__(__VA_ARGS__, let_multi_7, let_multi_6, let_multi_5, let_multi_4, let_multi_3, let_multi_2, let_multi_1, let_multi_0)(__VA_ARGS__) }
+cell::iptr	error(const char* error);
 
 /* lists */
 cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
@@ -286,8 +467,6 @@ void		state_add_ffi(state_t* s, bool eval_args, const char* sym, ffi_call_t call
 /* eval */
 cell_ptr_t	eval(state_t* s);
 
-#ifdef __cplusplus
-}
-#endif
+}	// namespace schizo
 
 #endif /* SCHIZO_H */
