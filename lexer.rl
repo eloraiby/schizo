@@ -26,14 +26,16 @@
 
 #include "schizo.h"
 
+using namespace schizo;
+
 #define ADVANCE(A)	state->parser.token_start	= ts; \
-			state->parser.token_end	= te; \
+			state->parser.token_end		= te; \
 			state->parser.token_line	= line; \
 			copy_token(ts, te, tmp); \
-			state->parser.current_cell	= token_to_##A(state, tmp); \
-			parser_advance(parser, index_to_cell(state, state->parser.current_cell)->type, state->parser.current_cell, state)
+			state->parser.current_cell	= token_to_##A(tmp); \
+			parser_advance(parser, state->parser.current_cell->type(), state->parser.current_cell, state)
 
-#define ADVANCE_TOKEN(A)	parser_advance(parser, A, NIL_CELL, state)
+#define ADVANCE_TOKEN(A)	parser_advance(parser, A, nullptr, state)
 
 #define PUSH_TE()	const char* tmp_te = te
 #define POP_TE()	te	= tmp_te
@@ -47,7 +49,7 @@
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));
-extern void	parser_advance(void *yyp, int yymajor, cell_ptr_t yyminor, state_t* state);
+extern void	parser_advance(void *yyp, int yymajor, cell::iptr yyminor, state* state);
 
 %%{
 	machine scanner;
@@ -150,9 +152,9 @@ copy_token(const char* ts, const char *te, char* dst) {
 	return index;
 }
 
-static cell_ptr_t
-token_to_symbol(state_t* s, const char* b) {
-	return atom_new_symbol(s, b);
+static cell::iptr
+token_to_symbol(const char* sym) {
+	return new symbol(sym);
 }
 
 /*
@@ -167,44 +169,44 @@ token_to_binary_op(state_t* s, const char* op) {
 }
 */
 
-static cell_ptr_t
-token_to_boolean(state_t* s, const char* b) {
+static cell::iptr
+token_to_boolean(const char* b) {
 	if( !strcmp(b, "#t") ) {
-		return atom_new_boolean(s, true);
+		return new bool_cell(true);
 	} else {
-		return atom_new_boolean(s, false);
+		return new bool_cell(false);
 	}
 }
 
-static cell_ptr_t
-token_to_char(state_t* s, const char* b) {
-	return atom_new_char(s, *b);
+static cell::iptr
+token_to_char(const char* ch) {
+	return new char_cell(*ch);
 }
 
-static cell_ptr_t
-token_to_sint64(state_t* s, const char* b) {
+static cell::iptr
+token_to_sint64(const char* i) {
 	sint64	v	= 0;
-	sscanf(b, "%ld", &v);
+	sscanf(i, "%ld", &v);
 	/* TODO: check limit */
-	return atom_new_sint64(s, v);
+	return new sint64_cell(v);
 }
 
-static cell_ptr_t
-token_to_real64(state_t* s, const char* b) {
+static cell::iptr
+token_to_real64(const char* r) {
 	real64	v	= 0;
-	sscanf(b, "%lf", &v);
+	sscanf(r, "%lf", &v);
 	/* TODO: check limit */
-	return atom_new_real64(s, v);
+	return new real64_cell(v);
 }
 
-static cell_ptr_t
-token_to_string(state_t* s, const char* b) {
-	return atom_new_string(s, b);
+static cell::iptr
+token_to_string(const char* str) {
+	return new string_cell(str);
 }
 
 
 void
-parse(state_t* state, const char* str)
+parse(state* state, const char* str)
 {
 	void*		parser;
 	size_t		line	= 1;
@@ -220,7 +222,7 @@ parse(state_t* state, const char* str)
 	int		cs	= 0;
 	char		tmp[4096];
 
-	state->parser.root	= NIL_CELL;
+	state->parser.root	= nullptr;
 
 	parser	= parser_alloc(malloc);
 
@@ -237,7 +239,7 @@ parse(state_t* state, const char* str)
 		exit(1);
 	}
 
-	parser_advance(parser, 0, NIL_CELL, state);
+	parser_advance(parser, 0, nullptr, state);
 
 	parser_free(parser, free);
 }

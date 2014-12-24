@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+using namespace schizo;
+
 int
 main(int argc,
      char* argv[])
@@ -98,21 +100,20 @@ main(int argc,
 
 	/* char*		example	= "((lambda () (define str \"hello\") (display str))())"; */
 	size_t		i	= 0;
-	state_t*	s	= state_new();
+	state*		s	= new state();
 
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		parse(s, prog[i]);
-		print_cell(s, s->parser.root, 0);
+		print_cell(s->parser.root, 0);
 		fprintf(stderr, "\n");
 	}
 
 
-	state_release(s);
+	delete s;
 
-	s	= state_new();
+	s	= new state();
 	parse(s, example);
-	set_cell(s->registers.exp_stack, s->parser.root);
-	eval(s);
+	eval(s, s->parser.root);
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);
 
@@ -121,7 +122,7 @@ main(int argc,
 
 	mtime = (long)(((seconds) * 1000 + useconds/1000.0) + 0.5);
 	fprintf(stderr, "took %ld ms to scan memory\n", mtime);
-	state_release(s);
+	delete s;
 
 	return 0;
 }

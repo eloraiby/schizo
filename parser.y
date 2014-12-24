@@ -22,15 +22,25 @@
 */
 %name parser
 
-%token_type	{ cell_ptr_t }
-%extra_argument { state_t* s }
+%token_type	{ cell* }
+%extra_argument { state* s }
 
 %include {
 #include "schizo.h"
+
+using namespace schizo;
+
+static INLINE cell* pipe_return(state* s, cell::iptr c) {
+	s->parser.token_list	= new list(c, s->parser.token_list);
+	return c.get();
 }
 
-%type program	{ cell_ptr_t }
-%type cell_list	{ cell_ptr_t }
+#define PR(V)	pipe_return(s, V)
+
+}
+
+%type program	{ cell* }
+%type cell_list	{ cell* }
 
 /*
 %left BIN_OP3
@@ -58,54 +68,52 @@
 %start_symbol program
 
 /* a program is a cell */
-program		::= atom(B).				{ set_cell(s->parser.root, B); }
-program		::= sexpr(B).				{ set_cell(s->parser.root, B); }
+program		::= atom(B).				{ s->parser.root = PR(B); }
+program		::= sexpr(B).				{ s->parser.root = PR(B); }
 
 /* literals */
-atom(A)		::= ATOM_SYMBOL(B).			{ A = B; }
-atom(A)		::= ATOM_BOOL(B).			{ A = B; }
-atom(A)		::= ATOM_CHAR(B).			{ A = B; }
-atom(A)		::= ATOM_SINT64(B).			{ A = B; }
-atom(A)		::= ATOM_REAL64(B).			{ A = B; }
-atom(A)		::= ATOM_STRING(B).			{ A = B; }
+atom(A)		::= ATOM_SYMBOL(B).			{ A = PR(B); }
+atom(A)		::= ATOM_BOOL(B).			{ A = PR(B); }
+atom(A)		::= ATOM_CHAR(B).			{ A = PR(B); }
+atom(A)		::= ATOM_SINT64(B).			{ A = PR(B); }
+atom(A)		::= ATOM_REAL64(B).			{ A = PR(B); }
+atom(A)		::= ATOM_STRING(B).			{ A = PR(B); }
 
 /* NEVER USED in the parser: with these, lemon will also generates the ids automatically, so the enums are continious */
 sexpr		::= ATOM_ERROR.				/* error */
-sexpr		::= CELL_PAIR.				/* list */
+sexpr		::= CELL_LIST.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_LAMBDA.			/* lambda */
 sexpr		::= CELL_QUOTE.				/* quote (this should could have been replaced with objects, but will increase the complexity of the evaluator) */
 
-sexpr		::= OP_APPLY_CLOSURE.			/* closure */
-sexpr		::= OP_APPLY_FFI.			/* foreign function interface */
-sexpr		::= OP_BIND.				/* bind symbols */
-sexpr		::= OP_EVAL_EXPR.			/* eval expression */
-sexpr		::= OP_EVAL_ARGS.			/* eval operator arguments */
+sexpr		::= CELL_CLOSURE.			/* closure : lambda->closure*/
+sexpr		::= CELL_FFI.				/* foreign function interface */
+sexpr		::= CELL_BIND.				/* bind symbols */
 
 /* ( ... ) */
-sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = B; }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse(s, B) : B); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = list_cons(s, atom_new_symbol(s, "begin"), ( cell_type(s, B) == CELL_PAIR ) ? list_reverse(s, B) : B); }
-sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = list_cons(s, atom_new_symbol(s, "vector.get"),
-									   list_cons(s, B, ( cell_type(s, C) == CELL_PAIR ) ? list_reverse(s, C) : C)); }
-ilist(A)	::= atom(B).				{ A = B; }
-ilist(A)	::= sexpr(B).				{ A = B; }
+sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = PR(B); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B->type() == CELL_LIST ) ? list::reverse(B) : B)); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B->type() == CELL_LIST ) ? list::reverse(B) : B)); }
+sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new list(PR(new symbol("vector.get")),
+									  PR(new list(B, ( C->type() == CELL_LIST ) ? list::reverse(C) : C)))); }
+ilist(A)	::= atom(B).				{ A = PR(B); }
+ilist(A)	::= sexpr(B).				{ A = PR(B); }
 
-list(A)		::= ilist(B).				{ A = list_cons(s, B, NIL_CELL); }
-list(A)		::= list(B) ilist(C).			{ A = list_cons(s, C, B); }
+list(A)		::= ilist(B).				{ A = PR(new list(B, nullptr)); }
+list(A)		::= list(B) ilist(C).			{ A = PR(new list(C, B)); }
 
-se_members(A)	::=.					{ A = NIL_CELL; }
-se_members(A)	::= list(B).				{ A = list_reverse(s, B); }
+se_members(A)	::=.					{ A = nullptr; }
+se_members(A)	::= list(B).				{ A = PR(list::reverse(B)); }
 
 /* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
-be_members(A)	::= list(B).				{ A = list_reverse(s, B); }
+be_members(A)	::= list(B).				{ A = PR(list::reverse(B)); }
 
 /* { ... } */
-member_list(A)	::=.					{ A = NIL_CELL; }
-member_list(A)	::= be_members(B).			{ A = list_cons(s, (list_length(s, B) == 1) ? list_head(s, B) : B, NIL_CELL); }
-member_list(A)	::= member_list(B) sc be_members(C).	{ A = list_cons(s, (list_length(s, C) == 1) ? list_head(s, C) : C,  B); }
+member_list(A)	::=.					{ A = nullptr; }
+member_list(A)	::= be_members(B).			{ A = PR(new list((list::length(B) == 1) ? list::head(B) : B, nullptr)); }
+member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new list((list::length(C) == 1) ? list::head(C) : C,  B)); }
 
 /* TODO: operator precedence */

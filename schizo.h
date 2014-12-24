@@ -80,8 +80,6 @@ typedef double		real64;
 //  The object is responsible for destroying itself.
 //
 
-namespace raja
-{
 template<class T>
 class intrusive_ptr
 {
@@ -331,6 +329,7 @@ protected:
 	char*		string_;
 };
 
+// bool
 struct bool_cell : public cell {
 	bool_cell(bool b) : cell(ATOM_BOOL), b_(b)	{}
 	virtual		~bool_cell() override	{}
@@ -341,14 +340,37 @@ protected:
 	bool		b_;
 };
 
+// char
 struct char_cell : public cell {
 	char_cell(char ch) : cell(ATOM_CHAR), ch_(ch)	{}
 	virtual		~char_cell() override	{}
 
-	bool		value() const		{ return ch_; }
+	char		value() const		{ return ch_; }
 
 protected:
-	bool		ch_;
+	char		ch_;
+};
+
+// sint64
+struct sint64_cell : public cell {
+	sint64_cell(sint64 s64) : cell(ATOM_SINT64), s64_(s64)	{}
+	virtual		~sint64_cell() override	{}
+
+	sint64		value() const		{ return s64_; }
+
+protected:
+	sint64		s64_;
+};
+
+// real64
+struct real64_cell : public cell {
+	real64_cell(real64 r64) : cell(ATOM_REAL64), r64_(r64)	{}
+	virtual		~real64_cell() override	{}
+
+	real64		value() const		{ return r64_; }
+
+protected:
+	real64		r64_;
 };
 
 // symbol
@@ -362,47 +384,72 @@ private:
 	char*		sym_;
 };
 
-// lists
-struct pair : public cell {
-	pair(iptr head, iptr tail) : cell(CELL_PAIR), head_(head), tail_(tail)	{}
-	virtual		~pair() override	{}
+// list
+struct list : public cell {
+	list(iptr head, iptr tail) : cell(CELL_LIST), head_(head), tail_(tail)	{}
+	virtual		~list() override	{}
 
 	iptr		head() const		{ return head_; }
 	iptr		tail() const		{ return tail_; }
 
+	static iptr	reverse(iptr l);
+	static uint32	length(iptr l);
+
+	static INLINE cell::iptr	head(cell::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->head(); }
+	static INLINE cell::iptr	tail(cell::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->tail(); }
 private:
-	iptr		head_;		/* the head */
-	iptr		tail_;		/* the tail */
+	iptr		head_;			///< the head
+	iptr		tail_;			///< the tail
 };
 
 // lambda
 struct lambda : public cell {
-	iptr		syms;		/* arguments */
-	iptr		body;		/* closure body */
+	lambda(iptr syms, iptr body) : cell(CELL_LAMBDA), syms_(syms), body_(body)	{}
+	virtual		~lambda() override	{}
+
+	iptr		syms() const		{ return syms_; }
+	iptr		body() const		{ return body_; }
+
+private:
+	iptr		syms_;			///< arguments
+	iptr		body_;			///< closure body
 };
 
 // foreign function
 typedef void (*ffi_call_t)(state* s);
 
 struct ffi : public cell {
-	uint16		flags;
-	sint16		arg_count;	/* total argument count, -1 = any */
-	ffi_call_t	proc;		/* the procedure */
+	ffi(uint16 flags, sint16 arg_count, ffi_call_t proc) : cell(CELL_FFI), flags_(flags), arg_count_(arg_count), proc_(proc)	{}
+	virtual		~ffi() override		{}
+
+	uint16		flags() const		{ return flags_; }
+	sint16		arg_count() const	{ return arg_count_; }
+	ffi_call_t	proc() const		{ return proc_; }
+
+private:
+	uint16		flags_;
+	sint16		arg_count_;		///< total argument count, -1 = any
+	ffi_call_t	proc_;			///< the procedure
 };
 
 // closure
 struct closure : public cell {
-	iptr		env;		/* captured environment */
-	iptr		lambda;		/* original args and body pair */
+	closure(iptr env, iptr lambda) : cell(CELL_CLOSURE), env_(env), lambda_(lambda)	{}
+	virtual		~closure() override	{}
+
+private:
+	iptr		env_;			///< captured environment
+	iptr		lambda_;		///< original args and body pair
 };
 
+// bind
+struct bind : public cell {
+	bind(iptr bindings) : cell(CELL_BIND), bindings_(bindings)	{}
+	virtual		~bind() override	{}
 
-cell(sint64 i) : ref_count_(0), type_(ATOM_SINT64), obj_(i)	{}
-cell(real64 r) : ref_count_(0), type_(ATOM_REAL64), obj_(r)	{}
-cell(lambda l) : ref_count_(0), type_(CELL_LAMBDA), obj_(l)	{}
-cell(iptr bindings) : ref_count_(0), type_(OP_BIND), obj_(bindings)	{}
-cell(closure cl) : ref_count_(0), type_(OP_APPLY_CLOSURE), obj_(cl)	{}
-cell(ffi fn) : ref_count_(0), type_(OP_APPLY_FFI), obj_(fn)	{}
+private:
+	iptr		bindings_;		///< binding list
+};
 
 
 #define EVAL_ARGS	0x8000		/* arguments are evaluated before call */
@@ -420,25 +467,14 @@ struct state {
 	} registers;
 
 	struct {
-		cell::iptr	root;		/* root cell */
+		cell::iptr	token_list;	///< token list
+		cell::iptr	root;		///< root cell
 		cell::iptr	current_cell;
 		const char*	token_start;
 		const char*	token_end;
 		uint32		token_line;
 	} parser;
 };
-
-/*
- * Inline helpers
- */
-
-#define NIL_CELL	cell_ptr(0x0)
-
-#define is_nil(c)	((c).index == NIL_CELL.index)
-
-static INLINE cell::iptr	list_head(cell::iptr l) { assert(l->type() == CELL_PAIR || l->type() == CELL_FREE); return l->get_pair().head; }
-static INLINE cell::iptr	list_tail(cell::iptr l) { assert(l->type() == CELL_PAIR || l->type() == CELL_FREE); return l->get_pair().tail; }
-
 
 /* printing */
 void		print_cell(cell::iptr c, uint32 level);
@@ -447,25 +483,16 @@ void		print_cell(cell::iptr c, uint32 level);
 cell::iptr	error(const char* error);
 
 /* lists */
-cell_ptr_t	list_cons(state_t* s, cell_ptr_t head, cell_ptr_t tail);
-#define		list_make_pair(s, fst, snd)	(list_cons((s), (fst), list_cons((s), (snd), NIL_CELL)))
-
-cell_ptr_t	list_reverse(state_t* s, cell_ptr_t list);
-uint32		list_length(state_t* s, cell_ptr_t list);
-
-/* vectors */
-cell_ptr_t	cell_vector(state_t* s, uint32 count);
+#define		pair(fst, snd)	(new list((s), (fst), new list((s), (snd), nullptr)))
 
 /* parser.y / lexer.rl */
-void		parse(state_t* state, const char* str);
+void		parse(state* state, const char* str);
 
 /* states */
-state_t*	state_new();
-void		state_release(state_t* s);
-void		state_add_ffi(state_t* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
+void		state_add_ffi(state* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
 
 /* eval */
-cell_ptr_t	eval(state_t* s);
+cell::iptr	eval(state* s, cell::iptr exp);
 
 }	// namespace schizo
 

@@ -21,153 +21,7 @@
 #include "schizo.h"
 #include <stdio.h>
 
-/* little helpers */
-#define ITC(A)			index_to_cell(s, A)
-
-/*******************************************************************************
-** memory management
-*******************************************************************************/
-#define INITIAL_CELL_COUNT	2/* 128 * 1024 */	/* this should be at least 2 */
-
-void
-free_cell(state_t* s,
-	  cell_ptr_t ptr)
-{
-	cell_t*	p	= ITC(ptr);
-
-	assert( p->ref_count == 0 );
-
-	switch( p->type ) {
-	case ATOM_BOOL:
-	case ATOM_CHAR:
-	case ATOM_SINT64:
-	case ATOM_REAL64:
-	case OP_APPLY_FFI:
-		break;
-
-	case CELL_FREE:
-		assert( 0 && "freeing a FREE_CELL!!!");
-		break;
-
-	case CELL_PAIR:
-		release(p->object.pair.head);
-
-		/* TODO: prevent recursive call and stack overflow from successive list calls */
-		release(p->object.pair.tail);
-		break;
-
-	case OP_APPLY_CLOSURE:
-		release(p->object.closure.env);
-		release(p->object.closure.lambda);
-		break;
-
-	case CELL_LAMBDA:
-		release(p->object.lambda.syms);
-		release(p->object.lambda.body);
-		break;
-
-	case CELL_QUOTE:
-		release(p->object.quote.list);
-		break;
-
-	case OP_BIND:
-		release(p->object.bindings);
-		break;
-
-	case ATOM_STRING:
-		free(p->object.string);
-		break;
-
-	case ATOM_SYMBOL:
-		free(p->object.symbol);
-		break;
-
-	case ATOM_ERROR:	/* ERRORS should point to another cell symbol/string ? */
-		free(p->object.string);
-		break;
-	default:
-		assert(false);
-	}
-
-	/* append the free cell list */
-	p->type			= CELL_FREE;
-	p->ref_count		= 0;
-	p->object.pair.head	= NIL_CELL;
-	p->object.pair.tail	= s->gc_block.free_list;
-	s->gc_block.free_list	= ptr;
-}
-
-
-
-cell_ptr_t
-cell_alloc(state_t* s) {
-	uint32		i = 0;
-	cell_ptr_t	c = NIL_CELL;
-
-	/*
-	** TODO: handle reallocation, calling garbage collector and the rest...
-	** Unit testing is crucial: ensure all branches are visited.
-	*/
-	if( s->gc_block.cells == NULL ) {
-		s->gc_block.count	= INITIAL_CELL_COUNT;
-		s->gc_block.free_count	= INITIAL_CELL_COUNT - 2;
-		s->gc_block.cells	= (cell_t*)malloc(sizeof(cell_t) * s->gc_block.count);
-		memset(s->gc_block.cells, 0, sizeof(cell_t) * s->gc_block.count);
-
-		for( i = 0; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type		= CELL_FREE;
-			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
-			s->gc_block.cells[i].object.pair.tail	= cell_ptr(i + 1);
-		}
-
-		s->gc_block.cells[INITIAL_CELL_COUNT - 1].object.pair.tail	= NIL_CELL;
-
-		/* first cell, is the nil cell */
-		s->gc_block.cells[0].type			= CELL_PAIR;
-		s->gc_block.cells[0].object.pair.tail		= NIL_CELL;
-
-		s->gc_block.free_list	= cell_ptr(1);	/* free_list is the allocated lists */
-
-	} else if( is_nil(s->gc_block.free_list) ) {
-		uint32	old_count	= s->gc_block.count;
-
-		cell_t* new_block	= (cell_t*)malloc(sizeof(cell_t) * old_count * 2);
-		if( new_block == NULL ) {
-			fprintf(stderr, "Fatal error: Not enough memory...\n");
-			exit(1);
-		}
-
-		memset(new_block, 0, sizeof(cell_t) * old_count * 2);
-		memcpy(new_block, s->gc_block.cells, sizeof(cell_t) * old_count);
-		free(s->gc_block.cells);
-
-		s->gc_block.free_count	= s->gc_block.count;
-		s->gc_block.count	*= 2;
-		s->gc_block.cells	= new_block;
-
-		s->gc_block.free_list	= cell_ptr(old_count);
-
-		for( i = old_count; i < s->gc_block.count; ++i ) {
-			s->gc_block.cells[i].type		= CELL_FREE;
-			s->gc_block.cells[i].object.pair.head	= NIL_CELL;
-			s->gc_block.cells[i].object.pair.tail	= cell_ptr(i + 1);
-		}
-
-		s->gc_block.cells[s->gc_block.count - 1].object.pair.tail	= NIL_CELL;
-	}
-
-	c	= s->gc_block.free_list;
-
-	assert( ITC(c)->ref_count == 0 );
-
-	s->gc_block.free_list	= list_tail(s, c);
-	--(s->gc_block.free_count);
-	/* set both to NIL_CELL so that set_cell usage is consistent */
-	ITC(c)->object.pair.head	= NIL_CELL;
-	ITC(c)->object.pair.tail	= NIL_CELL;
-
-	return c;
-}
+using namespace schizo;
 
 /*******************************************************************************
 ** printing
@@ -182,15 +36,13 @@ print_level(uint32 level) {
 }
 
 void
-print_cell(state_t* s,
-	   cell_ptr_t cell,
+schizo::print_cell(cell::iptr c,
 	   uint32 level)
 {
-	cell_t* c	= ITC(cell);
 	print_level(level);
-	switch( c->type ) {
+	switch( c->type() ) {
 	case ATOM_BOOL:
-		if( c->object.boolean ) {
+		if( static_cast<bool_cell*>(c.get())->value() ) {
 			fprintf(stderr, "#t");
 		} else {
 			fprintf(stderr, "#f");
@@ -198,7 +50,7 @@ print_cell(state_t* s,
 		break;
 
 	case ATOM_SYMBOL:
-		fprintf(stderr, "%s", c->object.symbol);
+		fprintf(stderr, "%s", static_cast<symbol*>(c.get())->value());
 		break;
 		/*
 	case ATOM_UNARY_OP:
@@ -210,40 +62,40 @@ print_cell(state_t* s,
 		break;
 */
 	case ATOM_CHAR:
-		fprintf(stderr, "'%c'", c->object.ch);
+		fprintf(stderr, "'%c'", static_cast<char_cell*>(c.get())->value());
 		break;
 
 	case ATOM_SINT64:
-		fprintf(stderr, "%ld", (sint64)c->object.s64);
+		fprintf(stderr, "%ld", static_cast<sint64_cell*>(c.get())->value());
 		break;
 
 	case ATOM_REAL64:
-		fprintf(stderr, "%lf", (real64)c->object.r64);
+		fprintf(stderr, "%lf", static_cast<real64_cell*>(c.get())->value());
 		break;
 
 	case ATOM_STRING:
-		fprintf(stderr, "\"%s\"", c->object.string);
+		fprintf(stderr, "\"%s\"", static_cast<string_cell*>(c.get())->value());
 		break;
 
-	case CELL_PAIR:
-		if( !is_nil(c->object.pair.head) ) {
+	case CELL_LIST:
+		if( !list::head(c) ) {
 			fprintf(stderr, "(");
-			print_cell(s, c->object.pair.head, 0);
+			print_cell(list::head(c), uint32(0));
 		} else {
 			fprintf(stderr, "(nil");
 		}
 
-		if( !is_nil(c->object.pair.tail) ) {
-			cell_ptr_t n	= c->object.pair.tail;
-			while( !is_nil(n) ) {
-				if( !is_nil(list_head(s, n)) ) {
-					print_cell(s, list_head(s, n), 1);
+		if( !list::tail(c) ) {
+			cell::iptr n	= list::tail(c);
+			while( !n ) {
+				if( !list::head(n) ) {
+					print_cell(list::head(n), 1);
 				} else {
 					print_level(level + 1);
 					fprintf(stderr, "nil");
 				}
 
-				n	= list_tail(s, n);
+				n	= list::tail(n);
 			}
 		}
 		fprintf(stderr, ")");
@@ -253,211 +105,38 @@ print_cell(state_t* s,
 	}
 }
 
-/*******************************************************************************
-** atoms
-*******************************************************************************/
-
-#define IMPLEMENT_TYPE_CELL(TYPE, FIELD, ENUM)	cell_ptr_t \
-	atom_new_ ## TYPE(state_t* s, TYPE v) { \
-	cell_ptr_t r	= cell_alloc(s); \
-	ITC(r)->type	= ENUM; \
-	ITC(r)->object.FIELD	= v; \
-	return r; \
-	}
-
-cell_ptr_t
-atom_new_symbol(state_t* s,
-		const char* b)
-{
-	size_t len	= strlen(b);
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= ATOM_SYMBOL;
-	ITC(r)->object.symbol	= (char*)(malloc(len + 1));
-	memcpy(ITC(r)->object.symbol, b, len + 1);
-	return r;
-}
-
-cell_ptr_t
-atom_new_boolean(state_t* s,
-		 bool b)
-{
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= ATOM_BOOL;
-	ITC(r)->object.boolean	= b;
-	return r;
-}
-
-cell_ptr_t
-atom_new_char(state_t* s,
-	      char c)
-{
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= ATOM_CHAR;
-	ITC(r)->object.ch	= c;
-	return r;
-}
-
-IMPLEMENT_TYPE_CELL(sint64, s64, ATOM_SINT64)
-IMPLEMENT_TYPE_CELL(real64, r64, ATOM_REAL64)
-
-cell_ptr_t
-atom_new_string(state_t* s,
-		const char* b)
-{
-	size_t len	= strlen(b);
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= ATOM_STRING;
-	ITC(r)->object.string	= (char*)(malloc(len + 1));
-	memcpy(ITC(r)->object.string, b, len + 1);
-	return r;
-}
-
-cell_ptr_t
-schizo_error(state_t* s,
-	     const char* error)
-{
-	size_t len	= strlen(error);
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= ATOM_ERROR;
-	ITC(r)->object.string	= (char*)(malloc(len + 1));
-	memcpy(ITC(r)->object.string, error, len + 1);
-	return r;
-}
-
-cell_ptr_t
-cell_new_bind_list(state_t* s)
-{
-	cell_ptr_t r	= cell_alloc(s);
-
-	ITC(r)->type	= OP_BIND;
-	ITC(r)->object.bindings	= NIL_CELL;
-	return r;
-}
-
-/*
-cell_ptr_t
-atom_new_unary_op(state_t* s,
-		  const char* op)
-{
-	size_t len	= strlen(op);
-	cell_ptr_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
-
-	ret->type	= ATOM_UNARY_OP;
-	ret->object.op	= (char*)(malloc(len + 1));
-	memcpy(ret->object.symbol, op, len + 1);
-	return id;
-
-}
-
-cell_ptr_t
-atom_new_binary_op(state_t* s,
-		   const char* op)
-{
-	size_t len	= strlen(op);
-	cell_ptr_t id	= cell_alloc(s);
-	cell_t*	ret	= &s->gc_block.cells[id.index];
-
-	ret->type	= ATOM_BINARY_OP;
-	ret->object.op	= (char*)(malloc(len + 1));
-	memcpy(ret->object.symbol, op, len + 1);
-	return id;
-
-}
-*/
 
 /*******************************************************************************
 ** lists
 *******************************************************************************/
-
-cell_ptr_t
-list_cons(state_t* s,
-	  cell_ptr_t head,
-	  cell_ptr_t tail)
-{
-	cell_ptr_t r	= cell_alloc(s);
-
-	assert( is_nil(tail) || cell_type(s, tail) == CELL_PAIR );
-
-	ITC(r)->type	= CELL_PAIR;
-
-	set_cell(ITC(r)->object.pair.head, head);
-
-	ITC(r)->object.pair.tail	= NIL_CELL;
-
-	set_cell(ITC(r)->object.pair.tail, tail);
-
-	return r;
-}
-
 uint32
-list_length(state_t* s, cell_ptr_t list)
+list::length(cell::iptr l)
 {
-	cell_ptr_t	curr	= list;
+	cell::iptr	curr	= l;
 	uint32		len	= 0;
 
-	while( !is_nil(curr) ) {
-		assert( cell_type(s, list) == CELL_PAIR );
+	while( !curr ) {
+		assert( l->type() == CELL_LIST );
 		++len;
-		curr	= list_tail(s, curr);
+		curr	= list::tail(curr);
 	}
 	return len;
 }
 
-cell_ptr_t
-list_reverse(state_t* s,
-	     cell_ptr_t list)
+cell::iptr
+list::reverse(cell::iptr l)
 {
-	cell_ptr_t	nl	= NIL_CELL;
+	cell::iptr	nl	= nullptr;
 
-	while( !is_nil(list) ) {
-		nl	= list_cons(s, list_head(s, list), nl);
-		list	= list_tail(s, list);
+	while( !l ) {
+		nl	= new list(list::head(l), nl);
+		l	= list::tail(l);
 	}
 
 	return nl;
 }
 
 /*
-cell_ptr_t
-list_reverse_in_place(state_t* s, cell_ptr_t list)
-{
-	if( !is_nil(list) ) {
-		cell_ptr_t	curr	= NIL_CELL;
-		cell_ptr_t	next	= NIL_CELL;
-
-		assert( cell_type(s, list) == CELL_PAIR );
-
-		curr	= list;
-		next	= list_tail(s, curr);
-		while( !is_nil(next) ) {
-			cell_ptr_t	tmp	= NIL_CELL;
-
-			assert( cell_type(s, curr) == CELL_PAIR );
-
-			tmp		= list_tail(s, next);
-
-			ITC(next)->object.pair.tail	= curr;
-
-			curr		= next;
-			next		= tmp;
-		}
-
-		ITC(list)->object.pair.tail	= NIL_CELL;
-
-		assert( ITC(curr)->ref_count >= 1 );
-		assert( ITC(list)->ref_count >= 1 );
-		return curr;
-	} else {
-		return list;
-	}
-}
-
 cell_ptr_t
 list_zip(state_t* s,
 	 cell_ptr_t l0,
