@@ -113,7 +113,7 @@ main(int argc,
 
 	s	= new state();
 	state::parse(s, example);
-	s->eval(s->root());
+	s->eval(state::default_env(), s->root());
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);
 

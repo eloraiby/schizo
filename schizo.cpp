@@ -169,46 +169,51 @@ list_zip(state_t* s,
 ** eval
 *******************************************************************************/
 cell::iptr
-state::lookup(const char* sym)
+state::lookup(cell::iptr env,
+	      const char* sym)
 {
-	iptr	env	= list::head(registers_.env_stack);
-	iptr	pair	= list::head(env);
+	if( env ) {
+		iptr	pair	= list::head(env);
 
-	while( pair && strcmp(sym, static_cast<symbol*>(list::head(pair).get())->value()) != 0 ) {
-		env	= list::tail(env);
-		if( env ) {
-			pair	= list::head(env);
-		} else {
-			pair	= nullptr;
+		while( pair && strcmp(sym, static_cast<symbol*>(list::head(pair).get())->value()) != 0 ) {
+			env	= list::tail(env);
+			if( env ) {
+				pair	= list::head(env);
+			} else {
+				pair	= nullptr;
+			}
 		}
-	}
 
-	if( !pair ) {
-		return nullptr;
-	} else {
-		if( list::tail(pair) ) {
-			return list::head(list::tail(pair));
-		} else {
+		if( !pair ) {
 			return nullptr;
+		} else {
+			if( list::tail(pair) ) {
+				return list::head(list::tail(pair));
+			} else {
+				return nullptr;
+			}
 		}
+	} else {
+		return nullptr;
 	}
 }
 
 cell::iptr
-state::eval_list(cell::iptr expr) {
+state::eval_list(cell::iptr env,
+		 cell::iptr expr)
+{
 	cell::iptr	res	= nullptr;
 	while( expr ) {
-		res	= new list(eval(list::head(expr)), res);
+		res	= new list(eval(env, list::head(expr)), res);
 		expr	= list::tail(expr);
 	}
 	return list::reverse(res);
 }
 
 cell::iptr
-state::apply_bind(cell::iptr b)
+state::apply_bind(iptr env,
+		  cell::iptr b)
 {
-	iptr	env	= top_env();
-
 	if( b->type() == CELL_BIND ) {
 		iptr	sympair = static_cast<bind*>(b.get())->bindings();
 		while( sympair ) {
@@ -217,8 +222,7 @@ state::apply_bind(cell::iptr b)
 		}
 	}
 
-	registers_.env_stack	= new list(env, list::tail(registers_.env_stack));
-	return nullptr;
+	return env;
 }
 
 /*
@@ -234,7 +238,9 @@ print_env(state_t* s)
 */
 
 cell::iptr
-state::eval(cell::iptr exp) {
+state::eval(cell::iptr env,
+	    cell::iptr exp)
+{
 	while( exp ) {	/* not a NIL_CELL */
 		/* print_env(s); */
 		switch( exp->type() ) {
@@ -250,12 +256,12 @@ state::eval(cell::iptr exp) {
 		case CELL_QUOTE:
 			return exp;
 		case CELL_BIND:
-			return apply_bind(exp);
+			return apply_bind(env, exp);
 
 			/* symbols */
 		case ATOM_SYMBOL:
 			fprintf(stderr, "SYMBOL LOOKUP: %s\n", static_cast<symbol*>(exp.get())->value());
-			return lookup(static_cast<symbol*>(exp.get())->value());
+			return lookup(env, static_cast<symbol*>(exp.get())->value());
 
 			/* applications */
 		case CELL_LIST:	{
@@ -267,7 +273,7 @@ state::eval(cell::iptr exp) {
 			}
 
 			tail	= list::tail(exp);	/* NOT NEEDED ? */
-			head	= eval(head);
+			head	= eval(env, head);
 
 			switch( head->type() ) {
 			case CELL_FFI:
@@ -281,12 +287,15 @@ state::eval(cell::iptr exp) {
 						return nullptr;
 					} else {
 
-						iptr args	= eval_list(tail);
+						iptr args	= eval_list(env, tail);
 
-						return (*static_cast<ffi*>(head.get()))(this, registers_.current_env, args);
+						return (*static_cast<ffi*>(head.get()))(env, args);
 					}
 				} else {	/* lambda, define, if */
-					exp	= (*static_cast<ffi*>(head.get()))(this, registers_.current_env, tail);
+					exp	= (*static_cast<ffi*>(head.get()))(env, tail);
+					if( exp->type() == CELL_BIND ) {	// bind needs to be returned immediately
+						return exp;
+					}
 				}
 				break;
 			case CELL_CLOSURE: {
@@ -297,18 +306,18 @@ state::eval(cell::iptr exp) {
 				/*print_cell(s, tail, 0);*/
 
 				lambda_	= static_cast<closure*>(head.get())->lambda();
-				registers_.current_env	= static_cast<closure*>(head.get())->env();
+				env	= static_cast<closure*>(head.get())->env();
 
 				/* evaluate the arguments and zip them */
 				if( list::length(tail) != list::length(static_cast<lambda*>(lambda_.get())->syms()) ) {
 					return new error("ERROR: closure arguments do not match given arguments");
 				}
 
-				args	= eval_list(tail);
+				args	= eval_list(env, tail);
 				syms	= static_cast<lambda*>(lambda_.get())->syms();
 
 				while( list::head(syms) && list::head(args) ) {
-					registers_.current_env	= new list(pair(list::head(syms), list::head(args)), registers_.current_env);
+					env	= new list(pair(list::head(syms), list::head(args)), env);
 					args	= list::tail(args);
 					syms	= list::tail(syms);
 				}
@@ -322,10 +331,16 @@ state::eval(cell::iptr exp) {
 					iptr	ret	= nullptr;
 
 					exp	= list::head(body);
+					if( exp->type() == CELL_BIND ) {	// bind needs to be treated here
+						env = apply_bind(env, exp);
+					}
 
 					while( next ) {
 						/* print_env(s); */
-						ret	= eval(exp);	/* eval and bind */
+						ret	= eval(env, exp);	/* eval and bind */
+						if( ret->type() == CELL_BIND ) {	// bind needs to be treated here
+							env = apply_bind(env, ret);
+						}
 
 						exp	= list::head(next);
 						next	= list::tail(next);
@@ -367,8 +382,7 @@ state::eval(cell::iptr exp) {
  * @return
  */
 static cell::iptr
-symbol_define(state* s,
-	      cell::iptr env,
+symbol_define(cell::iptr env,
 	      cell::iptr args)
 {
 	cell::iptr sym	= list::head(args);
@@ -387,8 +401,7 @@ symbol_define(state* s,
  * @return
  */
 static cell::iptr
-make_closure(state* s,
-	     cell::iptr env,
+make_closure(cell::iptr env,
 	     cell::iptr args)
 {
 	cell::iptr	syms	= list::head(args);
@@ -400,8 +413,7 @@ make_closure(state* s,
 }
 
 static cell::iptr
-if_else(state* s,
-	cell::iptr env,
+if_else(cell::iptr env,
 	cell::iptr args)
 {
 	if( list::length(args) != 4 ) {
@@ -414,7 +426,7 @@ if_else(state* s,
 	cell::iptr exp1		= list::head(list::tail(list::tail(list::tail(args))));
 
 	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<symbol*>(elsym.get())->value(), "else") == 0 ) {
-		cell::iptr b	= s->eval(cond);
+		cell::iptr b	= state::eval(env, cond);
 		if( b->type() != ATOM_BOOL ) {
 			return new error("ERROR: if requires condition to be boolean");
 		}
@@ -430,8 +442,7 @@ if_else(state* s,
 }
 
 static cell::iptr
-display(state* s,
-	cell::iptr env,
+display(cell::iptr env,
 	cell::iptr args)
 {
 	print_cell(args, 0);
@@ -441,8 +452,9 @@ display(state* s,
 /*******************************************************************************
 ** schizo state
 *******************************************************************************/
-void
-state::add_ffi(const char* sym,
+cell::iptr
+state::add_ffi(iptr env,
+	       const char* sym,
 	       uint16 flags,
 	       sint32 arg_count,
 	       ffi_call_t proc)
@@ -452,20 +464,26 @@ state::add_ffi(const char* sym,
 
 	cell::iptr	f	= new ffi(flags, arg_count, proc);
 
-	registers_.current_env	= new list(pair(_s, f), registers_.current_env);
+	return new list(pair(_s, f), env);
 }
 
 state::state() : cell(CELL_STATE) {
 	parser_.token_start	= nullptr;
 	parser_.token_end	= nullptr;
 	parser_.token_line	= 0;
-
-	add_ffi("lambda",  EVAL_ARGS, -1, make_closure);
-	add_ffi("define",  EVAL_ARGS,  2, symbol_define);
-	add_ffi("display", EVAL_ARGS,  1, display);
-	add_ffi("if",      0,          4, if_else);
 }
 
 state::~state() {
 }
+
+cell::iptr
+state::default_env() {
+	iptr env	= nullptr;
+	env = state::add_ffi(env, "lambda",  uint16(EVAL_ARGS), sint16(-1), make_closure);
+	env = state::add_ffi(env, "define",  EVAL_ARGS,  2, symbol_define);
+	env = add_ffi(env, "display", EVAL_ARGS,  1, display);
+	env = add_ffi(env, "if",      0,          4, if_else);
+	return env;
+}
+
 }	// namespace schizo

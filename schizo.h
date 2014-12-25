@@ -334,7 +334,7 @@ private:
 };
 
 // foreign function
-typedef cell::iptr (*ffi_call_t)(state* s, cell::iptr env, cell::iptr args);
+typedef cell::iptr (*ffi_call_t)(cell::iptr env, cell::iptr args);
 
 struct ffi : public cell {
 	inline		ffi(uint16 flags, sint16 arg_count, ffi_call_t proc) : cell(CELL_FFI), flags_(flags), arg_count_(arg_count), proc_(proc)	{}
@@ -342,7 +342,7 @@ struct ffi : public cell {
 
 	inline uint16	flags() const		{ return flags_; }
 	inline sint16	arg_count() const	{ return arg_count_; }
-	inline iptr	operator()(state* s, iptr env, iptr args) const		{ return proc_(s, env, args); }
+	inline iptr	operator()(iptr env, iptr args) const		{ return proc_(env, args); }
 
 private:
 	uint16		flags_;
@@ -385,14 +385,14 @@ struct state : public cell {
 	inline iptr	root() const		{ return parser_.root; }
 	inline void	set_root(iptr root)	{ parser_.root = root; }
 
-	iptr		eval(iptr exp);
-
-	void		add_ffi(const char* sym, uint16 flags, sint32 arg_count, ffi_call_t proc);
-	iptr		lookup(const char* sym);
-
+	static iptr	eval(iptr env, iptr exp);
 
 	/// parser.y / lexer.rl
 	static void	parse(state* state, const char* str);
+
+	static iptr	default_env();
+	static iptr	add_ffi(cell::iptr env, const char* sym, uint16 flags, sint32 arg_count, ffi_call_t proc);
+	static iptr	lookup(cell::iptr env, const char* sym);
 
 	static inline cell* add_token(state* s, cell* c) {
 		s->parser_.token_list	= new list(c, s->parser_.token_list);
@@ -401,24 +401,24 @@ struct state : public cell {
 
 protected:
 
-	iptr		eval_list(iptr l);
+	static iptr	eval_list(iptr env, iptr l);
 
-	inline void	push_env(iptr env)	{ registers_.env_stack = new list(env, registers_.env_stack);	}
-	inline void	pop_env()		{ registers_.env_stack = list::tail(registers_.env_stack);	}
-	inline iptr	top_env()		{ return list::head(registers_.env_stack);			}
+//	inline void	push_env(iptr env)	{ registers_.env_stack = new list(env, registers_.env_stack);	}
+//	inline void	pop_env()		{ registers_.env_stack = list::tail(registers_.env_stack);	}
+//	inline iptr	top_env()		{ return list::head(registers_.env_stack);			}
 
 	inline void	push_exp(iptr exp)	{ registers_.exp_stack = new list(exp, registers_.exp_stack);	}
 	inline void	pop_exp()		{ registers_.exp_stack = list::tail(registers_.exp_stack);	}
 	inline iptr	top_exp()		{ return list::head(registers_.exp_stack);			}
 
-	iptr		apply_bind(iptr bexp);
+	static iptr	apply_bind(iptr env, iptr bexp);
 
 	struct {
 		cell::iptr	exp_stack;	///< expression/operator to execute
-		cell::iptr	env_stack;	///< environment stack
+		//cell::iptr	env_stack;	///< environment stack
 
 		/* volatile registers */
-		cell::iptr	current_env;	///< current environment
+		//cell::iptr	current_env;	///< current environment
 	} registers_;
 
 	struct {
