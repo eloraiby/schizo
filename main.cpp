@@ -85,7 +85,7 @@ main(int argc,
 				    ")"
 	};
 
-	char*		example	= "("\
+	const char*	example	= "("\
 				  "  (lambda ()" \
 				  "          (define str \"hello\")" \
 				  "          (define b #t)" \
@@ -103,8 +103,8 @@ main(int argc,
 	state*		s	= new state();
 
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
-		parse(s, prog[i]);
-		print_cell(s->parser.root, 0);
+		state::parse(s, prog[i]);
+		print_cell(s->root(), 0);
 		fprintf(stderr, "\n");
 	}
 
@@ -112,8 +112,8 @@ main(int argc,
 	delete s;
 
 	s	= new state();
-	parse(s, example);
-	eval(s, s->parser.root);
+	state::parse(s, example);
+	s->eval(s->root());
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);
 

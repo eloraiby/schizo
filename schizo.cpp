@@ -21,7 +21,13 @@
 #include "schizo.h"
 #include <stdio.h>
 
-using namespace schizo;
+extern "C" void __cxa_pure_virtual() { while(1); }
+
+namespace schizo {
+
+cell::~cell() {
+
+}
 
 /*******************************************************************************
 ** printing
@@ -36,72 +42,68 @@ print_level(uint32 level) {
 }
 
 void
-schizo::print_cell(cell::iptr c,
+print_cell(cell::iptr c,
 	   uint32 level)
 {
 	print_level(level);
-	switch( c->type() ) {
-	case ATOM_BOOL:
-		if( static_cast<bool_cell*>(c.get())->value() ) {
-			fprintf(stderr, "#t");
-		} else {
-			fprintf(stderr, "#f");
-		}
-		break;
-
-	case ATOM_SYMBOL:
-		fprintf(stderr, "%s", static_cast<symbol*>(c.get())->value());
-		break;
-		/*
-	case ATOM_UNARY_OP:
-		fprintf(stderr, "%s", c->object.op);
-		break;
-
-	case ATOM_BINARY_OP:
-		fprintf(stderr, "%s", c->object.op);
-		break;
-*/
-	case ATOM_CHAR:
-		fprintf(stderr, "'%c'", static_cast<char_cell*>(c.get())->value());
-		break;
-
-	case ATOM_SINT64:
-		fprintf(stderr, "%ld", static_cast<sint64_cell*>(c.get())->value());
-		break;
-
-	case ATOM_REAL64:
-		fprintf(stderr, "%lf", static_cast<real64_cell*>(c.get())->value());
-		break;
-
-	case ATOM_STRING:
-		fprintf(stderr, "\"%s\"", static_cast<string_cell*>(c.get())->value());
-		break;
-
-	case CELL_LIST:
-		if( !list::head(c) ) {
-			fprintf(stderr, "(");
-			print_cell(list::head(c), uint32(0));
-		} else {
-			fprintf(stderr, "(nil");
-		}
-
-		if( !list::tail(c) ) {
-			cell::iptr n	= list::tail(c);
-			while( !n ) {
-				if( !list::head(n) ) {
-					print_cell(list::head(n), 1);
-				} else {
-					print_level(level + 1);
-					fprintf(stderr, "nil");
-				}
-
-				n	= list::tail(n);
+	if( c ) {
+		switch( c->type() ) {
+		case ATOM_BOOL:
+			if( static_cast<bool_cell*>(c.get())->value() ) {
+				fprintf(stderr, "#t");
+			} else {
+				fprintf(stderr, "#f");
 			}
+			break;
+
+		case ATOM_SYMBOL:
+			fprintf(stderr, "%s", static_cast<symbol*>(c.get())->value());
+			break;
+
+		case ATOM_CHAR:
+			fprintf(stderr, "'%c'", static_cast<char_cell*>(c.get())->value());
+			break;
+
+		case ATOM_SINT64:
+			fprintf(stderr, "%ld", static_cast<sint64_cell*>(c.get())->value());
+			break;
+
+		case ATOM_REAL64:
+			fprintf(stderr, "%lf", static_cast<real64_cell*>(c.get())->value());
+			break;
+
+		case ATOM_STRING:
+			fprintf(stderr, "\"%s\"", static_cast<string_cell*>(c.get())->value());
+			break;
+
+		case CELL_LIST:
+			if( list::head(c) ) {
+				fprintf(stderr, "(");
+				print_cell(list::head(c), uint32(0));
+			} else {
+				fprintf(stderr, "(nil");
+			}
+
+			if( list::tail(c) ) {
+				cell::iptr n	= list::tail(c);
+				while( n ) {
+					if( list::head(n) ) {
+						print_cell(list::head(n), 1);
+					} else {
+						print_level(level + 1);
+						fprintf(stderr, "nil");
+					}
+
+					n	= list::tail(n);
+				}
+			}
+			fprintf(stderr, ")");
+			break;
+		default:
+			break;
 		}
-		fprintf(stderr, ")");
-		break;
-	default:
-		break;
+	} else {
+		fprintf(stderr, "nil");
 	}
 }
 
@@ -115,7 +117,7 @@ list::length(cell::iptr l)
 	cell::iptr	curr	= l;
 	uint32		len	= 0;
 
-	while( !curr ) {
+	while( curr ) {
 		assert( l->type() == CELL_LIST );
 		++len;
 		curr	= list::tail(curr);
@@ -128,7 +130,7 @@ list::reverse(cell::iptr l)
 {
 	cell::iptr	nl	= nullptr;
 
-	while( !l ) {
+	while( l ) {
 		nl	= new list(list::head(l), nl);
 		l	= list::tail(l);
 	}
@@ -164,86 +166,57 @@ list_zip(state_t* s,
 /*******************************************************************************
 ** eval
 *******************************************************************************/
-static cell_ptr_t
-symbol_lookup(state_t* s,
-	      const char* sym)
+cell::iptr
+state::lookup(const char* sym)
 {
-	cell_ptr_t	env	= list_head(s, s->registers.env_stack);
-	cell_ptr_t	pair	= list_head(s, env);
+	iptr	env	= list::head(registers_.env_stack);
+	iptr	pair	= list::head(env);
 
-	while( !is_nil(pair) && strcmp(sym, ITC(list_head(s, pair))->object.symbol) != 0 ) {
-		env	= list_tail(s, env);
-		if( !is_nil(env) ) {
-			pair	= list_head(s, env);
+	while( pair && strcmp(sym, static_cast<symbol*>(list::head(pair).get())->value()) != 0 ) {
+		env	= list::tail(env);
+		if( env ) {
+			pair	= list::head(env);
 		} else {
-			pair	= NIL_CELL;
+			pair	= nullptr;
 		}
 	}
 
-	if( is_nil(pair) ) {
-		return NIL_CELL;
+	if( !pair ) {
+		return nullptr;
 	} else {
-		if( !is_nil(list_tail(s, pair)) ) {
-			return list_head(s, list_tail(s, pair));
+		if( list::tail(pair) ) {
+			return list::head(list::tail(pair));
 		} else {
-			return NIL_CELL;
+			return nullptr;
 		}
 	}
 }
 
-static INLINE void
-push_env(state_t* s,
-	 cell_ptr_t env)
-{
-	set_cell(s->registers.env_stack, list_cons(s, env, s->registers.env_stack));
-}
-
-static INLINE void
-pop_env(state_t* s)
-{
-	set_cell(s->registers.env_stack, list_tail(s, s->registers.env_stack));
-}
-
-static INLINE void
-push_exp(state_t* s,
-	 cell_ptr_t exp)
-{
-	set_cell(s->registers.exp_stack, list_cons(s, exp, s->registers.exp_stack));
-}
-
-static INLINE void
-pop_exp(state_t* s)
-{
-	set_cell(s->registers.exp_stack, list_tail(s, s->registers.exp_stack));
-}
-
-static cell_ptr_t
-eval_list(state_t* s,
-	  cell_ptr_t expr)
-{
-	cell_ptr_t	res	= NIL_CELL;
-	while( !is_nil(expr) ) {
-		res	= list_cons(s, eval(s, list_head(s, expr)), res);
-		expr	= list_tail(s, expr);
+cell::iptr
+state::eval_list(cell::iptr expr) {
+	cell::iptr	res	= nullptr;
+	while( expr ) {
+		res	= new list(eval(list::head(expr)), res);
+		expr	= list::tail(expr);
 	}
-	return list_reverse(s, res);
+	return list::reverse(res);
 }
 
-static INLINE void
-op_bind(state_t* s,
-	cell_ptr_t b)
+cell::iptr
+state::apply_bind(cell::iptr b)
 {
-	cell_ptr_t	env	= list_head(s, s->registers.env_stack);
+	iptr	env	= top_env();
 
-	if( cell_type(s, b) == OP_BIND ) {
-		cell_ptr_t	sympair = ITC(b)->object.bindings;
-		while( !is_nil(sympair) ) {
-			set_cell(env, list_cons(s, list_head(s, sympair), env));
-			sympair	= list_tail(s, sympair);
+	if( b->type() == CELL_BIND ) {
+		iptr	sympair = static_cast<bind*>(b.get())->bindings();
+		while( sympair ) {
+			env = new list(list::head(sympair), env);
+			sympair	= list::tail(sympair);
 		}
 	}
 
-	ITC(s->registers.env_stack)->object.pair.head = env;
+	registers_.env_stack	= new list(env, list::tail(registers_.env_stack));
+	return nullptr;
 }
 
 /*
@@ -258,15 +231,11 @@ print_env(state_t* s)
 }
 */
 
-#define RETURN(EXP)	set_cell(s->registers.ret_val, EXP); set_cell(exp, NIL_CELL);
-
-cell_ptr_t
-eval(state_t* s)
-{
-
-	while( !is_nil(exp) ) {	/* not a NIL_CELL */
+cell::iptr
+state::eval(cell::iptr exp) {
+	while( exp ) {	/* not a NIL_CELL */
 		/* print_env(s); */
-		switch( cell_type(s, exp) ) {
+		switch( exp->type() ) {
 		/* constants */
 		case ATOM_BOOL:
 		case ATOM_CHAR:
@@ -274,133 +243,99 @@ eval(state_t* s)
 		case ATOM_REAL64:
 		case ATOM_STRING:
 		case ATOM_ERROR:
-		case OP_APPLY_CLOSURE:
-		case OP_APPLY_FFI:
+		case CELL_CLOSURE:
+		case CELL_FFI:
 		case CELL_QUOTE:
-		case OP_BIND:
-			RETURN(exp);
+			return exp;
+		case CELL_BIND:
+			return apply_bind(exp);
 
-		/* symbols */
+			/* symbols */
 		case ATOM_SYMBOL:
-			fprintf(stderr, "SYMBOL LOOKUP: %s\n", ITC(exp)->object.symbol);
-			RETURN(symbol_lookup(s, s->registers.current_env, ITC(exp)->object.symbol));
+			fprintf(stderr, "SYMBOL LOOKUP: %s\n", static_cast<symbol*>(exp.get())->value());
+			return lookup(static_cast<symbol*>(exp.get())->value());
 
-		/* applications */
-		case CELL_PAIR:	{
-			cell_ptr_t	head	= NIL_CELL;
-			cell_ptr_t	tail	= NIL_CELL;
+			/* applications */
+		case CELL_LIST:	{
+			iptr	head	= list::head(exp);
+			iptr	tail	= nullptr;
 
-			set_cell(head, list_head(s, exp));	/* NOT NEEDED ? */
-			grab(head);
-			set_cell(head, eval(s, head));
-			release(head);
-
-			if( is_nil(head) ) {
-				set_cell(head, NIL_CELL);
-				RETURN(NIL_CELL);
+			if( !head ) {
+				return nullptr;
 			}
 
-			set_cell(tail, list_tail(s, exp));	/* NOT NEEDED ? */
+			tail	= list::tail(exp);	/* NOT NEEDED ? */
 
-			switch( cell_type(s, head) ) {
-			case OP_FFI:
-				if( ITC(head)->object.ffi.flags & EVAL_ARGS ) {
+			switch( head->type() ) {
+			case CELL_FFI:
+				if( static_cast<ffi*>(head.get())->flags() & EVAL_ARGS ) {
 					/* TODO: this is limited to 32768 elements! need to increase the range */
-					uint32	l	= list_length(s, tail);
+					uint32	l	= list::length(tail);
 					assert( l < 0x7FFF );
-					if( ITC(head)->object.ffi.arg_count > 0 && (sint16)l != ITC(head)->object.ffi.arg_count ) {
-						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, ITC(head)->object.ffi.arg_count);
-						set_cell(tail, NIL_CELL);
-						set_cell(head, NIL_CELL);
-						RETURN(NIL_CELL);
+					if( static_cast<ffi*>(head.get())->arg_count() > 0 &&
+					    (sint16)l != static_cast<ffi*>(head.get())->arg_count() ) {
+						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, static_cast<ffi*>(head.get())->arg_count());
+						return nullptr;
 					} else {
-						cell_ptr_t	r	= NIL_CELL;
 
-						set_cell(s->registers.current_exp, eval_list(s, tail));
+						iptr args	= eval_list(tail);
 
-						push_exp(s);
-						ITC(head)->object.ffi.proc(s);
-						set_cell(r, s->registers.ret_val);
-						pop_exp(s);
-
-						set_cell(tail, NIL_CELL);
-						set_cell(head, NIL_CELL);
-						RETURN(r);
+						return (*static_cast<ffi*>(head.get()))(this, registers_.current_env, args);
 					}
 				} else {	/* lambda, define, if */
-					set_cell(exp, ITC(head)->object.ffi.proc(s, tail));
-					set_cell(tail, NIL_CELL);
-					set_cell(head, NIL_CELL);
+					exp	= (*static_cast<ffi*>(head.get()))(this, registers_.current_env, tail);
 				}
 				break;
-			case OP_CLOSURE: {
-				cell_ptr_t	args	= NIL_CELL;
-				cell_ptr_t	syms	= NIL_CELL;
-				cell_ptr_t	lambda	= NIL_CELL;
+			case CELL_CLOSURE: {
+				iptr	args	= nullptr;
+				iptr	syms	= nullptr;
+				iptr	lambda_	= nullptr;
 
 				/*print_cell(s, tail, 0);*/
 
-				set_cell(lambda, ITC(head)->object.closure.lambda);
-				if( s->registers.current_env.index != ITC(head)->object.closure.env.index ) {
-					set_cell(s->registers.current_env, ITC(head)->object.closure.env);
-				}
+				lambda_	= static_cast<closure*>(head.get())->lambda();
+				registers_.current_env	= static_cast<closure*>(head.get())->env();
 
 				/* evaluate the arguments and zip them */
-				if( list_length(s, tail) != list_length(s, ITC(lambda)->object.lambda.syms) ) {
-					RETURN(schizo_error(s, "ERROR: closure arguments do not match given arguments"));
+				if( list::length(tail) != list::length(static_cast<lambda*>(lambda_.get())->syms()) ) {
+					return new error("ERROR: closure arguments do not match given arguments");
 				}
 
-				set_cell(args, eval_list(s, tail));
-				set_cell(syms, ITC(lambda)->object.lambda.syms);
+				args	= eval_list(tail);
+				syms	= static_cast<lambda*>(lambda_.get())->syms();
 
-				while( !is_nil(list_head(s, syms)) && !is_nil(list_head(s, args)) ) {
-					set_cell(s->registers.current_env, list_cons(s, list_make_pair(s, list_head(s, syms), list_head(s, args)), s->registers.current_env));
-					set_cell(args, list_tail(s, args));
-					set_cell(syms, list_tail(s, syms));
+				while( list::head(syms) && list::head(args) ) {
+					registers_.current_env	= new list(pair(list::head(syms), list::head(args)), registers_.current_env);
+					args	= list::tail(args);
+					syms	= list::tail(syms);
 				}
 
-				if( is_nil(syms) != is_nil(args) ) {
-					set_cell(syms, NIL_CELL);
-					set_cell(args, NIL_CELL);
-
-					set_cell(tail, NIL_CELL);
-					set_cell(head, NIL_CELL);
-
-					RETURN(schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other"));
+				if( list::length(syms) != list::length(args) ) {
+					return new error("ERROR: couldn't zip the lists, one is longer than the other");
 				} else {
 					/* all good, evaluate the body(*) */
-					cell_ptr_t	body	= NIL_CELL;
-					cell_ptr_t	next	= NIL_CELL;
+					iptr	body	= static_cast<lambda*>(lambda_.get())->body();
+					iptr	next	= list::tail(body);
+					iptr	ret	= nullptr;
 
-					set_cell(body, ITC(lambda)->object.lambda.body);
-					set_cell(next, list_tail(s, body));
+					exp	= list::head(body);
 
-					set_cell(exp, list_head(s, body));
-
-					while( !is_nil(next) ) {
+					while( next ) {
 						/* print_env(s); */
-						bind(s, eval(s, exp));	/* eval and bind */
+						ret	= eval(exp);	/* eval and bind */
 
-						set_cell(exp, list_head(s, next));
-						set_cell(next, list_tail(s, next));
+						exp	= list::head(next);
+						next	= list::tail(next);
 					}
 
 					/* now the tail call (env and exp are set) */
-					set_cell(body, NIL_CELL);
-					set_cell(next, NIL_CELL);
-
-					set_cell(syms, NIL_CELL);
-					set_cell(args, NIL_CELL);
-
-					set_cell(tail, NIL_CELL);
-					set_cell(head, NIL_CELL);
 				}
 				break;
 			}
 
 			default:
 				/* more error handling */
-				fprintf(stderr, "Unexpected type: %u\n", cell_type(s, head));
+				fprintf(stderr, "Unexpected type: %u\n", head->type());
 				assert(0);
 				break;
 			}
@@ -414,7 +349,7 @@ eval(state_t* s)
 	}
 
 	/* if expression is NIL_CELL */
-	RETURN(NIL_CELL);
+	return nullptr;
 }
 
 /*******************************************************************************
@@ -428,19 +363,17 @@ eval(state_t* s)
  * @param args
  * @return
  */
-static cell_ptr_t
-symbol_define(state_t* s,
-	      cell_ptr_t args)
+static cell::iptr
+symbol_define(state* s,
+	      cell::iptr env,
+	      cell::iptr args)
 {
-	cell_ptr_t sym	= list_head(s, args);
-	cell_ptr_t body	= list_head(s, list_tail(s, args));
+	cell::iptr sym	= list::head(args);
+	cell::iptr body	= list::head(list::tail(args));
 
-	cell_ptr_t pair	= list_make_pair(s, sym, body);
+	cell::iptr pair_	= pair(sym, body);
 
-	cell_ptr_t ret	= cell_new_bind_list(s);
-	set_cell(ITC(ret)->object.bindings, list_cons(s, pair, ITC(ret)->object.bindings));
-
-	return ret;
+	return new bind(new list(pair_, nullptr));
 }
 
 /**
@@ -450,122 +383,86 @@ symbol_define(state_t* s,
  * @param args
  * @return
  */
-static cell_ptr_t
-make_closure(state_t* s,
-	     cell_ptr_t args)
+static cell::iptr
+make_closure(state* s,
+	     cell::iptr env,
+	     cell::iptr args)
 {
-	cell_ptr_t	syms	= list_head(s, args);
-	cell_ptr_t	body	= list_tail(s, args);
+	cell::iptr	syms	= list::head(args);
+	cell::iptr	body	= list::tail(args);
 
-	cell_ptr_t	closure	= cell_alloc(s);
+	cell::iptr	lam	= new lambda(syms, body);
 
-	cell_ptr_t	lambda	= cell_alloc(s);
-
-
-	ITC(lambda)->type	= CELL_LAMBDA;
-	set_cell(ITC(lambda)->object.lambda.syms, syms);
-	set_cell(ITC(lambda)->object.lambda.body, body);
-
-	ITC(closure)->type	= OP_CLOSURE;
-	set_cell(ITC(closure)->object.closure.lambda, lambda);
-	set_cell(ITC(closure)->object.closure.env, s->registers.current_env);
-	return closure;
+	return new closure(env, lam);
 }
 
-static cell_ptr_t
-if_else(state_t* s,
-	cell_ptr_t args)
+static cell::iptr
+if_else(state* s,
+	cell::iptr env,
+	cell::iptr args)
 {
-	cell_ptr_t	cond	= NIL_CELL;
-	cell_ptr_t	exp0	= NIL_CELL;
-	cell_ptr_t	elsym	= NIL_CELL;
-	cell_ptr_t	exp1	= NIL_CELL;
-
-	if( list_length(s, args) != 4 ) {
-		return schizo_error(s, "ERROR in \"if\" usage: if cond exp0 else exp1");
+	if( list::length(args) != 4 ) {
+		return new error("ERROR in \"if\" usage: if cond exp0 else exp1");
 	}
 
-	cond	= list_head(s, args);
-	exp0	= list_head(s, list_tail(s, args));
-	elsym	= list_head(s, list_tail(s, list_tail(s, args)));
-	exp1	= list_head(s, list_tail(s, list_tail(s, list_tail(s, args))));
+	cell::iptr cond		= list::head(args);
+	cell::iptr exp0		= list::head(list::tail(args));
+	cell::iptr elsym	= list::head(list::tail(list::tail(args)));
+	cell::iptr exp1		= list::head(list::tail(list::tail(list::tail(args))));
 
-	if( cell_type(s, elsym) == ATOM_SYMBOL && strcmp(ITC(elsym)->object.symbol, "else") == 0 ) {
-		cell_ptr_t b	= eval(s, cond);
-		if( cell_type(s, b) != ATOM_BOOL ) {
-			return schizo_error(s, "ERROR: if requires condition to be boolean");
+	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<symbol*>(elsym.get())->value(), "else") == 0 ) {
+		cell::iptr b	= s->eval(cond);
+		if( b->type() != ATOM_BOOL ) {
+			return new error("ERROR: if requires condition to be boolean");
 		}
 
-		if( ITC(b)->object.boolean ) {
+		if( static_cast<bool_cell*>(b.get())->value() ) {
 			return exp0;
 		} else {
 			return exp1;
 		}
 	} else {
-		return schizo_error(s, "ERROR: if requires \"else\" keyword: if cond exp0 else exp1");
+		return new error("ERROR: if requires \"else\" keyword: if cond exp0 else exp1");
 	}
 }
 
-static cell_ptr_t
-display(state_t* s,
-	cell_ptr_t args)
+static cell::iptr
+display(state* s,
+	cell::iptr env,
+	cell::iptr args)
 {
-	print_cell(s, args, 0);
-	return NIL_CELL;
+	print_cell(args, 0);
+	return nullptr;
 }
 
 /*******************************************************************************
 ** schizo state
 *******************************************************************************/
 void
-state_add_ffi(state_t *s,
-	      bool eval_args,
-	      const char* sym,
-	      ffi_call_t call,
-	      sint32 arg_count)
+state::add_ffi(const char* sym,
+	       uint16 flags,
+	       sint32 arg_count,
+	       ffi_call_t proc)
 {
-	cell_ptr_t	p	= NIL_CELL;
-	cell_ptr_t	_s	= atom_new_symbol(s, sym);
-	cell_ptr_t	f	= cell_alloc(s);
+	cell::iptr	p	= nullptr;
+	cell::iptr	_s	= new symbol(sym);
 
-	ITC(f)->type	= OP_FFI;
-	ITC(f)->object.ffi.flags	|= eval_args ? EVAL_ARGS : 0;
-	ITC(f)->object.ffi.arg_count	= arg_count;
-	ITC(f)->object.ffi.proc	= call;
+	cell::iptr	f	= new ffi(flags, arg_count, proc);
 
-	p		= list_make_pair(s, _s, f);
-	set_cell(s->registers.current_env, list_cons(s, p, s->registers.current_env));
+	registers_.current_env	= new list(pair(_s, f), registers_.current_env);
 }
 
-state_t*
-state_new()
-{
-	state_t*	state	= (state_t*)malloc(sizeof(state_t));
-	memset(state, 0, sizeof(state_t));
+state::state() : cell(CELL_STATE) {
+	parser_.token_start	= nullptr;
+	parser_.token_end	= nullptr;
+	parser_.token_line	= 0;
 
-	state_add_ffi(state, false, "lambda",  make_closure, -1);
-	state_add_ffi(state, false, "define",  symbol_define, 2);
-	state_add_ffi(state, true,  "display", display,       1);
-	state_add_ffi(state, false, "if",      if_else,       4);
-
-	return state;
+	add_ffi("lambda",  EVAL_ARGS, -1, make_closure);
+	add_ffi("define",  EVAL_ARGS,  2, symbol_define);
+	add_ffi("display", EVAL_ARGS,  1, display);
+	add_ffi("if",      0,          4, if_else);
 }
 
-void
-state_release(state_t *s)
-{
-	uint32	i = 0;
-	if( s->gc_block.cells ) {
-		/* release all cells individually */
-		set_cell(s->parser.root, NIL_CELL);
-		set_cell(s->registers.current_env, NIL_CELL);
-		set_cell(s->registers.current_exp, NIL_CELL);
-		set_cell(s->registers.env_stack, NIL_CELL);
-
-		assert( s->gc_block.free_count = s->gc_block.count );
-
-		free(s->gc_block.cells);
-	}
-
-	free(s);
+state::~state() {
 }
+}	// namespace schizo

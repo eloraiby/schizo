@@ -91,107 +91,59 @@ public:
 
 	typedef T element_type;
 
-	intrusive_ptr(): px( 0 )
-	{
-	}
-
-	intrusive_ptr( T * p, bool add_ref = true ): px( p )
-	{
-		if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
-	}
+	intrusive_ptr(): px( 0 )	{}
+	intrusive_ptr( T * p, bool add_ref = true ): px( p )	{	if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );	}
 
 	template<class U>
-	intrusive_ptr( intrusive_ptr<U> const & rhs )
-		: px( rhs.get() )
-	{
-		if( px != 0 ) intrusive_ptr_add_ref( px );
-	}
+	intrusive_ptr( intrusive_ptr<U> const & rhs ) : px( rhs.get() )	{	if( px != 0 ) intrusive_ptr_add_ref( px );	}
+	intrusive_ptr(intrusive_ptr const & rhs): px( rhs.px )	{	if( px != 0 ) intrusive_ptr_add_ref( px );		}
 
-	intrusive_ptr(intrusive_ptr const & rhs): px( rhs.px )
-	{
-		if( px != 0 ) intrusive_ptr_add_ref( px );
-	}
+	~intrusive_ptr()					{	if( px != 0 ) intrusive_ptr_release( px );		}
 
-	~intrusive_ptr()
-	{
-		if( px != 0 ) intrusive_ptr_release( px );
-	}
-
-	template<class U> intrusive_ptr & operator=(intrusive_ptr<U> const & rhs)
-	{
+	template<class U>
+	intrusive_ptr&	operator=(intrusive_ptr<U> const & rhs)	{
 		this_type(rhs).swap(*this);
 		return *this;
 	}
 
 	// Move support
-
-//	intrusive_ptr(intrusive_ptr && rhs): px( rhs.px )
-//	{
-//		rhs.px = 0;
-//	}
-
-//	intrusive_ptr & operator=(intrusive_ptr && rhs)
-//	{
-//		this_type( static_cast< intrusive_ptr && >( rhs ) ).swap(*this);
-//		return *this;
-//	}
-
-	intrusive_ptr & operator=(intrusive_ptr const & rhs)
-	{
-		this_type(rhs).swap(*this);
+	intrusive_ptr(intrusive_ptr && rhs): px( rhs.px )	{	rhs.px = 0;	}
+	intrusive_ptr&	operator=(intrusive_ptr && rhs)	{
+		this_type( static_cast< intrusive_ptr && >( rhs ) ).swap(*this);
 		return *this;
 	}
 
-	intrusive_ptr & operator=(T * rhs)
-	{
-		this_type(rhs).swap(*this);
-		return *this;
-	}
+	intrusive_ptr&	operator=(intrusive_ptr const & rhs)	{	this_type(rhs).swap(*this); return *this;		}
+	intrusive_ptr&	operator=(T * rhs)			{	this_type(rhs).swap(*this); return *this;		}
 
-	void reset()
-	{
-		this_type().swap( *this );
-	}
+	void		reset()					{	this_type().swap( *this );				}
+	void		reset( T * rhs )			{	this_type( rhs ).swap( *this );				}
 
-	void reset( T * rhs )
-	{
-		this_type( rhs ).swap( *this );
-	}
-
-	T * get() const
-	{
-		return px;
-	}
-
-	T & operator*() const
-	{
-		if( px == nullptr )
-			throw "pointer is null";
+	T*		get() const				{	return px;						}
+	T&		operator*() const {
+		/* if( px == nullptr )
+			throw "pointer is null"; */
 		return *px;
 	}
 
-	T * operator->() const
-	{
-		if( px == nullptr )
-			throw "pointer is null";
+	T*		operator->() const {
+		/* if( px == nullptr )
+			throw "pointer is null"; */
 		return px;
 	}
 
-	typedef T * this_type::*unspecified_bool_type;
+	typedef T* this_type::*unspecified_bool_type;
 
-	operator unspecified_bool_type() const // never throws
-	{
+	operator unspecified_bool_type() const { // never throws
 		return px == 0? 0: &this_type::px;
 	}
 
 	// operator! is redundant, but some compilers need it
-	bool operator! () const // never throws
-	{
+	bool		operator! () const { // never throws
 		return px == 0;
 	}
 
-	void swap(intrusive_ptr & rhs)
-	{
+	void		swap(intrusive_ptr & rhs) {
 		T * tmp = px;
 		px = rhs.px;
 		rhs.px = tmp;
@@ -208,78 +160,29 @@ private:
 	T * px;
 };
 
-template<class T, class U> inline bool operator==(intrusive_ptr<T> const & a, intrusive_ptr<U> const & b)
-{
-	return a.get() == b.get();
-}
-
-template<class T, class U> inline bool operator!=(intrusive_ptr<T> const & a, intrusive_ptr<U> const & b)
-{
-	return a.get() != b.get();
-}
-
-template<class T, class U> inline bool operator==(intrusive_ptr<T> const & a, U * b)
-{
-	return a.get() == b;
-}
-
-template<class T, class U> inline bool operator!=(intrusive_ptr<T> const & a, U * b)
-{
-	return a.get() != b;
-}
-
-template<class T, class U> inline bool operator==(T * a, intrusive_ptr<U> const & b)
-{
-	return a == b.get();
-}
-
-template<class T, class U> inline bool operator!=(T * a, intrusive_ptr<U> const & b)
-{
-	return a != b.get();
-}
+template<class T, class U> inline bool operator==(intrusive_ptr<T> const & a, intrusive_ptr<U> const & b) {	return a.get() == b.get();	}
+template<class T, class U> inline bool operator!=(intrusive_ptr<T> const & a, intrusive_ptr<U> const & b) {	return a.get() != b.get();	}
+template<class T, class U> inline bool operator==(intrusive_ptr<T> const & a, U * b)		{	return a.get() == b;	}
+template<class T, class U> inline bool operator!=(intrusive_ptr<T> const & a, U * b)		{	return a.get() != b;	}
+template<class T, class U> inline bool operator==(T * a, intrusive_ptr<U> const & b)		{	return a == b.get();	}
+template<class T, class U> inline bool operator!=(T * a, intrusive_ptr<U> const & b)		{	return a != b.get();	}
 
 #if __GNUC__ == 2 && __GNUC_MINOR__ <= 96
 
 // Resolve the ambiguity between our op!= and the one in rel_ops
 
-template<class T> inline bool operator!=(intrusive_ptr<T> const & a, intrusive_ptr<T> const & b)
-{
-	return a.get() != b.get();
-}
+template<class T> inline bool operator!=(intrusive_ptr<T> const & a, intrusive_ptr<T> const & b) {	return a.get() != b.get();	}
 
 #endif
 
-template<class T> inline bool operator<(intrusive_ptr<T> const & a, intrusive_ptr<T> const & b)
-{
-	return static_cast<size_t>(a.get()) <  static_cast<size_t>(b.get());
-}
-
-template<class T> void swap(intrusive_ptr<T> & lhs, intrusive_ptr<T> & rhs)
-{
-	lhs.swap(rhs);
-}
+template<class T> inline bool operator<(intrusive_ptr<T> const & a, intrusive_ptr<T> const & b)	{	return static_cast<size_t>(a.get()) <  static_cast<size_t>(b.get());	}
+template<class T> void swap(intrusive_ptr<T> & lhs, intrusive_ptr<T> & rhs)			{	lhs.swap(rhs);	}
 
 // mem_fn support
-
-template<class T> T * get_pointer(intrusive_ptr<T> const & p)
-{
-	return p.get();
-}
-
-template<class T, class U> intrusive_ptr<T> static_pointer_cast(intrusive_ptr<U> const & p)
-{
-	return static_cast<T *>(p.get());
-}
-
-template<class T, class U> intrusive_ptr<T> const_pointer_cast(intrusive_ptr<U> const & p)
-{
-	return const_cast<T *>(p.get());
-}
-
-template<class T, class U> intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const & p)
-{
-	return dynamic_cast<T *>(p.get());
-}
+template<class T> T * get_pointer(intrusive_ptr<T> const & p)	{	return p.get(); }
+template<class T, class U> intrusive_ptr<T> static_pointer_cast(intrusive_ptr<U> const & p)	{	return static_cast<T *>(p.get());	}
+template<class T, class U> intrusive_ptr<T> const_pointer_cast(intrusive_ptr<U> const & p)	{	return const_cast<T *>(p.get());	}
+template<class T, class U> intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const & p)	{	return dynamic_cast<T *>(p.get());	}
 
 
 struct state;
@@ -322,6 +225,17 @@ protected:
 struct string_cell : public cell {
 	string_cell(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str))))	{ memcpy(string_, str, strlen(str)); }
 	virtual		~string_cell() override	{ free(string_); }
+
+	const char*	value() const		{ return string_; }
+
+protected:
+	char*		string_;
+};
+
+// error
+struct error : public cell {
+	error(const char* str) : cell(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str))))	{ memcpy(string_, str, strlen(str)); }
+	virtual		~error() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
 
@@ -416,15 +330,15 @@ private:
 };
 
 // foreign function
-typedef void (*ffi_call_t)(state* s);
+typedef cell::iptr (*ffi_call_t)(state* s, cell::iptr env, cell::iptr args);
 
 struct ffi : public cell {
-	ffi(uint16 flags, sint16 arg_count, ffi_call_t proc) : cell(CELL_FFI), flags_(flags), arg_count_(arg_count), proc_(proc)	{}
+	inline		ffi(uint16 flags, sint16 arg_count, ffi_call_t proc) : cell(CELL_FFI), flags_(flags), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~ffi() override		{}
 
-	uint16		flags() const		{ return flags_; }
-	sint16		arg_count() const	{ return arg_count_; }
-	ffi_call_t	proc() const		{ return proc_; }
+	inline uint16	flags() const		{ return flags_; }
+	inline sint16	arg_count() const	{ return arg_count_; }
+	inline iptr	operator()(state* s, iptr env, iptr args) const		{ return proc_(s, env, args); }
 
 private:
 	uint16		flags_;
@@ -437,6 +351,8 @@ struct closure : public cell {
 	closure(iptr env, iptr lambda) : cell(CELL_CLOSURE), env_(env), lambda_(lambda)	{}
 	virtual		~closure() override	{}
 
+	inline iptr	env() const		{ return env_;		}
+	inline iptr	lambda() const		{ return lambda_;	}
 private:
 	iptr		env_;			///< captured environment
 	iptr		lambda_;		///< original args and body pair
@@ -447,6 +363,8 @@ struct bind : public cell {
 	bind(iptr bindings) : cell(CELL_BIND), bindings_(bindings)	{}
 	virtual		~bind() override	{}
 
+	inline iptr	bindings() const	{ return bindings_; }
+
 private:
 	iptr		bindings_;		///< binding list
 };
@@ -455,16 +373,49 @@ private:
 #define EVAL_ARGS	0x8000		/* arguments are evaluated before call */
 #define ARGS_ANY	-1		/* any number of argument */
 
-struct state {
+struct state : public cell {
+
+	state();
+	virtual		~state() override;
+
+	inline iptr	root() const		{ return parser_.root; }
+	inline void	set_root(iptr root)	{ parser_.root = root; }
+
+	iptr		eval(iptr exp);
+
+	void		add_ffi(const char* sym, uint16 flags, sint32 arg_count, ffi_call_t proc);
+	iptr		lookup(const char* sym);
+
+
+	/// parser.y / lexer.rl
+	static void	parse(state* state, const char* str);
+
+	static inline cell* add_token(state* s, cell::iptr c) {
+		s->parser_.token_list	= new list(c, s->parser_.token_list);
+		return c.get();
+	}
+
+protected:
+
+	iptr		eval_list(iptr l);
+
+	inline void	push_env(iptr env)	{ registers_.env_stack = new list(env, registers_.env_stack);	}
+	inline void	pop_env()		{ registers_.env_stack = list::tail(registers_.env_stack);	}
+	inline iptr	top_env()		{ return list::head(registers_.env_stack);			}
+
+	inline void	push_exp(iptr exp)	{ registers_.exp_stack = new list(exp, registers_.exp_stack);	}
+	inline void	pop_exp()		{ registers_.exp_stack = list::tail(registers_.exp_stack);	}
+	inline iptr	top_exp()		{ return list::head(registers_.exp_stack);			}
+
+	iptr		apply_bind(iptr bexp);
+
 	struct {
-		cell::iptr	exp_stack;	/* expression/operator to execute */
-		cell::iptr	env_stack;	/* environment stack */
+		cell::iptr	exp_stack;	///< expression/operator to execute
+		cell::iptr	env_stack;	///< environment stack
 
 		/* volatile registers */
-		cell::iptr	current_env;	/* current environment */
-		cell::iptr	current_exp;	/* current exp + args */
-		cell::iptr	ret_val;	/* return value */
-	} registers;
+		cell::iptr	current_env;	///< current environment
+	} registers_;
 
 	struct {
 		cell::iptr	token_list;	///< token list
@@ -473,26 +424,16 @@ struct state {
 		const char*	token_start;
 		const char*	token_end;
 		uint32		token_line;
-	} parser;
+	} parser_;
 };
 
 /* printing */
 void		print_cell(cell::iptr c, uint32 level);
 
-/* atoms */
-cell::iptr	error(const char* error);
-
 /* lists */
-#define		pair(fst, snd)	(new list((s), (fst), new list((s), (snd), nullptr)))
+#define		pair(fst, snd)	(new list((fst), new list((snd), nullptr)))
 
-/* parser.y / lexer.rl */
-void		parse(state* state, const char* str);
 
-/* states */
-void		state_add_ffi(state* s, bool eval_args, const char* sym, ffi_call_t call, sint32 arg_count);
-
-/* eval */
-cell::iptr	eval(state* s, cell::iptr exp);
 
 }	// namespace schizo
 

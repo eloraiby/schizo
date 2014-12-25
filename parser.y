@@ -30,12 +30,7 @@
 
 using namespace schizo;
 
-static INLINE cell* pipe_return(state* s, cell::iptr c) {
-	s->parser.token_list	= new list(c, s->parser.token_list);
-	return c.get();
-}
-
-#define PR(V)	pipe_return(s, V)
+#define PR(V)	state::add_token(s, V)
 
 }
 
@@ -68,8 +63,8 @@ static INLINE cell* pipe_return(state* s, cell::iptr c) {
 %start_symbol program
 
 /* a program is a cell */
-program		::= atom(B).				{ s->parser.root = PR(B); }
-program		::= sexpr(B).				{ s->parser.root = PR(B); }
+program		::= atom(B).				{ s->set_root(PR(B)); }
+program		::= sexpr(B).				{ s->set_root(PR(B)); }
 
 /* literals */
 atom(A)		::= ATOM_SYMBOL(B).			{ A = PR(B); }
@@ -85,6 +80,7 @@ sexpr		::= CELL_LIST.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_LAMBDA.			/* lambda */
 sexpr		::= CELL_QUOTE.				/* quote (this should could have been replaced with objects, but will increase the complexity of the evaluator) */
+sexpr		::= CELL_STATE.				/* the state cell (nested VMs) */
 
 sexpr		::= CELL_CLOSURE.			/* closure : lambda->closure*/
 sexpr		::= CELL_FFI.				/* foreign function interface */
@@ -92,10 +88,10 @@ sexpr		::= CELL_BIND.				/* bind symbols */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = PR(B); }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B->type() == CELL_LIST ) ? list::reverse(B) : B)); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B->type() == CELL_LIST ) ? list::reverse(B) : B)); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B)) : B)); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B)) : B)); }
 sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new list(PR(new symbol("vector.get")),
-									  PR(new list(B, ( C->type() == CELL_LIST ) ? list::reverse(C) : C)))); }
+									  PR(new list(B, ( C && C->type() == CELL_LIST ) ? PR(list::reverse(C)) : C)))); }
 ilist(A)	::= atom(B).				{ A = PR(B); }
 ilist(A)	::= sexpr(B).				{ A = PR(B); }
 
