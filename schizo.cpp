@@ -18,10 +18,10 @@
   Also add information on how to contact you by electronic and paper mail.
 */
 
-#include "schizo.h"
+#include "schizo.hpp"
 #include <stdio.h>
 
-extern "C" void __cxa_pure_virtual() { while(1); }
+extern "C" void __cxa_pure_virtual() { fprintf(stderr, "attempt to call a pure virtual method!!!"); exit(1); }
 
 namespace schizo {
 
@@ -225,17 +225,15 @@ state::apply_bind(iptr env,
 	return env;
 }
 
-/*
 static void
-print_env(state_t* s)
+print_env(cell::iptr env)
 {
-	cell_ptr_t l	= s->registers.current_env;
-	while( l != NIL_CELL ) {
-		fprintf(stderr, "* %s\n", list_head(list_head(l))->object.symbol);
-		l	= list_tail(l);
+	fprintf(stderr, "------------------------\n");
+	while( env ) {
+		fprintf(stderr, "* %s\n", static_cast<symbol*>(list::head(list::head(env)).get())->value());
+		env	= list::tail(env);
 	}
 }
-*/
 
 cell::iptr
 state::eval(cell::iptr env,
@@ -385,6 +383,7 @@ static cell::iptr
 symbol_define(cell::iptr env,
 	      cell::iptr args)
 {
+	print_env(env);
 	cell::iptr sym	= list::head(args);
 	cell::iptr body	= list::head(list::tail(args));
 
@@ -416,6 +415,7 @@ static cell::iptr
 if_else(cell::iptr env,
 	cell::iptr args)
 {
+	print_env(env);
 	if( list::length(args) != 4 ) {
 		return new error("ERROR in \"if\" usage: if cond exp0 else exp1");
 	}

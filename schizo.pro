@@ -43,4 +43,4 @@ OTHER_FILES += \
 
 HEADERS += \
     parser.h \
-    schizo.h
+    schizo.hpp

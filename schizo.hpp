@@ -238,7 +238,7 @@ protected:
 
 // error
 struct error : public cell {
-	error(const char* str) : cell(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str))))	{ memcpy(string_, str, strlen(str)); }
+	error(const char* str) : cell(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~error() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
@@ -293,7 +293,7 @@ protected:
 
 // symbol
 struct symbol : public cell {
-	symbol(const char* sym) : cell(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym))))	{ memcpy(sym_, sym, strlen(sym)); }
+	symbol(const char* sym) : cell(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
 	virtual		~symbol() override	{ free(sym_); }
 
 	const char*	value() const		{ return sym_; }

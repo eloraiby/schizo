@@ -26,7 +26,7 @@
 %extra_argument { state* s }
 
 %include {
-#include "schizo.h"
+#include "schizo.hpp"
 
 using namespace schizo;
 

@@ -7,7 +7,7 @@
 #include <assert.h>
 #line 28 "/home/aifu/Projects/schizo/parser.y"
 
-#include "schizo.h"
+#include "schizo.hpp"
 
 using namespace schizo;
 
