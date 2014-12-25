@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 
-#include "schizo.h"
+#include "schizo.hpp"
 
 #include <sys/time.h>
 #include <stdio.h>

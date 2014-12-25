@@ -407,19 +407,19 @@ protected:
 //	inline void	pop_env()		{ registers_.env_stack = list::tail(registers_.env_stack);	}
 //	inline iptr	top_env()		{ return list::head(registers_.env_stack);			}
 
-	inline void	push_exp(iptr exp)	{ registers_.exp_stack = new list(exp, registers_.exp_stack);	}
-	inline void	pop_exp()		{ registers_.exp_stack = list::tail(registers_.exp_stack);	}
-	inline iptr	top_exp()		{ return list::head(registers_.exp_stack);			}
+//	inline void	push_exp(iptr exp)	{ registers_.exp_stack = new list(exp, registers_.exp_stack);	}
+//	inline void	pop_exp()		{ registers_.exp_stack = list::tail(registers_.exp_stack);	}
+//	inline iptr	top_exp()		{ return list::head(registers_.exp_stack);			}
 
 	static iptr	apply_bind(iptr env, iptr bexp);
 
-	struct {
-		cell::iptr	exp_stack;	///< expression/operator to execute
-		//cell::iptr	env_stack;	///< environment stack
+//	struct {
+//		cell::iptr	exp_stack;	///< expression/operator to execute
+//		//cell::iptr	env_stack;	///< environment stack
 
-		/* volatile registers */
-		//cell::iptr	current_env;	///< current environment
-	} registers_;
+//		/* volatile registers */
+//		//cell::iptr	current_env;	///< current environment
+//	} registers_;
 
 	struct {
 		cell::iptr	token_list;
