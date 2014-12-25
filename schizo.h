@@ -191,6 +191,8 @@ struct cell;
 struct cell {
 	typedef intrusive_ptr<cell>	iptr;
 
+	static bool	clear_to_destroy;
+
 	uint32		type() const		{ return type_; }
 
 			cell(uint32 type) : ref_count_(0), type_(type)	{}
@@ -208,8 +210,10 @@ struct cell {
 
 	friend inline void	intrusive_ptr_release(cell* p) {
 		// decrement reference count, and delete object when reference count reaches 0
-		if( --(p->ref_count_) == 0 )
+		if( --(p->ref_count_) == 0 ) {
+			assert(clear_to_destroy == true);
 			delete p;
+		}
 	}
 
 	friend inline void	intrusive_decrement_ref_count(cell* p) {
@@ -390,9 +394,9 @@ struct state : public cell {
 	/// parser.y / lexer.rl
 	static void	parse(state* state, const char* str);
 
-	static inline cell* add_token(state* s, cell::iptr c) {
+	static inline cell* add_token(state* s, cell* c) {
 		s->parser_.token_list	= new list(c, s->parser_.token_list);
-		return c.get();
+		return c;
 	}
 
 protected:
@@ -418,9 +422,8 @@ protected:
 	} registers_;
 
 	struct {
-		cell::iptr	token_list;	///< token list
+		cell::iptr	token_list;
 		cell::iptr	root;		///< root cell
-		cell::iptr	current_cell;
 		const char*	token_start;
 		const char*	token_end;
 		uint32		token_line;

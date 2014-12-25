@@ -31,13 +31,13 @@ extern void	parser_free(void *p, void (*freeProc)(void*));
 extern void	parser_advance(void *yyp, int yymajor, schizo::cell* yyminor, schizo::state* s);
 
 namespace schizo {
-
 #define ADVANCE(A)	s->parser_.token_start	= ts; \
 			s->parser_.token_end	= te; \
 			s->parser_.token_line	= line; \
 			copy_token(ts, te, tmp); \
-			s->parser_.current_cell	= token_to_##A(tmp); \
-			parser_advance(parser, s->parser_.current_cell->type(), s->parser_.current_cell.get(), s)
+			cell::iptr tmpc = token_to_##A(tmp); \
+			s->parser_.token_list	= new list(tmpc, s->parser_.token_list); \
+			parser_advance(parser, tmpc->type(), tmpc.get(), s)
 
 #define ADVANCE_TOKEN(A)	parser_advance(parser, A, nullptr, s)
 
@@ -224,8 +224,9 @@ state::parse(state* s, const char* str)
 	char		tmp[4096];
 
 	s->parser_.root	= nullptr;
-	s->parser_.token_list	= nullptr;
+	cell::iptr token_list	= nullptr;
 
+	cell::clear_to_destroy	= false;
 	parser	= parser_alloc(malloc);
 
 	memset(tmp, 0, sizeof(tmp));
@@ -243,6 +244,7 @@ state::parse(state* s, const char* str)
 
 	parser_advance(parser, 0, nullptr, s);
 
+	cell::clear_to_destroy	= true;
 	parser_free(parser, free);
 }
 }

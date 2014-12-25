@@ -67,12 +67,12 @@ program		::= atom(B).				{ s->set_root(PR(B)); }
 program		::= sexpr(B).				{ s->set_root(PR(B)); }
 
 /* literals */
-atom(A)		::= ATOM_SYMBOL(B).			{ A = PR(B); }
-atom(A)		::= ATOM_BOOL(B).			{ A = PR(B); }
-atom(A)		::= ATOM_CHAR(B).			{ A = PR(B); }
-atom(A)		::= ATOM_SINT64(B).			{ A = PR(B); }
-atom(A)		::= ATOM_REAL64(B).			{ A = PR(B); }
-atom(A)		::= ATOM_STRING(B).			{ A = PR(B); }
+atom(A)		::= ATOM_SYMBOL(B).			{ A = B; }
+atom(A)		::= ATOM_BOOL(B).			{ A = B; }
+atom(A)		::= ATOM_CHAR(B).			{ A = B; }
+atom(A)		::= ATOM_SINT64(B).			{ A = B; }
+atom(A)		::= ATOM_REAL64(B).			{ A = B; }
+atom(A)		::= ATOM_STRING(B).			{ A = B; }
 
 /* NEVER USED in the parser: with these, lemon will also generates the ids automatically, so the enums are continious */
 sexpr		::= ATOM_ERROR.				/* error */
@@ -88,10 +88,10 @@ sexpr		::= CELL_BIND.				/* bind symbols */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = PR(B); }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B)) : B)); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B)) : B)); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
 sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new list(PR(new symbol("vector.get")),
-									  PR(new list(B, ( C && C->type() == CELL_LIST ) ? PR(list::reverse(C)) : C)))); }
+									  PR(new list(B, ( C && C->type() == CELL_LIST ) ? PR(list::reverse(C).get()) : C)))); }
 ilist(A)	::= atom(B).				{ A = PR(B); }
 ilist(A)	::= sexpr(B).				{ A = PR(B); }
 
@@ -99,13 +99,13 @@ list(A)		::= ilist(B).				{ A = PR(new list(B, nullptr)); }
 list(A)		::= list(B) ilist(C).			{ A = PR(new list(C, B)); }
 
 se_members(A)	::=.					{ A = nullptr; }
-se_members(A)	::= list(B).				{ A = PR(list::reverse(B)); }
+se_members(A)	::= list(B).				{ A = PR(list::reverse(B).get()); }
 
 /* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
-be_members(A)	::= list(B).				{ A = PR(list::reverse(B)); }
+be_members(A)	::= list(B).				{ A = PR(list::reverse(B).get()); }
 
 /* { ... } */
 member_list(A)	::=.					{ A = nullptr; }

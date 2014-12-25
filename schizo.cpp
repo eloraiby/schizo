@@ -25,6 +25,8 @@ extern "C" void __cxa_pure_virtual() { while(1); }
 
 namespace schizo {
 
+bool cell::clear_to_destroy	= true;
+
 cell::~cell() {
 
 }
@@ -265,6 +267,7 @@ state::eval(cell::iptr exp) {
 			}
 
 			tail	= list::tail(exp);	/* NOT NEEDED ? */
+			head	= eval(head);
 
 			switch( head->type() ) {
 			case CELL_FFI:
