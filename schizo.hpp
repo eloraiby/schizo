@@ -184,10 +184,17 @@ template<class T, class U> intrusive_ptr<T> static_pointer_cast(intrusive_ptr<U>
 template<class T, class U> intrusive_ptr<T> const_pointer_cast(intrusive_ptr<U> const & p)	{	return const_cast<T *>(p.get());	}
 template<class T, class U> intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const & p)	{	return dynamic_cast<T *>(p.get());	}
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct state;
 struct cell;
+struct retval;
 
+////////////////////////////////////////////////////////////////////////////////
+/// \brief The cell struct
+////////////////////////////////////////////////////////////////////////////////
 struct cell {
 	typedef intrusive_ptr<cell>	iptr;
 
@@ -227,7 +234,7 @@ protected:
 
 // string
 struct string_cell : public cell {
-	string_cell(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str))))	{ memcpy(string_, str, strlen(str)); }
+	string_cell(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~string_cell() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }

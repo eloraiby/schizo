@@ -90,9 +90,9 @@ main(int argc,
 				  "          (define str \"hello\")" \
 				  "          (define b #t)" \
 				  "          (if b" \
-				  "              (display \"true\")" \
+				  "              (display \":-> true\")" \
 				  "           else" \
-				  "              (display \"false\")" \
+				  "              (display \":-> false\")" \
 				  "          )" \
 				  "  )" \
 				  "  ()" \

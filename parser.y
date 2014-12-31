@@ -98,7 +98,7 @@ ilist(A)	::= sexpr(B).				{ A = PR(B); }
 list(A)		::= ilist(B).				{ A = PR(new list(B, nullptr)); }
 list(A)		::= list(B) ilist(C).			{ A = PR(new list(C, B)); }
 
-se_members(A)	::=.					{ A = PR(new list(nullptr, nullptr)); }
+se_members(A)	::=.					{ A = nullptr; }
 se_members(A)	::= list(B).				{ A = PR(list::reverse(B).get()); }
 
 /* ; ;;... */
@@ -108,7 +108,7 @@ sc		::= sc SEMICOL.
 be_members(A)	::= list(B).				{ A = PR(list::reverse(B).get()); }
 
 /* { ... } */
-member_list(A)	::=.					{ A = PR(new list(nullptr, nullptr)); }
+member_list(A)	::=.					{ A = nullptr; }
 member_list(A)	::= be_members(B).			{ A = PR(new list((list::length(B) == 1) ? list::head(B) : B, nullptr)); }
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new list((list::length(C) == 1) ? list::head(C) : C,  B)); }
 

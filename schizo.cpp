@@ -322,18 +322,17 @@ state::eval(cell::iptr env,
 				iptr	syms	= nullptr;
 				iptr	lambda_	= nullptr;
 
-				/*print_cell(s, tail, 0);*/
-
 				lambda_	= static_cast<closure*>(head.get())->lambda();
 				env	= static_cast<closure*>(head.get())->env();
 
-				/* evaluate the arguments and zip them */
-				if( (list::length(tail) != list::length(static_cast<lambda*>(lambda_.get())->syms())) ) {
+				syms	= static_cast<lambda*>(lambda_.get())->syms();
+
+				// evaluate the arguments and zip them
+				if( (list::length(tail) != list::length(syms)) ) {
 					return new error("ERROR: closure arguments do not match given arguments");
 				}
 
 				args	= eval_list(env, tail);
-				syms	= static_cast<lambda*>(lambda_.get())->syms();
 
 				while( list::head(syms) && list::head(args) ) {
 					env	= new list(pair(list::head(syms), list::head(args)), env);
@@ -427,7 +426,8 @@ static cell::iptr
 make_closure(cell::iptr env,
 	     cell::iptr args)
 {
-	cell::iptr	syms	= list::head(args);
+	// the new nullptr list is needed in case we pass a NIL argument ()
+	cell::iptr	syms	= list::head(args) ? args : new list(nullptr, nullptr);
 	cell::iptr	body	= list::tail(args);
 
 	cell::iptr	lam	= new lambda(syms, body);
