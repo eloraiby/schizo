@@ -794,7 +794,7 @@ static void yy_reduce(
       case 25: /* se_members ::= */
       case 30: /* member_list ::= */ yytestcase(yyruleno==30);
 #line 101 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = nullptr; }
+{ yygotominor.yy0 = PR(new list(nullptr, nullptr)); }
 #line 799 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 26: /* se_members ::= list */

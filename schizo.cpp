@@ -78,6 +78,18 @@ print_cell(cell::iptr c,
 			fprintf(stderr, "\"%s\"", static_cast<string_cell*>(c.get())->value());
 			break;
 
+		case ATOM_ERROR:
+			fprintf(stderr, "<ERROR>");
+			break;
+
+		case CELL_CLOSURE:
+			fprintf(stderr, "<CLOSURE>");
+			break;
+
+		case CELL_FFI:
+			fprintf(stderr, "<FFI>");
+			break;
+
 		case CELL_LIST:
 			if( list::head(c) ) {
 				fprintf(stderr, "(");
@@ -230,7 +242,9 @@ print_env(cell::iptr env)
 {
 	fprintf(stderr, "------------------------\n");
 	while( env ) {
-		fprintf(stderr, "* %s\n", static_cast<symbol*>(list::head(list::head(env)).get())->value());
+		fprintf(stderr, "* %s :: ", static_cast<symbol*>(list::head(list::head(env)).get())->value());
+		print_cell(list::head(list::tail(list::head(env))), 0);
+		fprintf(stderr, "\n");
 		env	= list::tail(env);
 	}
 }
@@ -239,6 +253,10 @@ cell::iptr
 state::eval(cell::iptr env,
 	    cell::iptr exp)
 {
+	fprintf(stderr, "EVAL: ");
+	print_cell(exp, 0);
+	fprintf(stderr, "\n");
+
 	while( exp ) {	/* not a NIL_CELL */
 		/* print_env(s); */
 		switch( exp->type() ) {
@@ -258,8 +276,11 @@ state::eval(cell::iptr env,
 
 			/* symbols */
 		case ATOM_SYMBOL:
-			fprintf(stderr, "SYMBOL LOOKUP: %s\n", static_cast<symbol*>(exp.get())->value());
-			return lookup(env, static_cast<symbol*>(exp.get())->value());
+			fprintf(stderr, "SYMBOL %s -> eval to: ", static_cast<symbol*>(exp.get())->value());
+			exp	= lookup(env, static_cast<symbol*>(exp.get())->value());
+			print_cell(exp, 0);
+			fprintf(stderr, "\n");
+			return exp;
 
 			/* applications */
 		case CELL_LIST:	{
@@ -307,7 +328,7 @@ state::eval(cell::iptr env,
 				env	= static_cast<closure*>(head.get())->env();
 
 				/* evaluate the arguments and zip them */
-				if( list::length(tail) != list::length(static_cast<lambda*>(lambda_.get())->syms()) ) {
+				if( (list::length(tail) != list::length(static_cast<lambda*>(lambda_.get())->syms())) ) {
 					return new error("ERROR: closure arguments do not match given arguments");
 				}
 
@@ -383,7 +404,10 @@ static cell::iptr
 symbol_define(cell::iptr env,
 	      cell::iptr args)
 {
-	print_env(env);
+	if( env ) {
+		print_env(env);
+	}
+
 	cell::iptr sym	= list::head(args);
 	cell::iptr body	= list::head(list::tail(args));
 
@@ -479,10 +503,10 @@ state::~state() {
 cell::iptr
 state::default_env() {
 	iptr env	= nullptr;
-	env = state::add_ffi(env, "lambda",  uint16(EVAL_ARGS), sint16(-1), make_closure);
-	env = state::add_ffi(env, "define",  EVAL_ARGS,  2, symbol_define);
-	env = add_ffi(env, "display", EVAL_ARGS,  1, display);
+	env = add_ffi(env, "lambda",  0,	 -1, make_closure);
+	env = add_ffi(env, "define",  0,	  2, symbol_define);
 	env = add_ffi(env, "if",      0,          4, if_else);
+	env = add_ffi(env, "display", EVAL_ARGS,  1, display);
 	return env;
 }
 
