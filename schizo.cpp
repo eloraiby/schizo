@@ -295,28 +295,27 @@ state::eval(cell::iptr env,
 			head	= eval(env, head);
 
 			switch( head->type() ) {
-			case CELL_FFI:
-				if( static_cast<ffi*>(head.get())->flags() & EVAL_ARGS ) {
-					/* TODO: this is limited to 32768 elements! need to increase the range */
-					uint32	l	= list::length(tail);
-					assert( l < 0x7FFF );
-					if( static_cast<ffi*>(head.get())->arg_count() > 0 &&
-					    (sint16)l != static_cast<ffi*>(head.get())->arg_count() ) {
-						fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, static_cast<ffi*>(head.get())->arg_count());
-						return nullptr;
-					} else {
+			case CELL_FFI: {
+				uint32	l	= list::length(tail);
+				assert( l < 0x7FFFFFFF );
+				if( static_cast<ffi*>(head.get())->arg_count() > 0 && (sint32)l != static_cast<ffi*>(head.get())->arg_count() ) {
+					fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, static_cast<ffi*>(head.get())->arg_count());
+					return nullptr;
+				} else {
+					iptr args	= eval_list(env, tail);
 
-						iptr args	= eval_list(env, tail);
+					return (*static_cast<ffi*>(head.get()))(args);
+				}}
+				break;
 
-						return (*static_cast<ffi*>(head.get()))(env, args);
-					}
-				} else {	/* lambda, define, if */
-					exp	= (*static_cast<ffi*>(head.get()))(env, tail);
-					if( exp->type() == CELL_BIND ) {	// bind needs to be returned immediately
-						return exp;
-					}
+			case CELL_SPECIAL_FORM:
+				/* lambda, define, if */
+				exp	= (*static_cast<special*>(head.get()))(env, tail);
+				if( exp->type() == CELL_BIND ) {	// bind needs to be returned immediately
+					return exp;
 				}
 				break;
+
 			case CELL_CLOSURE: {
 				iptr	args	= nullptr;
 				iptr	syms	= nullptr;
@@ -388,9 +387,9 @@ state::eval(cell::iptr env,
 	return nullptr;
 }
 
-/*******************************************************************************
-** core functions
-*******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+/// special functions
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief symbol_define
@@ -465,9 +464,11 @@ if_else(cell::iptr env,
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// special functions
+////////////////////////////////////////////////////////////////////////////////
 static cell::iptr
-display(cell::iptr env,
-	cell::iptr args)
+display(cell::iptr args)
 {
 	print_cell(args, 0);
 	return nullptr;
@@ -479,14 +480,27 @@ display(cell::iptr env,
 cell::iptr
 state::add_ffi(iptr env,
 	       const char* sym,
-	       uint16 flags,
 	       sint32 arg_count,
-	       ffi_call_t proc)
+	       ffi::call proc)
 {
 	cell::iptr	p	= nullptr;
 	cell::iptr	_s	= new symbol(sym);
 
-	cell::iptr	f	= new ffi(flags, arg_count, proc);
+	cell::iptr	f	= new ffi(arg_count, proc);
+
+	return new list(pair(_s, f), env);
+}
+
+cell::iptr
+state::add_special(iptr env,
+		   const char* sym,
+		   sint32 arg_count,
+		   special::call proc)
+{
+	cell::iptr	p	= nullptr;
+	cell::iptr	_s	= new symbol(sym);
+
+	cell::iptr	f	= new special(arg_count, proc);
 
 	return new list(pair(_s, f), env);
 }
@@ -503,10 +517,10 @@ state::~state() {
 cell::iptr
 state::default_env() {
 	iptr env	= nullptr;
-	env = add_ffi(env, "lambda",  0,	 -1, make_closure);
-	env = add_ffi(env, "define",  0,	  2, symbol_define);
-	env = add_ffi(env, "if",      0,          4, if_else);
-	env = add_ffi(env, "display", EVAL_ARGS,  1, display);
+	env = add_special(env, "lambda",  -1,	make_closure);
+	env = add_special(env, "define",  2,	symbol_define);
+	env = add_special(env, "if",      4,	if_else);
+	env = add_ffi    (env, "display", 1,	display);
 	return env;
 }
 

@@ -340,21 +340,35 @@ private:
 	iptr		body_;			///< closure body
 };
 
-// foreign function
-typedef cell::iptr (*ffi_call_t)(cell::iptr env, cell::iptr args);
 
 struct ffi : public cell {
-	inline		ffi(uint16 flags, sint16 arg_count, ffi_call_t proc) : cell(CELL_FFI), flags_(flags), arg_count_(arg_count), proc_(proc)	{}
+	// foreign function
+	typedef cell::iptr (*call)(cell::iptr args);
+
+	inline		ffi(sint32 arg_count, call proc) : cell(CELL_FFI), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~ffi() override		{}
 
-	inline uint16	flags() const		{ return flags_; }
-	inline sint16	arg_count() const	{ return arg_count_; }
+	inline sint32	arg_count() const	{ return arg_count_; }
+	inline iptr	operator()(iptr args) const		{ return proc_(args); }
+
+private:
+	sint32		arg_count_;		///< total argument count, -1 = any
+	call		proc_;			///< the procedure
+};
+
+struct special : public cell {
+	// special function
+	typedef cell::iptr (*call)(cell::iptr env, cell::iptr args);
+
+	inline		special(sint32 arg_count, call proc) : cell(CELL_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
+	virtual		~special() override		{}
+
+	inline sint32	arg_count() const	{ return arg_count_; }
 	inline iptr	operator()(iptr env, iptr args) const		{ return proc_(env, args); }
 
 private:
-	uint16		flags_;
-	sint16		arg_count_;		///< total argument count, -1 = any
-	ffi_call_t	proc_;			///< the procedure
+	sint32		arg_count_;		///< total argument count, -1 = any
+	call		proc_;			///< the procedure
 };
 
 // closure
@@ -398,7 +412,8 @@ struct state : public cell {
 	static void	parse(state* state, const char* str);
 
 	static iptr	default_env();
-	static iptr	add_ffi(cell::iptr env, const char* sym, uint16 flags, sint32 arg_count, ffi_call_t proc);
+	static iptr	add_ffi(cell::iptr env, const char* sym, sint32 arg_count, ffi::call proc);
+	static iptr	add_special(cell::iptr env, const char* sym, sint32 arg_count, special::call proc);
 	static iptr	lookup(cell::iptr env, const char* sym);
 
 	static inline cell* add_token(state* s, cell* c) {
