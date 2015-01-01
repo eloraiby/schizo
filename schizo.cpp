@@ -253,12 +253,13 @@ cell::iptr
 state::eval(cell::iptr env,
 	    cell::iptr exp)
 {
+#ifdef DEBUG_EVAL
 	fprintf(stderr, "EVAL: ");
 	print_cell(exp, 0);
 	fprintf(stderr, "\n");
+#endif	// DEBUG_EVAL
 
 	while( exp ) {	/* not a NIL_CELL */
-		/* print_env(s); */
 		switch( exp->type() ) {
 		/* constants */
 		case ATOM_BOOL:
@@ -276,10 +277,14 @@ state::eval(cell::iptr env,
 
 			/* symbols */
 		case ATOM_SYMBOL:
+#ifdef DEBUG_LOOKUP
 			fprintf(stderr, "SYMBOL %s -> eval to: ", static_cast<symbol*>(exp.get())->value());
+#endif	// DEBUG_LOOKUP
 			exp	= lookup(env, static_cast<symbol*>(exp.get())->value());
+#ifdef DEBUG_LOOKUP
 			print_cell(exp, 0);
 			fprintf(stderr, "\n");
+#endif	// DEBUG_LOOKUP
 			return exp;
 
 			/* applications */
@@ -353,7 +358,6 @@ state::eval(cell::iptr env,
 					}
 
 					while( next ) {
-						/* print_env(s); */
 						ret	= eval(env, exp);	/* eval and bind */
 						if( ret->type() == CELL_BIND ) {	// bind needs to be treated here
 							env = apply_bind(env, ret);
@@ -402,10 +406,6 @@ static cell::iptr
 symbol_define(cell::iptr env,
 	      cell::iptr args)
 {
-	if( env ) {
-		print_env(env);
-	}
-
 	cell::iptr sym	= list::head(args);
 	cell::iptr body	= list::head(list::tail(args));
 
@@ -438,7 +438,6 @@ static cell::iptr
 if_else(cell::iptr env,
 	cell::iptr args)
 {
-	print_env(env);
 	if( list::length(args) != 4 ) {
 		return new error("ERROR in \"if\" usage: if cond exp0 else exp1");
 	}
