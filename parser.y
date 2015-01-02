@@ -89,9 +89,9 @@ sexpr		::= CELL_BIND.				/* bind symbols */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = PR(B); }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
-sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new list(PR(new symbol("vector.get")),
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
+sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new list(PR(new cell::symbol("vector.get")),
 									  PR(new list(B, ( C && C->type() == CELL_LIST ) ? PR(list::reverse(C).get()) : C)))); }
 ilist(A)	::= atom(B).				{ A = PR(B); }
 ilist(A)	::= sexpr(B).				{ A = PR(B); }

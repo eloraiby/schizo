@@ -70,6 +70,7 @@ main(int argc,
 				    "{ !a + b }",
 				    "{ a + !b }",
 				    "{ !a + !b }",
+				    "{ a + b + c; a2 + b2 + c2; }",
 
 				    "("\
 				    "  (lambda ()" \
@@ -90,9 +91,9 @@ main(int argc,
 				  "          (define str \"hello\")" \
 				  "          (define b #t)" \
 				  "          (if b" \
-				  "              (display \":-> true\")" \
+				  "              (display \"res -> true\")" \
 				  "           else" \
-				  "              (display \":-> false\")" \
+				  "              (display \"res -> false\")" \
 				  "          )" \
 				  "  )" \
 				  "  ()" \

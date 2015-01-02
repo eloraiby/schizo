@@ -155,7 +155,7 @@ copy_token(const char* ts, const char *te, char* dst) {
 
 static cell::iptr
 token_to_symbol(const char* sym) {
-	return new symbol(sym);
+	return new cell::symbol(sym);
 }
 
 /*
@@ -173,9 +173,9 @@ token_to_binary_op(state_t* s, const char* op) {
 static cell::iptr
 token_to_boolean(const char* b) {
 	if( !strcmp(b, "#t") ) {
-		return new bool_cell(true);
+		return new cell::boolean(true);
 	} else {
-		return new bool_cell(false);
+		return new cell::boolean(false);
 	}
 }
 
@@ -202,7 +202,7 @@ token_to_real64(const char* r) {
 
 static cell::iptr
 token_to_string(const char* str) {
-	return new string_cell(str);
+	return new cell::string(str);
 }
 
 
@@ -226,7 +226,6 @@ state::parse(state* s, const char* str)
 	s->parser_.root	= nullptr;
 	cell::iptr token_list	= nullptr;
 
-	cell::clear_to_destroy	= false;
 	parser	= parser_alloc(malloc);
 
 	memset(tmp, 0, sizeof(tmp));
@@ -244,7 +243,6 @@ state::parse(state* s, const char* str)
 
 	parser_advance(parser, 0, nullptr, s);
 
-	cell::clear_to_destroy	= true;
 	parser_free(parser, free);
 }
 }

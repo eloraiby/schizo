@@ -198,7 +198,10 @@ struct retval;
 struct cell {
 	typedef intrusive_ptr<cell>	iptr;
 
-	static bool	clear_to_destroy;
+	struct error;
+	struct string;
+	struct boolean;
+	struct symbol;
 
 	uint32		type() const		{ return type_; }
 
@@ -218,7 +221,6 @@ struct cell {
 	friend inline void	intrusive_ptr_release(cell* p) {
 		// decrement reference count, and delete object when reference count reaches 0
 		if( --(p->ref_count_) == 0 ) {
-			assert(clear_to_destroy == true);
 			delete p;
 		}
 	}
@@ -233,9 +235,9 @@ protected:
 };	// cell
 
 // string
-struct string_cell : public cell {
-	string_cell(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
-	virtual		~string_cell() override	{ free(string_); }
+struct cell::string : public cell {
+	string(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
+	virtual		~string() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
 
@@ -244,7 +246,7 @@ protected:
 };
 
 // error
-struct error : public cell {
+struct cell::error : public cell {
 	error(const char* str) : cell(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~error() override	{ free(string_); }
 
@@ -255,9 +257,9 @@ protected:
 };
 
 // bool
-struct bool_cell : public cell {
-	bool_cell(bool b) : cell(ATOM_BOOL), b_(b)	{}
-	virtual		~bool_cell() override	{}
+struct cell::boolean : public cell {
+	boolean(bool b) : cell(ATOM_BOOL), b_(b)	{}
+	virtual		~boolean() override	{}
 
 	bool		value() const		{ return b_; }
 
@@ -299,7 +301,7 @@ protected:
 };
 
 // symbol
-struct symbol : public cell {
+struct cell::symbol : public cell {
 	symbol(const char* sym) : cell(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
 	virtual		~symbol() override	{ free(sym_); }
 
@@ -394,10 +396,6 @@ private:
 	iptr		bindings_;		///< binding list
 };
 
-
-#define EVAL_ARGS	0x8000		/* arguments are evaluated before call */
-#define ARGS_ANY	-1		/* any number of argument */
-
 struct state : public cell {
 
 	state();
@@ -456,7 +454,7 @@ protected:
 void		print_cell(cell::iptr c, uint32 level);
 
 /* lists */
-#define		pair(fst, snd)	(new list((fst), new list((snd), nullptr)))
+static inline cell::iptr	pair(cell::iptr fst, cell::iptr snd) { return new list((fst), new list((snd), nullptr)); }
 
 
 

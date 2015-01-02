@@ -25,8 +25,6 @@ extern "C" void __cxa_pure_virtual() { fprintf(stderr, "attempt to call a pure v
 
 namespace schizo {
 
-bool cell::clear_to_destroy	= true;
-
 cell::~cell() {
 
 }
@@ -51,7 +49,7 @@ print_cell(cell::iptr c,
 	if( c ) {
 		switch( c->type() ) {
 		case ATOM_BOOL:
-			if( static_cast<bool_cell*>(c.get())->value() ) {
+			if( static_cast<cell::boolean*>(c.get())->value() ) {
 				fprintf(stderr, "#t");
 			} else {
 				fprintf(stderr, "#f");
@@ -59,7 +57,7 @@ print_cell(cell::iptr c,
 			break;
 
 		case ATOM_SYMBOL:
-			fprintf(stderr, "%s", static_cast<symbol*>(c.get())->value());
+			fprintf(stderr, "%s", static_cast<cell::symbol*>(c.get())->value());
 			break;
 
 		case ATOM_CHAR:
@@ -75,7 +73,7 @@ print_cell(cell::iptr c,
 			break;
 
 		case ATOM_STRING:
-			fprintf(stderr, "\"%s\"", static_cast<string_cell*>(c.get())->value());
+			fprintf(stderr, "\"%s\"", static_cast<cell::string*>(c.get())->value());
 			break;
 
 		case ATOM_ERROR:
@@ -187,7 +185,7 @@ state::lookup(cell::iptr env,
 	if( env ) {
 		iptr	pair	= list::head(env);
 
-		while( pair && strcmp(sym, static_cast<symbol*>(list::head(pair).get())->value()) != 0 ) {
+		while( pair && strcmp(sym, static_cast<cell::symbol*>(list::head(pair).get())->value()) != 0 ) {
 			env	= list::tail(env);
 			if( env ) {
 				pair	= list::head(env);
@@ -242,7 +240,7 @@ print_env(cell::iptr env)
 {
 	fprintf(stderr, "------------------------\n");
 	while( env ) {
-		fprintf(stderr, "* %s :: ", static_cast<symbol*>(list::head(list::head(env)).get())->value());
+		fprintf(stderr, "* %s :: ", static_cast<cell::symbol*>(list::head(list::head(env)).get())->value());
 		print_cell(list::head(list::tail(list::head(env))), 0);
 		fprintf(stderr, "\n");
 		env	= list::tail(env);
@@ -280,7 +278,7 @@ state::eval(cell::iptr env,
 #ifdef DEBUG_LOOKUP
 			fprintf(stderr, "SYMBOL %s -> eval to: ", static_cast<symbol*>(exp.get())->value());
 #endif	// DEBUG_LOOKUP
-			exp	= lookup(env, static_cast<symbol*>(exp.get())->value());
+			exp	= lookup(env, static_cast<cell::symbol*>(exp.get())->value());
 #ifdef DEBUG_LOOKUP
 			print_cell(exp, 0);
 			fprintf(stderr, "\n");
@@ -310,8 +308,9 @@ state::eval(cell::iptr env,
 					iptr args	= eval_list(env, tail);
 
 					return (*static_cast<ffi*>(head.get()))(args);
-				}}
+				}
 				break;
+			}
 
 			case CELL_SPECIAL_FORM:
 				/* lambda, define, if */
@@ -439,7 +438,7 @@ if_else(cell::iptr env,
 	cell::iptr args)
 {
 	if( list::length(args) != 4 ) {
-		return new error("ERROR in \"if\" usage: if cond exp0 else exp1");
+		return new cell::error("ERROR in \"if\" usage: if cond exp0 else exp1");
 	}
 
 	cell::iptr cond		= list::head(args);
@@ -447,25 +446,47 @@ if_else(cell::iptr env,
 	cell::iptr elsym	= list::head(list::tail(list::tail(args)));
 	cell::iptr exp1		= list::head(list::tail(list::tail(list::tail(args))));
 
-	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<symbol*>(elsym.get())->value(), "else") == 0 ) {
+	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<cell::symbol*>(elsym.get())->value(), "else") == 0 ) {
 		cell::iptr b	= state::eval(env, cond);
 		if( b->type() != ATOM_BOOL ) {
-			return new error("ERROR: if requires condition to be boolean");
+			return new cell::error("ERROR: if requires condition to be boolean");
 		}
 
-		if( static_cast<bool_cell*>(b.get())->value() ) {
+		if( static_cast<cell::boolean*>(b.get())->value() ) {
 			return exp0;
 		} else {
 			return exp1;
 		}
 	} else {
-		return new error("ERROR: if requires \"else\" keyword: if cond exp0 else exp1");
+		return new cell::error("ERROR: if requires \"else\" keyword: if cond exp0 else exp1");
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// special functions
+/// built-in functions
 ////////////////////////////////////////////////////////////////////////////////
+static cell::iptr
+leq(cell::iptr args)
+{
+	cell::iptr	left	= list::head(args);
+	cell::iptr	right	= list::head(list::tail(args));
+
+	if( left->type() != right->type() ||
+	    left->type() != ATOM_REAL64 ||
+	    left->type() != ATOM_SINT64 ) {
+		return new cell::error("< takes 2 values of the same number type");
+	}
+
+	switch(left->type()) {
+	case ATOM_REAL64:
+		return new cell::boolean(static_cast<real64_cell*>(left.get())->value() < static_cast<real64_cell*>(right.get())->value());
+	case ATOM_SINT64:
+		return new cell::boolean(static_cast<sint64_cell*>(left.get())->value() < static_cast<sint64_cell*>(right.get())->value());
+	}
+
+	return new cell::error("< should not pass here");
+}
+
 static cell::iptr
 display(cell::iptr args)
 {
@@ -519,7 +540,9 @@ state::default_env() {
 	env = add_special(env, "lambda",  -1,	make_closure);
 	env = add_special(env, "define",  2,	symbol_define);
 	env = add_special(env, "if",      4,	if_else);
+
 	env = add_ffi    (env, "display", 1,	display);
+	env = add_ffi    (env, "leq",	  2,	leq);
 	return env;
 }
 

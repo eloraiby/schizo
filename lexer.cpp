@@ -211,7 +211,7 @@ copy_token(const char* ts, const char *te, char* dst) {
 
 static cell::iptr
 token_to_symbol(const char* sym) {
-	return new symbol(sym);
+	return new cell::symbol(sym);
 }
 
 /*
@@ -229,9 +229,9 @@ token_to_binary_op(state_t* s, const char* op) {
 static cell::iptr
 token_to_boolean(const char* b) {
 	if( !strcmp(b, "#t") ) {
-		return new bool_cell(true);
+		return new cell::boolean(true);
 	} else {
-		return new bool_cell(false);
+		return new cell::boolean(false);
 	}
 }
 
@@ -258,7 +258,7 @@ token_to_real64(const char* r) {
 
 static cell::iptr
 token_to_string(const char* str) {
-	return new string_cell(str);
+	return new cell::string(str);
 }
 
 
@@ -282,13 +282,12 @@ state::parse(state* s, const char* str)
 	s->parser_.root	= nullptr;
 	cell::iptr token_list	= nullptr;
 
-	cell::clear_to_destroy	= false;
 	parser	= parser_alloc(malloc);
 
 	memset(tmp, 0, sizeof(tmp));
 
 	
-#line 292 "/home/aifu/Projects/schizo/lexer.cpp"
+#line 291 "/home/aifu/Projects/schizo/lexer.cpp"
 	{
 	cs = scanner_start;
 	ts = 0;
@@ -296,10 +295,10 @@ state::parse(state* s, const char* str)
 	act = 0;
 	}
 
-#line 235 "/home/aifu/Projects/schizo/lexer.rl"
+#line 234 "/home/aifu/Projects/schizo/lexer.rl"
 
 	
-#line 303 "/home/aifu/Projects/schizo/lexer.cpp"
+#line 302 "/home/aifu/Projects/schizo/lexer.cpp"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -320,7 +319,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 324 "/home/aifu/Projects/schizo/lexer.cpp"
+#line 323 "/home/aifu/Projects/schizo/lexer.cpp"
 		}
 	}
 
@@ -564,7 +563,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 568 "/home/aifu/Projects/schizo/lexer.cpp"
+#line 567 "/home/aifu/Projects/schizo/lexer.cpp"
 		}
 	}
 
@@ -577,7 +576,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 581 "/home/aifu/Projects/schizo/lexer.cpp"
+#line 580 "/home/aifu/Projects/schizo/lexer.cpp"
 		}
 	}
 
@@ -597,7 +596,7 @@ _again:
 	_out: {}
 	}
 
-#line 237 "/home/aifu/Projects/schizo/lexer.rl"
+#line 236 "/home/aifu/Projects/schizo/lexer.rl"
 
 	/* Check if we failed. */
 	if ( cs == scanner_error ) {
@@ -608,7 +607,6 @@ _again:
 
 	parser_advance(parser, 0, nullptr, s);
 
-	cell::clear_to_destroy	= true;
 	parser_free(parser, free);
 }
 }
