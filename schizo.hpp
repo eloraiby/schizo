@@ -205,6 +205,12 @@ struct cell {
 	struct sint64;
 	struct real64;
 	struct symbol;
+	struct list;
+	struct lambda;
+	struct closure;
+	struct ffi;
+	struct special;
+	struct bind;
 
 	uint32		type() const		{ return type_; }
 
@@ -315,7 +321,7 @@ private:
 };
 
 // list
-struct list : public cell {
+struct cell::list : public cell {
 	list(iptr head, iptr tail) : cell(CELL_LIST), head_(head), tail_(tail)	{}
 	virtual		~list() override	{}
 
@@ -333,7 +339,7 @@ private:
 };
 
 // lambda
-struct lambda : public cell {
+struct cell::lambda : public cell {
 	lambda(iptr syms, iptr body) : cell(CELL_LAMBDA), syms_(syms), body_(body)	{}
 	virtual		~lambda() override	{}
 
@@ -346,7 +352,7 @@ private:
 };
 
 
-struct ffi : public cell {
+struct cell::ffi : public cell {
 	// foreign function
 	typedef cell::iptr (*call)(cell::iptr args);
 
@@ -361,7 +367,7 @@ private:
 	call		proc_;			///< the procedure
 };
 
-struct special : public cell {
+struct cell::special : public cell {
 	// special function
 	typedef cell::iptr (*call)(cell::iptr env, cell::iptr args);
 
@@ -377,7 +383,7 @@ private:
 };
 
 // closure
-struct closure : public cell {
+struct cell::closure : public cell {
 	closure(iptr env, iptr lambda) : cell(CELL_CLOSURE), env_(env), lambda_(lambda)	{}
 	virtual		~closure() override	{}
 
@@ -389,7 +395,7 @@ private:
 };
 
 // bind
-struct bind : public cell {
+struct cell::bind : public cell {
 	bind(iptr bindings) : cell(CELL_BIND), bindings_(bindings)	{}
 	virtual		~bind() override	{}
 
@@ -457,7 +463,7 @@ protected:
 void		print_cell(cell::iptr c, uint32 level);
 
 /* lists */
-static inline cell::iptr	pair(cell::iptr fst, cell::iptr snd) { return new list((fst), new list((snd), nullptr)); }
+static inline cell::iptr	pair(cell::iptr fst, cell::iptr snd) { return new cell::list((fst), new cell::list((snd), nullptr)); }
 
 
 

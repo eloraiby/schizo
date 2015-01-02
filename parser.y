@@ -89,28 +89,28 @@ sexpr		::= CELL_BIND.				/* bind symbols */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = PR(B); }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(list::reverse(B).get()) : B)); }
-sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new list(PR(new cell::symbol("vector.get")),
-									  PR(new list(B, ( C && C->type() == CELL_LIST ) ? PR(list::reverse(C).get()) : C)))); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new cell::list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(cell::list::reverse(B).get()) : B)); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new cell::list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(cell::list::reverse(B).get()) : B)); }
+sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new cell::list(PR(new cell::symbol("vector.get")),
+									  PR(new cell::list(B, ( C && C->type() == CELL_LIST ) ? PR(cell::list::reverse(C).get()) : C)))); }
 ilist(A)	::= atom(B).				{ A = PR(B); }
 ilist(A)	::= sexpr(B).				{ A = PR(B); }
 
-list(A)		::= ilist(B).				{ A = PR(new list(B, nullptr)); }
-list(A)		::= list(B) ilist(C).			{ A = PR(new list(C, B)); }
+list(A)		::= ilist(B).				{ A = PR(new cell::list(B, nullptr)); }
+list(A)		::= list(B) ilist(C).			{ A = PR(new cell::list(C, B)); }
 
 se_members(A)	::=.					{ A = nullptr; }
-se_members(A)	::= list(B).				{ A = PR(list::reverse(B).get()); }
+se_members(A)	::= list(B).				{ A = PR(cell::list::reverse(B).get()); }
 
 /* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
-be_members(A)	::= list(B).				{ A = PR(list::reverse(B).get()); }
+be_members(A)	::= list(B).				{ A = PR(cell::list::reverse(B).get()); }
 
 /* { ... } */
 member_list(A)	::=.					{ A = nullptr; }
-member_list(A)	::= be_members(B).			{ A = PR(new list((list::length(B) == 1) ? list::head(B) : B, nullptr)); }
-member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new list((list::length(C) == 1) ? list::head(C) : C,  B)); }
+member_list(A)	::= be_members(B).			{ A = PR(new cell::list((cell::list::length(B) == 1) ? cell::list::head(B) : B, nullptr)); }
+member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new cell::list((cell::list::length(C) == 1) ? cell::list::head(C) : C, B)); }
 
 /* TODO: operator precedence */

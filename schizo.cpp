@@ -89,24 +89,24 @@ print_cell(cell::iptr c,
 			break;
 
 		case CELL_LIST:
-			if( list::head(c) ) {
+			if( cell::list::head(c) ) {
 				fprintf(stderr, "(");
-				print_cell(list::head(c), uint32(0));
+				print_cell(cell::list::head(c), uint32(0));
 			} else {
 				fprintf(stderr, "(nil");
 			}
 
-			if( list::tail(c) ) {
-				cell::iptr n	= list::tail(c);
+			if( cell::list::tail(c) ) {
+				cell::iptr n	= cell::list::tail(c);
 				while( n ) {
-					if( list::head(n) ) {
-						print_cell(list::head(n), 1);
+					if( cell::list::head(n) ) {
+						print_cell(cell::list::head(n), 1);
 					} else {
 						print_level(level + 1);
 						fprintf(stderr, "nil");
 					}
 
-					n	= list::tail(n);
+					n	= cell::list::tail(n);
 				}
 			}
 			fprintf(stderr, ")");
@@ -124,7 +124,7 @@ print_cell(cell::iptr c,
 ** lists
 *******************************************************************************/
 uint32
-list::length(cell::iptr l)
+cell::list::length(cell::iptr l)
 {
 	cell::iptr	curr	= l;
 	uint32		len	= 0;
@@ -138,7 +138,7 @@ list::length(cell::iptr l)
 }
 
 cell::iptr
-list::reverse(cell::iptr l)
+cell::list::reverse(cell::iptr l)
 {
 	cell::iptr	nl	= nullptr;
 
@@ -240,10 +240,10 @@ print_env(cell::iptr env)
 {
 	fprintf(stderr, "------------------------\n");
 	while( env ) {
-		fprintf(stderr, "* %s :: ", static_cast<cell::symbol*>(list::head(list::head(env)).get())->value());
-		print_cell(list::head(list::tail(list::head(env))), 0);
+		fprintf(stderr, "* %s :: ", static_cast<cell::symbol*>(cell::list::head(cell::list::head(env)).get())->value());
+		print_cell(cell::list::head(cell::list::tail(cell::list::head(env))), 0);
 		fprintf(stderr, "\n");
-		env	= list::tail(env);
+		env	= cell::list::tail(env);
 	}
 }
 
@@ -405,12 +405,12 @@ static cell::iptr
 symbol_define(cell::iptr env,
 	      cell::iptr args)
 {
-	cell::iptr sym	= list::head(args);
-	cell::iptr body	= list::head(list::tail(args));
+	cell::iptr sym	= cell::list::head(args);
+	cell::iptr body	= cell::list::head(cell::list::tail(args));
 
 	cell::iptr pair_	= pair(sym, body);
 
-	return new bind(new list(pair_, nullptr));
+	return new cell::bind(new cell::list(pair_, nullptr));
 }
 
 /**
@@ -425,26 +425,26 @@ make_closure(cell::iptr env,
 	     cell::iptr args)
 {
 	// the new nullptr list is needed in case we pass a NIL argument ()
-	cell::iptr	syms	= list::head(args) ? args : new list(nullptr, nullptr);
-	cell::iptr	body	= list::tail(args);
+	cell::iptr	syms	= cell::list::head(args) ? args : new cell::list(nullptr, nullptr);
+	cell::iptr	body	= cell::list::tail(args);
 
-	cell::iptr	lam	= new lambda(syms, body);
+	cell::iptr	lam	= new cell::lambda(syms, body);
 
-	return new closure(env, lam);
+	return new cell::closure(env, lam);
 }
 
 static cell::iptr
 if_else(cell::iptr env,
 	cell::iptr args)
 {
-	if( list::length(args) != 4 ) {
+	if( cell::list::length(args) != 4 ) {
 		return new cell::error("ERROR in \"if\" usage: if cond exp0 else exp1");
 	}
 
-	cell::iptr cond		= list::head(args);
-	cell::iptr exp0		= list::head(list::tail(args));
-	cell::iptr elsym	= list::head(list::tail(list::tail(args)));
-	cell::iptr exp1		= list::head(list::tail(list::tail(list::tail(args))));
+	cell::iptr cond		= cell::list::head(args);
+	cell::iptr exp0		= cell::list::head(cell::list::tail(args));
+	cell::iptr elsym	= cell::list::head(cell::list::tail(cell::list::tail(args)));
+	cell::iptr exp1		= cell::list::head(cell::list::tail(cell::list::tail(cell::list::tail(args))));
 
 	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<cell::symbol*>(elsym.get())->value(), "else") == 0 ) {
 		cell::iptr b	= state::eval(env, cond);
@@ -468,8 +468,8 @@ if_else(cell::iptr env,
 static cell::iptr
 leq(cell::iptr args)
 {
-	cell::iptr	left	= list::head(args);
-	cell::iptr	right	= list::head(list::tail(args));
+	cell::iptr	left	= cell::list::head(args);
+	cell::iptr	right	= cell::list::head(cell::list::tail(args));
 
 	if( left->type() != right->type() ||
 	    left->type() != ATOM_REAL64 ||
