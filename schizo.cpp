@@ -61,15 +61,15 @@ print_cell(cell::iptr c,
 			break;
 
 		case ATOM_CHAR:
-			fprintf(stderr, "'%c'", static_cast<char_cell*>(c.get())->value());
+			fprintf(stderr, "'%c'", static_cast<cell::character*>(c.get())->value());
 			break;
 
 		case ATOM_SINT64:
-			fprintf(stderr, "%ld", static_cast<sint64_cell*>(c.get())->value());
+			fprintf(stderr, "%ld", static_cast<cell::sint64*>(c.get())->value());
 			break;
 
 		case ATOM_REAL64:
-			fprintf(stderr, "%lf", static_cast<real64_cell*>(c.get())->value());
+			fprintf(stderr, "%lf", static_cast<cell::real64*>(c.get())->value());
 			break;
 
 		case ATOM_STRING:
@@ -479,9 +479,9 @@ leq(cell::iptr args)
 
 	switch(left->type()) {
 	case ATOM_REAL64:
-		return new cell::boolean(static_cast<real64_cell*>(left.get())->value() < static_cast<real64_cell*>(right.get())->value());
+		return new cell::boolean(static_cast<cell::real64*>(left.get())->value() < static_cast<cell::real64*>(right.get())->value());
 	case ATOM_SINT64:
-		return new cell::boolean(static_cast<sint64_cell*>(left.get())->value() < static_cast<sint64_cell*>(right.get())->value());
+		return new cell::boolean(static_cast<cell::sint64*>(left.get())->value() < static_cast<cell::sint64*>(right.get())->value());
 	}
 
 	return new cell::error("< should not pass here");

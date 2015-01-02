@@ -181,7 +181,7 @@ token_to_boolean(const char* b) {
 
 static cell::iptr
 token_to_char(const char* ch) {
-	return new char_cell(*ch);
+	return new cell::character(*ch);
 }
 
 static cell::iptr
@@ -189,7 +189,7 @@ token_to_sint64(const char* i) {
 	sint64	v	= 0;
 	sscanf(i, "%ld", &v);
 	/* TODO: check limit */
-	return new sint64_cell(v);
+	return new cell::sint64(v);
 }
 
 static cell::iptr
@@ -197,7 +197,7 @@ token_to_real64(const char* r) {
 	real64	v	= 0;
 	sscanf(r, "%lf", &v);
 	/* TODO: check limit */
-	return new real64_cell(v);
+	return new cell::real64(v);
 }
 
 static cell::iptr

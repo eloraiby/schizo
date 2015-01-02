@@ -201,6 +201,9 @@ struct cell {
 	struct error;
 	struct string;
 	struct boolean;
+	struct character;
+	struct sint64;
+	struct real64;
 	struct symbol;
 
 	uint32		type() const		{ return type_; }
@@ -267,10 +270,10 @@ protected:
 	bool		b_;
 };
 
-// char
-struct char_cell : public cell {
-	char_cell(char ch) : cell(ATOM_CHAR), ch_(ch)	{}
-	virtual		~char_cell() override	{}
+// character
+struct cell::character : public cell {
+	character(char ch) : cell(ATOM_CHAR), ch_(ch)	{}
+	virtual		~character() override	{}
 
 	char		value() const		{ return ch_; }
 
@@ -279,25 +282,25 @@ protected:
 };
 
 // sint64
-struct sint64_cell : public cell {
-	sint64_cell(sint64 s64) : cell(ATOM_SINT64), s64_(s64)	{}
-	virtual		~sint64_cell() override	{}
+struct cell::sint64 : public cell {
+	sint64(::schizo::sint64 s64) : cell(ATOM_SINT64), s64_(s64)	{}
+	virtual		~sint64() override	{}
 
-	sint64		value() const		{ return s64_; }
+	::schizo::sint64	value() const		{ return s64_; }
 
 protected:
-	sint64		s64_;
+	::schizo::sint64	s64_;
 };
 
 // real64
-struct real64_cell : public cell {
-	real64_cell(real64 r64) : cell(ATOM_REAL64), r64_(r64)	{}
-	virtual		~real64_cell() override	{}
+struct cell::real64 : public cell {
+	real64(::schizo::real64 r64) : cell(ATOM_REAL64), r64_(r64)	{}
+	virtual		~real64() override	{}
 
-	real64		value() const		{ return r64_; }
+	::schizo::real64	value() const		{ return r64_; }
 
 protected:
-	real64		r64_;
+	::schizo::real64	r64_;
 };
 
 // symbol
