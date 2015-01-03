@@ -24,10 +24,10 @@ SOURCES += \
     src/lexer.cpp \
     main.cpp \
     src/parser.cpp \
-    src/schizo.cpp \
     src/expression.cpp \
     src/special_forms.cpp \
-    src/built_ins.cpp
+    src/built_ins.cpp \
+    src/state.cpp
 
 lexer.target = lexer.cpp
 lexer.commands = ragel -C -o $$PWD/src/lexer.cpp $$PWD/src/lexer.rl
