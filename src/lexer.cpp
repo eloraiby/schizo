@@ -461,31 +461,31 @@ _eof_trans:
 	break;
 	case 15:
 #line 126 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( LPAR );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_LPAR );}}
 	break;
 	case 16:
 #line 127 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( RPAR );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_RPAR );}}
 	break;
 	case 17:
 #line 128 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( LBR );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_LBR );}}
 	break;
 	case 18:
 #line 129 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( RBR );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_RBR );}}
 	break;
 	case 19:
 #line 130 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( LSQB );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_LSQB );}}
 	break;
 	case 20:
 #line 131 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( RSQB );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_RSQB );}}
 	break;
 	case 21:
 #line 132 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( SEMICOL );}}
+	{te = p+1;{ ADVANCE_TOKEN( TOK_SEMICOL );}}
 	break;
 	case 22:
 #line 137 "/home/aifu/Projects/schizo/src/lexer.rl"

@@ -123,13 +123,13 @@ namespace schizo {
 								};
 
 		# Only buffer the second item, first buffered by symbol. */
-		'('						{ ADVANCE_TOKEN( LPAR );};
-		')'						{ ADVANCE_TOKEN( RPAR );};
-		'{'						{ ADVANCE_TOKEN( LBR );};
-		'}'						{ ADVANCE_TOKEN( RBR );};
-		'['						{ ADVANCE_TOKEN( LSQB );};
-		']'						{ ADVANCE_TOKEN( RSQB );};
-		';'						{ ADVANCE_TOKEN( SEMICOL );};
+		'('						{ ADVANCE_TOKEN( TOK_LPAR );};
+		')'						{ ADVANCE_TOKEN( TOK_RPAR );};
+		'{'						{ ADVANCE_TOKEN( TOK_LBR );};
+		'}'						{ ADVANCE_TOKEN( TOK_RBR );};
+		'['						{ ADVANCE_TOKEN( TOK_LSQB );};
+		']'						{ ADVANCE_TOKEN( TOK_RSQB );};
+		';'						{ ADVANCE_TOKEN( TOK_SEMICOL );};
 
 		'\n'						{ ++line; };
 

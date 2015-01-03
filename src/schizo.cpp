@@ -49,7 +49,7 @@ print_cell(exp::iptr c,
 	print_level(level);
 	if( c ) {
 		switch( c->type() ) {
-		case ATOM_BOOL:
+		case exp::EXP_BOOLEAN:
 			if( static_cast<exp::boolean*>(c.get())->value() ) {
 				fprintf(stderr, "#t");
 			} else {
@@ -57,39 +57,39 @@ print_cell(exp::iptr c,
 			}
 			break;
 
-		case ATOM_SYMBOL:
+		case exp::EXP_SYMBOL:
 			fprintf(stderr, "%s", static_cast<exp::symbol*>(c.get())->value());
 			break;
 
-		case ATOM_CHAR:
+		case exp::EXP_CHARACTER:
 			fprintf(stderr, "'%c'", static_cast<exp::character*>(c.get())->value());
 			break;
 
-		case ATOM_SINT64:
+		case exp::EXP_SINT64:
 			fprintf(stderr, "%ld", static_cast<exp::sint64*>(c.get())->value());
 			break;
 
-		case ATOM_REAL64:
+		case exp::EXP_REAL64:
 			fprintf(stderr, "%lf", static_cast<exp::real64*>(c.get())->value());
 			break;
 
-		case ATOM_STRING:
+		case exp::EXP_STRING:
 			fprintf(stderr, "\"%s\"", static_cast<exp::string*>(c.get())->value());
 			break;
 
-		case ATOM_ERROR:
+		case exp::EXP_ERROR:
 			fprintf(stderr, "<ERROR>");
 			break;
 
-		case CELL_CLOSURE:
+		case exp::EXP_CLOSURE:
 			fprintf(stderr, "<CLOSURE>");
 			break;
 
-		case CELL_FFI:
+		case exp::EXP_FFI:
 			fprintf(stderr, "<FFI>");
 			break;
 
-		case CELL_LIST:
+		case exp::EXP_LIST:
 			if( exp::list::head(c) ) {
 				fprintf(stderr, "(");
 				print_cell(exp::list::head(c), uint32(0));
@@ -131,7 +131,7 @@ exp::list::length(exp::iptr l)
 	uint32		len	= 0;
 
 	while( curr ) {
-		assert( l->type() == CELL_LIST );
+		assert( l->type() == EXP_LIST );
 		++len;
 		curr	= list::tail(curr);
 	}
@@ -225,7 +225,7 @@ exp::iptr
 state::apply_bind(iptr env,
 		  exp::iptr b)
 {
-	if( b->type() == CELL_BIND ) {
+	if( b->type() == EXP_BIND ) {
 		iptr	sympair = static_cast<bind*>(b.get())->bindings();
 		while( sympair ) {
 			env = new list(list::head(sympair), env);
@@ -261,21 +261,21 @@ state::eval(exp::iptr env,
 	while( exp ) {	/* not a NIL_CELL */
 		switch( exp->type() ) {
 		/* constants */
-		case ATOM_BOOL:
-		case ATOM_CHAR:
-		case ATOM_SINT64:
-		case ATOM_REAL64:
-		case ATOM_STRING:
-		case ATOM_ERROR:
-		case CELL_CLOSURE:
-		case CELL_FFI:
-		case CELL_QUOTE:
+		case EXP_BOOLEAN:
+		case EXP_CHARACTER:
+		case EXP_SINT64:
+		case EXP_REAL64:
+		case EXP_STRING:
+		case EXP_ERROR:
+		case EXP_CLOSURE:
+		case EXP_FFI:
+		//case EXP_QUOTE:
 			return exp;
-		case CELL_BIND:
+		case EXP_BIND:
 			return apply_bind(env, exp);
 
 			/* symbols */
-		case ATOM_SYMBOL:
+		case EXP_SYMBOL:
 #ifdef DEBUG_LOOKUP
 			fprintf(stderr, "SYMBOL %s -> eval to: ", static_cast<symbol*>(exp.get())->value());
 #endif	// DEBUG_LOOKUP
@@ -287,7 +287,7 @@ state::eval(exp::iptr env,
 			return exp;
 
 			/* applications */
-		case CELL_LIST:	{
+		case EXP_LIST:	{
 			iptr	head	= list::head(exp);
 			iptr	tail	= nullptr;
 
@@ -299,7 +299,7 @@ state::eval(exp::iptr env,
 			head	= eval(env, head);
 
 			switch( head->type() ) {
-			case CELL_FFI: {
+			case EXP_FFI: {
 				uint32	l	= list::length(tail);
 				assert( l < 0x7FFFFFFF );
 				if( static_cast<ffi*>(head.get())->arg_count() > 0 && (sint32)l != static_cast<ffi*>(head.get())->arg_count() ) {
@@ -313,15 +313,15 @@ state::eval(exp::iptr env,
 				break;
 			}
 
-			case CELL_SPECIAL_FORM:
+			case EXP_SPECIAL_FORM:
 				/* lambda, define, if */
 				exp	= (*static_cast<special*>(head.get()))(env, tail);
-				if( exp->type() == CELL_BIND ) {	// bind needs to be returned immediately
+				if( exp->type() == EXP_BIND ) {	// bind needs to be returned immediately
 					return exp;
 				}
 				break;
 
-			case CELL_CLOSURE: {
+			case EXP_CLOSURE: {
 				iptr	args	= nullptr;
 				iptr	syms	= nullptr;
 				iptr	lambda_	= nullptr;
@@ -353,13 +353,13 @@ state::eval(exp::iptr env,
 					iptr	ret	= nullptr;
 
 					exp	= list::head(body);
-					if( exp && exp->type() == CELL_BIND ) {	// bind needs to be treated here
+					if( exp && exp->type() == EXP_BIND ) {	// bind needs to be treated here
 						env = apply_bind(env, exp);
 					}
 
 					while( next ) {
 						ret	= eval(env, exp);	/* eval and bind */
-						if( ret && ret->type() == CELL_BIND ) {	// bind needs to be treated here
+						if( ret && ret->type() == EXP_BIND ) {	// bind needs to be treated here
 							env = apply_bind(env, ret);
 						}
 
@@ -447,13 +447,13 @@ if_else(exp::iptr env,
 	exp::iptr elsym	= exp::list::head(exp::list::tail(exp::list::tail(args)));
 	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
-	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
+	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
 		exp::iptr b	= state::eval(env, cond);
 		switch( b->type() ) {
-		case ATOM_ERROR:
+		case exp::EXP_ERROR:
 			return b;
 
-		case ATOM_BOOL:
+		case exp::EXP_BOOLEAN:
 			if( static_cast<exp::boolean*>(b.get())->value() ) {
 				return exp0;
 			} else {
@@ -478,19 +478,20 @@ less_than(exp::iptr args)
 	exp::iptr	right	= exp::list::head(exp::list::tail(args));
 
 	if( left->type() != right->type() &&
-	    left->type() != ATOM_REAL64 &&
-	    left->type() != ATOM_SINT64 ) {
+	    left->type() != exp::EXP_REAL64 &&
+	    left->type() != exp::EXP_SINT64 ) {
 		return new exp::error("lt takes 2 values of the same number type");
 	}
 
 	switch(left->type()) {
-	case ATOM_REAL64:
+	case exp::EXP_REAL64:
 		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() < static_cast<exp::real64*>(right.get())->value());
-	case ATOM_SINT64:
+	case exp::EXP_SINT64:
 		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() < static_cast<exp::sint64*>(right.get())->value());
+	default:
+		return new exp::error("lt should not pass here");
 	}
 
-	return new exp::error("lt should not pass here");
 }
 
 static exp::iptr
@@ -531,7 +532,7 @@ state::add_special(iptr env,
 	return new list(pair(_s, f), env);
 }
 
-state::state() : exp(CELL_STATE) {
+state::state() : exp(EXP_STATE) {
 	parser_.token_start	= nullptr;
 	parser_.token_end	= nullptr;
 	parser_.token_line	= 0;

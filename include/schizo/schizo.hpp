@@ -209,9 +209,26 @@ struct exp {
 	struct special;
 	struct bind;
 
-	uint32		type() const		{ return type_; }
+	enum TYPE {
+		EXP_ERROR,
+		EXP_SYMBOL,
+		EXP_BOOLEAN,
+		EXP_CHARACTER,
+		EXP_SINT64,
+		EXP_REAL64,
+		EXP_STRING,
+		EXP_LIST,
+		EXP_LAMBDA,
+		EXP_CLOSURE,
+		EXP_FFI,
+		EXP_SPECIAL_FORM,
+		EXP_BIND,
+		EXP_STATE,
+	};
 
-			exp(uint32 type) : ref_count_(0), type_(type)	{}
+	TYPE		type() const		{ return type_; }
+
+			exp(TYPE type) : ref_count_(0), type_(type)	{}
 	virtual		~exp()	= 0;
 
 	void* operator	new(size_t s)		{ return malloc(s); }
@@ -237,12 +254,12 @@ struct exp {
 
 protected:
 	uint32		ref_count_;
-	uint32		type_;
+	TYPE		type_;
 };	// exp
 
 // string
 struct exp::string : public exp {
-	string(const char* str) : exp(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
+	string(const char* str) : exp(EXP_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~string() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
@@ -253,7 +270,7 @@ protected:
 
 // error
 struct exp::error : public exp {
-	error(const char* str) : exp(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
+	error(const char* str) : exp(EXP_ERROR), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~error() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
@@ -264,7 +281,7 @@ protected:
 
 // bool
 struct exp::boolean : public exp {
-	boolean(bool b) : exp(ATOM_BOOL), b_(b)	{}
+	boolean(bool b) : exp(EXP_BOOLEAN), b_(b)	{}
 	virtual		~boolean() override	{}
 
 	bool		value() const		{ return b_; }
@@ -275,7 +292,7 @@ protected:
 
 // character
 struct exp::character : public exp {
-	character(char ch) : exp(ATOM_CHAR), ch_(ch)	{}
+	character(char ch) : exp(EXP_CHARACTER), ch_(ch)	{}
 	virtual		~character() override	{}
 
 	char		value() const		{ return ch_; }
@@ -286,7 +303,7 @@ protected:
 
 // sint64
 struct exp::sint64 : public exp {
-	sint64(::schizo::sint64 s64) : exp(ATOM_SINT64), s64_(s64)	{}
+	sint64(::schizo::sint64 s64) : exp(EXP_SINT64), s64_(s64)	{}
 	virtual		~sint64() override	{}
 
 	::schizo::sint64	value() const		{ return s64_; }
@@ -297,7 +314,7 @@ protected:
 
 // real64
 struct exp::real64 : public exp {
-	real64(::schizo::real64 r64) : exp(ATOM_REAL64), r64_(r64)	{}
+	real64(::schizo::real64 r64) : exp(EXP_REAL64), r64_(r64)	{}
 	virtual		~real64() override	{}
 
 	::schizo::real64	value() const		{ return r64_; }
@@ -310,7 +327,7 @@ protected:
 /// @brief The exp::symbol struct
 ///
 struct exp::symbol : public exp {
-	symbol(const char* sym) : exp(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
+	symbol(const char* sym) : exp(EXP_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
 	virtual		~symbol() override	{ free(sym_); }
 
 	const char*	value() const		{ return sym_; }
@@ -323,7 +340,7 @@ private:
 /// @brief The exp::list struct
 ///
 struct exp::list : public exp {
-	list(iptr head, iptr tail) : exp(CELL_LIST), head_(head), tail_(tail)	{}
+	list(iptr head, iptr tail) : exp(EXP_LIST), head_(head), tail_(tail)	{}
 	virtual		~list() override	{}
 
 	iptr		head() const		{ return head_; }
@@ -332,8 +349,8 @@ struct exp::list : public exp {
 	static iptr	reverse(iptr l);
 	static uint32	length(iptr l);
 
-	static INLINE exp::iptr	head(exp::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->head(); }
-	static INLINE exp::iptr	tail(exp::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->tail(); }
+	static INLINE exp::iptr	head(exp::iptr l) { assert(l->type() == EXP_LIST); return static_cast<list*>(l.get())->head(); }
+	static INLINE exp::iptr	tail(exp::iptr l) { assert(l->type() == EXP_LIST); return static_cast<list*>(l.get())->tail(); }
 private:
 	iptr		head_;			///< the head
 	iptr		tail_;			///< the tail
@@ -343,7 +360,7 @@ private:
 /// @brief The exp::lambda struct
 ///
 struct exp::lambda : public exp {
-	lambda(iptr syms, iptr body) : exp(CELL_LAMBDA), syms_(syms), body_(body)	{}
+	lambda(iptr syms, iptr body) : exp(EXP_LAMBDA), syms_(syms), body_(body)	{}
 	virtual		~lambda() override	{}
 
 	iptr		syms() const		{ return syms_; }
@@ -360,7 +377,7 @@ private:
 struct exp::ffi : public exp {
 	typedef exp::iptr (*call)(exp::iptr args);
 
-	inline		ffi(sint32 arg_count, call proc) : exp(CELL_FFI), arg_count_(arg_count), proc_(proc)	{}
+	inline		ffi(sint32 arg_count, call proc) : exp(EXP_FFI), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~ffi() override		{}
 
 	inline sint32	arg_count() const	{ return arg_count_; }
@@ -377,7 +394,7 @@ private:
 struct exp::special : public exp {
 	typedef exp::iptr (*call)(exp::iptr env, exp::iptr args);
 
-	inline		special(sint32 arg_count, call proc) : exp(CELL_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
+	inline		special(sint32 arg_count, call proc) : exp(EXP_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~special() override		{}
 
 	inline sint32	arg_count() const	{ return arg_count_; }
@@ -392,7 +409,7 @@ private:
 /// @brief The exp::closure struct
 ///
 struct exp::closure : public exp {
-	closure(iptr env, iptr lambda) : exp(CELL_CLOSURE), env_(env), lambda_(lambda)	{}
+	closure(iptr env, iptr lambda) : exp(EXP_CLOSURE), env_(env), lambda_(lambda)	{}
 	virtual		~closure() override	{}
 
 	inline iptr	env() const		{ return env_;		}
@@ -406,7 +423,7 @@ private:
 /// @brief The exp::bind struct
 ///
 struct exp::bind : public exp {
-	bind(iptr bindings) : exp(CELL_BIND), bindings_(bindings)	{}
+	bind(iptr bindings) : exp(EXP_BIND), bindings_(bindings)	{}
 	virtual		~bind() override	{}
 
 	inline iptr	bindings() const	{ return bindings_; }
