@@ -1,6 +1,6 @@
 /*
   Schizo programming language
-  Copyright (C) 2014  Wael El Oraiby
+  Copyright (C) 2014-2015  Wael El Oraiby
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published
@@ -25,156 +25,8 @@ extern "C" void __cxa_pure_virtual() { fprintf(stderr, "attempt to call a pure v
 
 namespace schizo {
 
-exp::~exp() {
-
-}
-
-/*******************************************************************************
-** printing
-*******************************************************************************/
-
-static void
-print_level(uint32 level) {
-	uint32	i	= 0;
-	for( i = 0; i < level; ++i ) {
-		fprintf(stderr, "  ");
-	}
-}
-
-void
-print_cell(exp::iptr c,
-	   uint32 level)
-{
-	print_level(level);
-	if( c ) {
-		switch( c->type() ) {
-		case exp::EXP_BOOLEAN:
-			if( static_cast<exp::boolean*>(c.get())->value() ) {
-				fprintf(stderr, "#t");
-			} else {
-				fprintf(stderr, "#f");
-			}
-			break;
-
-		case exp::EXP_SYMBOL:
-			fprintf(stderr, "%s", static_cast<exp::symbol*>(c.get())->value());
-			break;
-
-		case exp::EXP_CHARACTER:
-			fprintf(stderr, "'%c'", static_cast<exp::character*>(c.get())->value());
-			break;
-
-		case exp::EXP_SINT64:
-			fprintf(stderr, "%ld", static_cast<exp::sint64*>(c.get())->value());
-			break;
-
-		case exp::EXP_REAL64:
-			fprintf(stderr, "%lf", static_cast<exp::real64*>(c.get())->value());
-			break;
-
-		case exp::EXP_STRING:
-			fprintf(stderr, "\"%s\"", static_cast<exp::string*>(c.get())->value());
-			break;
-
-		case exp::EXP_ERROR:
-			fprintf(stderr, "<ERROR>");
-			break;
-
-		case exp::EXP_CLOSURE:
-			fprintf(stderr, "<CLOSURE>");
-			break;
-
-		case exp::EXP_FFI:
-			fprintf(stderr, "<FFI>");
-			break;
-
-		case exp::EXP_LIST:
-			if( exp::list::head(c) ) {
-				fprintf(stderr, "(");
-				print_cell(exp::list::head(c), uint32(0));
-			} else {
-				fprintf(stderr, "(nil");
-			}
-
-			if( exp::list::tail(c) ) {
-				exp::iptr n	= exp::list::tail(c);
-				while( n ) {
-					if( exp::list::head(n) ) {
-						print_cell(exp::list::head(n), 1);
-					} else {
-						print_level(level + 1);
-						fprintf(stderr, "nil");
-					}
-
-					n	= exp::list::tail(n);
-				}
-			}
-			fprintf(stderr, ")");
-			break;
-		default:
-			break;
-		}
-	} else {
-		fprintf(stderr, "nil");
-	}
-}
 
 
-/*******************************************************************************
-** lists
-*******************************************************************************/
-uint32
-exp::list::length(exp::iptr l)
-{
-	exp::iptr	curr	= l;
-	uint32		len	= 0;
-
-	while( curr ) {
-		assert( l->type() == EXP_LIST );
-		++len;
-		curr	= list::tail(curr);
-	}
-	return len;
-}
-
-exp::iptr
-exp::list::reverse(exp::iptr l)
-{
-	exp::iptr	nl	= nullptr;
-
-	while( l ) {
-		nl	= new list(list::head(l), nl);
-		l	= list::tail(l);
-	}
-
-	return nl;
-}
-
-/*
-cell_ptr_t
-list_zip(state_t* s,
-	 cell_ptr_t l0,
-	 cell_ptr_t l1)
-{
-	cell_ptr_t	res	= NIL_CELL;
-	cell_ptr_t	pair	= NIL_CELL;
-
-	while( !is_nil(list_head(s, l0)) && !is_nil(list_head(s, l1)) ) {
-		set_cell(s, pair, list_make_pair(s, list_head(s, l0), list_head(s, l1)));
-
-		set_cell(s, res, list_cons(s, pair, res));
-
-		set_cell(s, l0, list_tail(s, l0));
-		set_cell(s, l1, list_tail(s, l1));
-	}
-
-	if( is_nil(l0) != is_nil(l1) ) {
-		return schizo_error(s, "ERROR: couldn't zip the lists, one is longer than the other");
-	} else {
-		return list_reverse_in_place(s, res);
-	}
-}
-*/
 /*******************************************************************************
 ** eval
 *******************************************************************************/
@@ -235,17 +87,7 @@ state::apply_bind(iptr env,
 	return env;
 }
 
-static void
-print_env(exp::iptr env)
-{
-	fprintf(stderr, "------------------------\n");
-	while( env ) {
-		fprintf(stderr, "* %s :: ", static_cast<exp::symbol*>(exp::list::head(exp::list::head(env)).get())->value());
-		print_cell(exp::list::head(exp::list::tail(exp::list::head(env))), 0);
-		fprintf(stderr, "\n");
-		env	= exp::list::tail(env);
-	}
-}
+
 
 exp::iptr
 state::eval(exp::iptr env,
@@ -496,7 +338,7 @@ less_than(exp::iptr args)
 static exp::iptr
 display(exp::iptr args)
 {
-	print_cell(args, 0);
+	exp::print(args, 0);
 	return nullptr;
 }
 

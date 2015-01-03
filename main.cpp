@@ -110,7 +110,7 @@ main(int argc,
 
 	for( i = 0; i < sizeof(prog) / sizeof(const char*); ++i ) {
 		state::parse(s, prog[i]);
-		print_cell(s->root(), 0);
+		exp::print(s->root(), 0);
 		fprintf(stderr, "\n");
 	}
 

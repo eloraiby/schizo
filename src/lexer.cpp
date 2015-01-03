@@ -2,7 +2,7 @@
 #line 1 "/home/aifu/Projects/schizo/src/lexer.rl"
 /*
   Schizo programming language
-  Copyright (C) 2014  Wael El Oraiby
+  Copyright (C) 2014-2015  Wael El Oraiby
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published

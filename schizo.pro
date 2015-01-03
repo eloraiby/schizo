@@ -24,7 +24,8 @@ SOURCES += \
     src/lexer.cpp \
     main.cpp \
     src/parser.cpp \
-    src/schizo.cpp
+    src/schizo.cpp \
+    src/expression.cpp
 
 lexer.target = lexer.cpp
 lexer.commands = ragel -C -o $$PWD/src/lexer.cpp $$PWD/src/lexer.rl
@@ -45,4 +46,7 @@ OTHER_FILES += \
 
 HEADERS += \
     src/parser.h \
-    include/schizo/schizo.hpp
+    include/schizo/schizo.hpp \
+    include/schizo/platform.hpp \
+    include/schizo/intrusive_ptr.hpp \
+    include/schizo/expression.hpp
