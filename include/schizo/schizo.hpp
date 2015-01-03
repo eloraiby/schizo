@@ -24,43 +24,6 @@
 
 namespace schizo {
 
-struct state : public exp {
-
-	state();
-	virtual		~state() override;
-
-	inline iptr	root() const		{ return parser_.root; }
-	inline void	set_root(iptr root)	{ parser_.root = root; }
-
-	static iptr	eval(iptr env, iptr exp);
-
-	/// parser.y / lexer.rl
-	static void	parse(state* state, const char* str);
-
-	static iptr	default_env();
-	static iptr	add_ffi(exp::iptr env, const char* sym, sint32 arg_count, ffi::call proc);
-	static iptr	add_special(exp::iptr env, const char* sym, sint32 arg_count, special::call proc);
-	static iptr	lookup(exp::iptr env, const char* sym);
-
-	static inline exp* add_token(state* s, exp* c) {
-		s->parser_.token_list	= new list(c, s->parser_.token_list);
-		return c;
-	}
-
-protected:
-
-	static iptr	eval_list(iptr env, iptr l);
-
-	static iptr	apply_bind(iptr env, iptr bexp);
-
-	struct {
-		exp::iptr	token_list;
-		exp::iptr	root;		///< root exp
-		const char*	token_start;
-		const char*	token_end;
-		uint32		token_line;
-	} parser_;
-};
 
 /* lists */
 static inline exp::iptr	pair(exp::iptr fst, exp::iptr snd) { return new exp::list((fst), new exp::list((snd), nullptr)); }

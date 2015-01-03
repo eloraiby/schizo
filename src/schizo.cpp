@@ -25,8 +25,6 @@ extern "C" void __cxa_pure_virtual() { fprintf(stderr, "attempt to call a pure v
 
 namespace schizo {
 
-
-
 /*******************************************************************************
 ** eval
 *******************************************************************************/
@@ -232,82 +230,7 @@ state::eval(exp::iptr env,
 	return nullptr;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// special functions
-////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief symbol_define
- * @param s
- * @param env
- * @param args
- * @return
- */
-static exp::iptr
-symbol_define(exp::iptr UNUSED env,
-	      exp::iptr args)
-{
-	exp::iptr sym	= exp::list::head(args);
-	exp::iptr body	= exp::list::head(exp::list::tail(args));
-
-	exp::iptr pair_	= pair(sym, body);
-
-	return new exp::bind(new exp::list(pair_, nullptr));
-}
-
-/**
- * @brief make_closure
- * @param s
- * @param env
- * @param args
- * @return
- */
-static exp::iptr
-make_closure(exp::iptr env,
-	     exp::iptr args)
-{
-	// the new nullptr list is needed in case we pass a NIL argument ()
-	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);
-	exp::iptr	body	= exp::list::tail(args);
-
-	exp::iptr	lam	= new exp::lambda(syms, body);
-
-	return new exp::closure(env, lam);
-}
-
-static exp::iptr
-if_else(exp::iptr env,
-	exp::iptr args)
-{
-	if( exp::list::length(args) != 4 ) {
-		return new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1");
-	}
-
-	exp::iptr cond		= exp::list::head(args);
-	exp::iptr exp0		= exp::list::head(exp::list::tail(args));
-	exp::iptr elsym	= exp::list::head(exp::list::tail(exp::list::tail(args)));
-	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
-
-	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
-		exp::iptr b	= state::eval(env, cond);
-		switch( b->type() ) {
-		case exp::EXP_ERROR:
-			return b;
-
-		case exp::EXP_BOOLEAN:
-			if( static_cast<exp::boolean*>(b.get())->value() ) {
-				return exp0;
-			} else {
-				return exp1;
-			}
-
-		default:
-			return new exp::error("ERROR: \"if\" requires condition to be boolean");
-		}
-	} else {
-		return new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1");
-	}
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// built-in functions
@@ -385,9 +308,9 @@ state::~state() {
 exp::iptr
 state::default_env() {
 	iptr env	= nullptr;
-	env = add_special(env, "lambda",  -1,	make_closure);
-	env = add_special(env, "define",  2,	symbol_define);
-	env = add_special(env, "if",      4,	if_else);
+	extern exp::iptr __get_special_forms(exp::iptr env);
+
+	env	= __get_special_forms(env);
 
 	env = add_ffi    (env, "display", 1,	display);
 	env = add_ffi    (env, "lt",	  2,	less_than);
