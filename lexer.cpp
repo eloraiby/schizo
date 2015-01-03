@@ -30,14 +30,14 @@
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));
-extern void	parser_advance(void *yyp, int yymajor, schizo::cell* yyminor, schizo::state* s);
+extern void	parser_advance(void *yyp, int yymajor, schizo::exp* yyminor, schizo::state* s);
 
 namespace schizo {
 #define ADVANCE(A)	s->parser_.token_start	= ts; \
 			s->parser_.token_end	= te; \
 			s->parser_.token_line	= line; \
 			copy_token(ts, te, tmp); \
-			cell::iptr tmpc = token_to_##A(tmp); \
+			exp::iptr tmpc = token_to_##A(tmp); \
 			s->parser_.token_list	= new list(tmpc, s->parser_.token_list); \
 			parser_advance(parser, tmpc->type(), tmpc.get(), s)
 
@@ -209,9 +209,9 @@ copy_token(const char* ts, const char *te, char* dst) {
 	return index;
 }
 
-static cell::iptr
+static exp::iptr
 token_to_symbol(const char* sym) {
-	return new cell::symbol(sym);
+	return new exp::symbol(sym);
 }
 
 /*
@@ -226,39 +226,39 @@ token_to_binary_op(state_t* s, const char* op) {
 }
 */
 
-static cell::iptr
+static exp::iptr
 token_to_boolean(const char* b) {
 	if( !strcmp(b, "#t") ) {
-		return new cell::boolean(true);
+		return new exp::boolean(true);
 	} else {
-		return new cell::boolean(false);
+		return new exp::boolean(false);
 	}
 }
 
-static cell::iptr
+static exp::iptr
 token_to_char(const char* ch) {
-	return new cell::character(*ch);
+	return new exp::character(*ch);
 }
 
-static cell::iptr
+static exp::iptr
 token_to_sint64(const char* i) {
 	sint64	v	= 0;
 	sscanf(i, "%ld", &v);
 	/* TODO: check limit */
-	return new cell::sint64(v);
+	return new exp::sint64(v);
 }
 
-static cell::iptr
+static exp::iptr
 token_to_real64(const char* r) {
 	real64	v	= 0;
 	sscanf(r, "%lf", &v);
 	/* TODO: check limit */
-	return new cell::real64(v);
+	return new exp::real64(v);
 }
 
-static cell::iptr
+static exp::iptr
 token_to_string(const char* str) {
-	return new cell::string(str);
+	return new exp::string(str);
 }
 
 
@@ -280,7 +280,7 @@ state::parse(state* s, const char* str)
 	char		tmp[4096];
 
 	s->parser_.root	= nullptr;
-	cell::iptr token_list	= nullptr;
+	exp::iptr token_list	= nullptr;
 
 	parser	= parser_alloc(malloc);
 

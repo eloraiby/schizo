@@ -25,7 +25,7 @@ extern "C" void __cxa_pure_virtual() { fprintf(stderr, "attempt to call a pure v
 
 namespace schizo {
 
-cell::~cell() {
+exp::~exp() {
 
 }
 
@@ -42,14 +42,14 @@ print_level(uint32 level) {
 }
 
 void
-print_cell(cell::iptr c,
+print_cell(exp::iptr c,
 	   uint32 level)
 {
 	print_level(level);
 	if( c ) {
 		switch( c->type() ) {
 		case ATOM_BOOL:
-			if( static_cast<cell::boolean*>(c.get())->value() ) {
+			if( static_cast<exp::boolean*>(c.get())->value() ) {
 				fprintf(stderr, "#t");
 			} else {
 				fprintf(stderr, "#f");
@@ -57,23 +57,23 @@ print_cell(cell::iptr c,
 			break;
 
 		case ATOM_SYMBOL:
-			fprintf(stderr, "%s", static_cast<cell::symbol*>(c.get())->value());
+			fprintf(stderr, "%s", static_cast<exp::symbol*>(c.get())->value());
 			break;
 
 		case ATOM_CHAR:
-			fprintf(stderr, "'%c'", static_cast<cell::character*>(c.get())->value());
+			fprintf(stderr, "'%c'", static_cast<exp::character*>(c.get())->value());
 			break;
 
 		case ATOM_SINT64:
-			fprintf(stderr, "%ld", static_cast<cell::sint64*>(c.get())->value());
+			fprintf(stderr, "%ld", static_cast<exp::sint64*>(c.get())->value());
 			break;
 
 		case ATOM_REAL64:
-			fprintf(stderr, "%lf", static_cast<cell::real64*>(c.get())->value());
+			fprintf(stderr, "%lf", static_cast<exp::real64*>(c.get())->value());
 			break;
 
 		case ATOM_STRING:
-			fprintf(stderr, "\"%s\"", static_cast<cell::string*>(c.get())->value());
+			fprintf(stderr, "\"%s\"", static_cast<exp::string*>(c.get())->value());
 			break;
 
 		case ATOM_ERROR:
@@ -89,24 +89,24 @@ print_cell(cell::iptr c,
 			break;
 
 		case CELL_LIST:
-			if( cell::list::head(c) ) {
+			if( exp::list::head(c) ) {
 				fprintf(stderr, "(");
-				print_cell(cell::list::head(c), uint32(0));
+				print_cell(exp::list::head(c), uint32(0));
 			} else {
 				fprintf(stderr, "(nil");
 			}
 
-			if( cell::list::tail(c) ) {
-				cell::iptr n	= cell::list::tail(c);
+			if( exp::list::tail(c) ) {
+				exp::iptr n	= exp::list::tail(c);
 				while( n ) {
-					if( cell::list::head(n) ) {
-						print_cell(cell::list::head(n), 1);
+					if( exp::list::head(n) ) {
+						print_cell(exp::list::head(n), 1);
 					} else {
 						print_level(level + 1);
 						fprintf(stderr, "nil");
 					}
 
-					n	= cell::list::tail(n);
+					n	= exp::list::tail(n);
 				}
 			}
 			fprintf(stderr, ")");
@@ -124,9 +124,9 @@ print_cell(cell::iptr c,
 ** lists
 *******************************************************************************/
 uint32
-cell::list::length(cell::iptr l)
+exp::list::length(exp::iptr l)
 {
-	cell::iptr	curr	= l;
+	exp::iptr	curr	= l;
 	uint32		len	= 0;
 
 	while( curr ) {
@@ -137,10 +137,10 @@ cell::list::length(cell::iptr l)
 	return len;
 }
 
-cell::iptr
-cell::list::reverse(cell::iptr l)
+exp::iptr
+exp::list::reverse(exp::iptr l)
 {
-	cell::iptr	nl	= nullptr;
+	exp::iptr	nl	= nullptr;
 
 	while( l ) {
 		nl	= new list(list::head(l), nl);
@@ -178,14 +178,14 @@ list_zip(state_t* s,
 /*******************************************************************************
 ** eval
 *******************************************************************************/
-cell::iptr
-state::lookup(cell::iptr env,
+exp::iptr
+state::lookup(exp::iptr env,
 	      const char* sym)
 {
 	if( env ) {
 		iptr	pair	= list::head(env);
 
-		while( pair && strcmp(sym, static_cast<cell::symbol*>(list::head(pair).get())->value()) != 0 ) {
+		while( pair && strcmp(sym, static_cast<exp::symbol*>(list::head(pair).get())->value()) != 0 ) {
 			env	= list::tail(env);
 			if( env ) {
 				pair	= list::head(env);
@@ -208,11 +208,11 @@ state::lookup(cell::iptr env,
 	}
 }
 
-cell::iptr
-state::eval_list(cell::iptr env,
-		 cell::iptr expr)
+exp::iptr
+state::eval_list(exp::iptr env,
+		 exp::iptr expr)
 {
-	cell::iptr	res	= nullptr;
+	exp::iptr	res	= nullptr;
 	while( expr ) {
 		res	= new list(eval(env, list::head(expr)), res);
 		expr	= list::tail(expr);
@@ -220,9 +220,9 @@ state::eval_list(cell::iptr env,
 	return list::reverse(res);
 }
 
-cell::iptr
+exp::iptr
 state::apply_bind(iptr env,
-		  cell::iptr b)
+		  exp::iptr b)
 {
 	if( b->type() == CELL_BIND ) {
 		iptr	sympair = static_cast<bind*>(b.get())->bindings();
@@ -236,20 +236,20 @@ state::apply_bind(iptr env,
 }
 
 static void
-print_env(cell::iptr env)
+print_env(exp::iptr env)
 {
 	fprintf(stderr, "------------------------\n");
 	while( env ) {
-		fprintf(stderr, "* %s :: ", static_cast<cell::symbol*>(cell::list::head(cell::list::head(env)).get())->value());
-		print_cell(cell::list::head(cell::list::tail(cell::list::head(env))), 0);
+		fprintf(stderr, "* %s :: ", static_cast<exp::symbol*>(exp::list::head(exp::list::head(env)).get())->value());
+		print_cell(exp::list::head(exp::list::tail(exp::list::head(env))), 0);
 		fprintf(stderr, "\n");
-		env	= cell::list::tail(env);
+		env	= exp::list::tail(env);
 	}
 }
 
-cell::iptr
-state::eval(cell::iptr env,
-	    cell::iptr exp)
+exp::iptr
+state::eval(exp::iptr env,
+	    exp::iptr exp)
 {
 #ifdef DEBUG_EVAL
 	fprintf(stderr, "EVAL: ");
@@ -278,7 +278,7 @@ state::eval(cell::iptr env,
 #ifdef DEBUG_LOOKUP
 			fprintf(stderr, "SYMBOL %s -> eval to: ", static_cast<symbol*>(exp.get())->value());
 #endif	// DEBUG_LOOKUP
-			exp	= lookup(env, static_cast<cell::symbol*>(exp.get())->value());
+			exp	= lookup(env, static_cast<exp::symbol*>(exp.get())->value());
 #ifdef DEBUG_LOOKUP
 			print_cell(exp, 0);
 			fprintf(stderr, "\n");
@@ -352,13 +352,13 @@ state::eval(cell::iptr env,
 					iptr	ret	= nullptr;
 
 					exp	= list::head(body);
-					if( exp->type() == CELL_BIND ) {	// bind needs to be treated here
+					if( exp && exp->type() == CELL_BIND ) {	// bind needs to be treated here
 						env = apply_bind(env, exp);
 					}
 
 					while( next ) {
 						ret	= eval(env, exp);	/* eval and bind */
-						if( ret->type() == CELL_BIND ) {	// bind needs to be treated here
+						if( ret && ret->type() == CELL_BIND ) {	// bind needs to be treated here
 							env = apply_bind(env, ret);
 						}
 
@@ -401,16 +401,16 @@ state::eval(cell::iptr env,
  * @param args
  * @return
  */
-static cell::iptr
-symbol_define(cell::iptr env,
-	      cell::iptr args)
+static exp::iptr
+symbol_define(exp::iptr UNUSED env,
+	      exp::iptr args)
 {
-	cell::iptr sym	= cell::list::head(args);
-	cell::iptr body	= cell::list::head(cell::list::tail(args));
+	exp::iptr sym	= exp::list::head(args);
+	exp::iptr body	= exp::list::head(exp::list::tail(args));
 
-	cell::iptr pair_	= pair(sym, body);
+	exp::iptr pair_	= pair(sym, body);
 
-	return new cell::bind(new cell::list(pair_, nullptr));
+	return new exp::bind(new exp::list(pair_, nullptr));
 }
 
 /**
@@ -420,75 +420,80 @@ symbol_define(cell::iptr env,
  * @param args
  * @return
  */
-static cell::iptr
-make_closure(cell::iptr env,
-	     cell::iptr args)
+static exp::iptr
+make_closure(exp::iptr env,
+	     exp::iptr args)
 {
 	// the new nullptr list is needed in case we pass a NIL argument ()
-	cell::iptr	syms	= cell::list::head(args) ? args : new cell::list(nullptr, nullptr);
-	cell::iptr	body	= cell::list::tail(args);
+	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);
+	exp::iptr	body	= exp::list::tail(args);
 
-	cell::iptr	lam	= new cell::lambda(syms, body);
+	exp::iptr	lam	= new exp::lambda(syms, body);
 
-	return new cell::closure(env, lam);
+	return new exp::closure(env, lam);
 }
 
-static cell::iptr
-if_else(cell::iptr env,
-	cell::iptr args)
+static exp::iptr
+if_else(exp::iptr env,
+	exp::iptr args)
 {
-	if( cell::list::length(args) != 4 ) {
-		return new cell::error("ERROR in \"if\" usage: if cond exp0 else exp1");
+	if( exp::list::length(args) != 4 ) {
+		return new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1");
 	}
 
-	cell::iptr cond		= cell::list::head(args);
-	cell::iptr exp0		= cell::list::head(cell::list::tail(args));
-	cell::iptr elsym	= cell::list::head(cell::list::tail(cell::list::tail(args)));
-	cell::iptr exp1		= cell::list::head(cell::list::tail(cell::list::tail(cell::list::tail(args))));
+	exp::iptr cond		= exp::list::head(args);
+	exp::iptr exp0		= exp::list::head(exp::list::tail(args));
+	exp::iptr elsym	= exp::list::head(exp::list::tail(exp::list::tail(args)));
+	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
-	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<cell::symbol*>(elsym.get())->value(), "else") == 0 ) {
-		cell::iptr b	= state::eval(env, cond);
-		if( b->type() != ATOM_BOOL ) {
-			return new cell::error("ERROR: if requires condition to be boolean");
-		}
+	if( elsym->type() == ATOM_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
+		exp::iptr b	= state::eval(env, cond);
+		switch( b->type() ) {
+		case ATOM_ERROR:
+			return b;
 
-		if( static_cast<cell::boolean*>(b.get())->value() ) {
-			return exp0;
-		} else {
-			return exp1;
+		case ATOM_BOOL:
+			if( static_cast<exp::boolean*>(b.get())->value() ) {
+				return exp0;
+			} else {
+				return exp1;
+			}
+
+		default:
+			return new exp::error("ERROR: \"if\" requires condition to be boolean");
 		}
 	} else {
-		return new cell::error("ERROR: if requires \"else\" keyword: if cond exp0 else exp1");
+		return new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1");
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// built-in functions
 ////////////////////////////////////////////////////////////////////////////////
-static cell::iptr
-leq(cell::iptr args)
+static exp::iptr
+less_than(exp::iptr args)
 {
-	cell::iptr	left	= cell::list::head(args);
-	cell::iptr	right	= cell::list::head(cell::list::tail(args));
+	exp::iptr	left	= exp::list::head(args);
+	exp::iptr	right	= exp::list::head(exp::list::tail(args));
 
-	if( left->type() != right->type() ||
-	    left->type() != ATOM_REAL64 ||
+	if( left->type() != right->type() &&
+	    left->type() != ATOM_REAL64 &&
 	    left->type() != ATOM_SINT64 ) {
-		return new cell::error("< takes 2 values of the same number type");
+		return new exp::error("lt takes 2 values of the same number type");
 	}
 
 	switch(left->type()) {
 	case ATOM_REAL64:
-		return new cell::boolean(static_cast<cell::real64*>(left.get())->value() < static_cast<cell::real64*>(right.get())->value());
+		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() < static_cast<exp::real64*>(right.get())->value());
 	case ATOM_SINT64:
-		return new cell::boolean(static_cast<cell::sint64*>(left.get())->value() < static_cast<cell::sint64*>(right.get())->value());
+		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() < static_cast<exp::sint64*>(right.get())->value());
 	}
 
-	return new cell::error("< should not pass here");
+	return new exp::error("lt should not pass here");
 }
 
-static cell::iptr
-display(cell::iptr args)
+static exp::iptr
+display(exp::iptr args)
 {
 	print_cell(args, 0);
 	return nullptr;
@@ -497,35 +502,35 @@ display(cell::iptr args)
 /*******************************************************************************
 ** schizo state
 *******************************************************************************/
-cell::iptr
+exp::iptr
 state::add_ffi(iptr env,
 	       const char* sym,
 	       sint32 arg_count,
 	       ffi::call proc)
 {
-	cell::iptr	p	= nullptr;
-	cell::iptr	_s	= new symbol(sym);
+	exp::iptr	p	= nullptr;
+	exp::iptr	_s	= new symbol(sym);
 
-	cell::iptr	f	= new ffi(arg_count, proc);
+	exp::iptr	f	= new ffi(arg_count, proc);
 
 	return new list(pair(_s, f), env);
 }
 
-cell::iptr
+exp::iptr
 state::add_special(iptr env,
 		   const char* sym,
 		   sint32 arg_count,
 		   special::call proc)
 {
-	cell::iptr	p	= nullptr;
-	cell::iptr	_s	= new symbol(sym);
+	exp::iptr	p	= nullptr;
+	exp::iptr	_s	= new symbol(sym);
 
-	cell::iptr	f	= new special(arg_count, proc);
+	exp::iptr	f	= new special(arg_count, proc);
 
 	return new list(pair(_s, f), env);
 }
 
-state::state() : cell(CELL_STATE) {
+state::state() : exp(CELL_STATE) {
 	parser_.token_start	= nullptr;
 	parser_.token_end	= nullptr;
 	parser_.token_line	= 0;
@@ -534,7 +539,7 @@ state::state() : cell(CELL_STATE) {
 state::~state() {
 }
 
-cell::iptr
+exp::iptr
 state::default_env() {
 	iptr env	= nullptr;
 	env = add_special(env, "lambda",  -1,	make_closure);
@@ -542,7 +547,7 @@ state::default_env() {
 	env = add_special(env, "if",      4,	if_else);
 
 	env = add_ffi    (env, "display", 1,	display);
-	env = add_ffi    (env, "leq",	  2,	leq);
+	env = add_ffi    (env, "lt",	  2,	less_than);
 	return env;
 }
 

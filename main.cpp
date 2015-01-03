@@ -95,6 +95,11 @@ main(int argc,
 				  "           else" \
 				  "              (display \"res -> false\")" \
 				  "          )" \
+				  "          (if (lt 2 4)" \
+				  "              (display \"2\")" \
+				  "           else" \
+				  "              (display \"4\")" \
+				  "          )" \
 				  "  )" \
 				  "  ()" \
 				  ")";

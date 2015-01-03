@@ -22,7 +22,7 @@
 */
 %name parser
 
-%token_type	{ cell* }
+%token_type	{ exp* }
 %extra_argument { state* s }
 
 %include {
@@ -34,8 +34,8 @@ using namespace schizo;
 
 }
 
-%type program	{ cell* }
-%type cell_list	{ cell* }
+%type program	{ exp* }
+%type cell_list	{ exp* }
 
 /*
 %left BIN_OP3
@@ -62,7 +62,7 @@ using namespace schizo;
 
 %start_symbol program
 
-/* a program is a cell */
+/* a program is a exp */
 program		::= atom(B).				{ s->set_root(PR(B)); }
 program		::= sexpr(B).				{ s->set_root(PR(B)); }
 
@@ -80,7 +80,7 @@ sexpr		::= CELL_LIST.				/* list */
 sexpr		::= CELL_VECTOR.			/* a vector of cells */
 sexpr		::= CELL_LAMBDA.			/* lambda */
 sexpr		::= CELL_QUOTE.				/* quote (this should could have been replaced with objects, but will increase the complexity of the evaluator) */
-sexpr		::= CELL_STATE.				/* the state cell (nested VMs) */
+sexpr		::= CELL_STATE.				/* the state exp (nested VMs) */
 
 sexpr		::= CELL_CLOSURE.			/* closure : lambda->closure */
 sexpr		::= CELL_FFI.				/* foreign function interface */
@@ -89,28 +89,28 @@ sexpr		::= CELL_BIND.				/* bind symbols */
 
 /* ( ... ) */
 sexpr(A)	::= LPAR se_members(B) RPAR.		{ A = PR(B); }
-sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new cell::list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(cell::list::reverse(B).get()) : B)); }
-sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new cell::list(PR(new cell::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(cell::list::reverse(B).get()) : B)); }
-sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new cell::list(PR(new cell::symbol("vector.get")),
-									  PR(new cell::list(B, ( C && C->type() == CELL_LIST ) ? PR(cell::list::reverse(C).get()) : C)))); }
+sexpr(A)	::= LBR member_list(B) RBR.		{ A = PR(new exp::list(PR(new exp::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(exp::list::reverse(B).get()) : B)); }
+sexpr(A)	::= LBR member_list(B) sc RBR.		{ A = PR(new exp::list(PR(new exp::symbol("begin")), ( B && B->type() == CELL_LIST ) ? PR(exp::list::reverse(B).get()) : B)); }
+sexpr(A)	::= ilist(B) LSQB member_list(C) RSQB.	{ A = PR(new exp::list(PR(new exp::symbol("vector.get")),
+									  PR(new exp::list(B, ( C && C->type() == CELL_LIST ) ? PR(exp::list::reverse(C).get()) : C)))); }
 ilist(A)	::= atom(B).				{ A = PR(B); }
 ilist(A)	::= sexpr(B).				{ A = PR(B); }
 
-list(A)		::= ilist(B).				{ A = PR(new cell::list(B, nullptr)); }
-list(A)		::= list(B) ilist(C).			{ A = PR(new cell::list(C, B)); }
+list(A)		::= ilist(B).				{ A = PR(new exp::list(B, nullptr)); }
+list(A)		::= list(B) ilist(C).			{ A = PR(new exp::list(C, B)); }
 
 se_members(A)	::=.					{ A = nullptr; }
-se_members(A)	::= list(B).				{ A = PR(cell::list::reverse(B).get()); }
+se_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
 
 /* ; ;;... */
 sc		::= SEMICOL.
 sc		::= sc SEMICOL.
 
-be_members(A)	::= list(B).				{ A = PR(cell::list::reverse(B).get()); }
+be_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
 
 /* { ... } */
 member_list(A)	::=.					{ A = nullptr; }
-member_list(A)	::= be_members(B).			{ A = PR(new cell::list((cell::list::length(B) == 1) ? cell::list::head(B) : B, nullptr)); }
-member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new cell::list((cell::list::length(C) == 1) ? cell::list::head(C) : C, B)); }
+member_list(A)	::= be_members(B).			{ A = PR(new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, nullptr)); }
+member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new exp::list((exp::list::length(C) == 1) ? exp::list::head(C) : C, B)); }
 
 /* TODO: operator precedence */

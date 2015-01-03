@@ -189,14 +189,13 @@ template<class T, class U> intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U
 ////////////////////////////////////////////////////////////////////////////////
 
 struct state;
-struct cell;
-struct retval;
+struct exp;
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \brief The cell struct
+/// \brief expression
 ////////////////////////////////////////////////////////////////////////////////
-struct cell {
-	typedef intrusive_ptr<cell>	iptr;
+struct exp {
+	typedef intrusive_ptr<exp>	iptr;
 
 	struct error;
 	struct string;
@@ -214,38 +213,38 @@ struct cell {
 
 	uint32		type() const		{ return type_; }
 
-			cell(uint32 type) : ref_count_(0), type_(type)	{}
-	virtual		~cell()	= 0;
+			exp(uint32 type) : ref_count_(0), type_(type)	{}
+	virtual		~exp()	= 0;
 
 	void* operator	new(size_t s)		{ return malloc(s); }
 	void operator	delete(void* p)		{ free(p); }
 
 	inline size_t	get_ref_count() const	{ return ref_count_; }
 
-	friend inline void	intrusive_ptr_add_ref(cell* p) {
+	friend inline void	intrusive_ptr_add_ref(exp* p) {
 		// increment reference count of object *p
 		++(p->ref_count_);
 	}
 
-	friend inline void	intrusive_ptr_release(cell* p) {
+	friend inline void	intrusive_ptr_release(exp* p) {
 		// decrement reference count, and delete object when reference count reaches 0
 		if( --(p->ref_count_) == 0 ) {
 			delete p;
 		}
 	}
 
-	friend inline void	intrusive_decrement_ref_count(cell* p) {
+	friend inline void	intrusive_decrement_ref_count(exp* p) {
 		--p->ref_count_;
 	}
 
 protected:
 	uint32		ref_count_;
 	uint32		type_;
-};	// cell
+};	// exp
 
 // string
-struct cell::string : public cell {
-	string(const char* str) : cell(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
+struct exp::string : public exp {
+	string(const char* str) : exp(ATOM_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~string() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
@@ -255,8 +254,8 @@ protected:
 };
 
 // error
-struct cell::error : public cell {
-	error(const char* str) : cell(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
+struct exp::error : public exp {
+	error(const char* str) : exp(ATOM_ERROR), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
 	virtual		~error() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
@@ -266,8 +265,8 @@ protected:
 };
 
 // bool
-struct cell::boolean : public cell {
-	boolean(bool b) : cell(ATOM_BOOL), b_(b)	{}
+struct exp::boolean : public exp {
+	boolean(bool b) : exp(ATOM_BOOL), b_(b)	{}
 	virtual		~boolean() override	{}
 
 	bool		value() const		{ return b_; }
@@ -277,8 +276,8 @@ protected:
 };
 
 // character
-struct cell::character : public cell {
-	character(char ch) : cell(ATOM_CHAR), ch_(ch)	{}
+struct exp::character : public exp {
+	character(char ch) : exp(ATOM_CHAR), ch_(ch)	{}
 	virtual		~character() override	{}
 
 	char		value() const		{ return ch_; }
@@ -288,8 +287,8 @@ protected:
 };
 
 // sint64
-struct cell::sint64 : public cell {
-	sint64(::schizo::sint64 s64) : cell(ATOM_SINT64), s64_(s64)	{}
+struct exp::sint64 : public exp {
+	sint64(::schizo::sint64 s64) : exp(ATOM_SINT64), s64_(s64)	{}
 	virtual		~sint64() override	{}
 
 	::schizo::sint64	value() const		{ return s64_; }
@@ -299,8 +298,8 @@ protected:
 };
 
 // real64
-struct cell::real64 : public cell {
-	real64(::schizo::real64 r64) : cell(ATOM_REAL64), r64_(r64)	{}
+struct exp::real64 : public exp {
+	real64(::schizo::real64 r64) : exp(ATOM_REAL64), r64_(r64)	{}
 	virtual		~real64() override	{}
 
 	::schizo::real64	value() const		{ return r64_; }
@@ -309,9 +308,11 @@ protected:
 	::schizo::real64	r64_;
 };
 
-// symbol
-struct cell::symbol : public cell {
-	symbol(const char* sym) : cell(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
+///
+/// @brief The exp::symbol struct
+///
+struct exp::symbol : public exp {
+	symbol(const char* sym) : exp(ATOM_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
 	virtual		~symbol() override	{ free(sym_); }
 
 	const char*	value() const		{ return sym_; }
@@ -320,9 +321,11 @@ private:
 	char*		sym_;
 };
 
-// list
-struct cell::list : public cell {
-	list(iptr head, iptr tail) : cell(CELL_LIST), head_(head), tail_(tail)	{}
+///
+/// @brief The exp::list struct
+///
+struct exp::list : public exp {
+	list(iptr head, iptr tail) : exp(CELL_LIST), head_(head), tail_(tail)	{}
 	virtual		~list() override	{}
 
 	iptr		head() const		{ return head_; }
@@ -331,16 +334,18 @@ struct cell::list : public cell {
 	static iptr	reverse(iptr l);
 	static uint32	length(iptr l);
 
-	static INLINE cell::iptr	head(cell::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->head(); }
-	static INLINE cell::iptr	tail(cell::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->tail(); }
+	static INLINE exp::iptr	head(exp::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->head(); }
+	static INLINE exp::iptr	tail(exp::iptr l) { assert(l->type() == CELL_LIST); return static_cast<list*>(l.get())->tail(); }
 private:
 	iptr		head_;			///< the head
 	iptr		tail_;			///< the tail
 };
 
-// lambda
-struct cell::lambda : public cell {
-	lambda(iptr syms, iptr body) : cell(CELL_LAMBDA), syms_(syms), body_(body)	{}
+///
+/// @brief The exp::lambda struct
+///
+struct exp::lambda : public exp {
+	lambda(iptr syms, iptr body) : exp(CELL_LAMBDA), syms_(syms), body_(body)	{}
 	virtual		~lambda() override	{}
 
 	iptr		syms() const		{ return syms_; }
@@ -351,12 +356,13 @@ private:
 	iptr		body_;			///< closure body
 };
 
+///
+/// @brief foreign function interface
+///
+struct exp::ffi : public exp {
+	typedef exp::iptr (*call)(exp::iptr args);
 
-struct cell::ffi : public cell {
-	// foreign function
-	typedef cell::iptr (*call)(cell::iptr args);
-
-	inline		ffi(sint32 arg_count, call proc) : cell(CELL_FFI), arg_count_(arg_count), proc_(proc)	{}
+	inline		ffi(sint32 arg_count, call proc) : exp(CELL_FFI), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~ffi() override		{}
 
 	inline sint32	arg_count() const	{ return arg_count_; }
@@ -367,11 +373,13 @@ private:
 	call		proc_;			///< the procedure
 };
 
-struct cell::special : public cell {
-	// special function
-	typedef cell::iptr (*call)(cell::iptr env, cell::iptr args);
+///
+/// @brief special function
+///
+struct exp::special : public exp {
+	typedef exp::iptr (*call)(exp::iptr env, exp::iptr args);
 
-	inline		special(sint32 arg_count, call proc) : cell(CELL_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
+	inline		special(sint32 arg_count, call proc) : exp(CELL_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~special() override		{}
 
 	inline sint32	arg_count() const	{ return arg_count_; }
@@ -382,9 +390,11 @@ private:
 	call		proc_;			///< the procedure
 };
 
-// closure
-struct cell::closure : public cell {
-	closure(iptr env, iptr lambda) : cell(CELL_CLOSURE), env_(env), lambda_(lambda)	{}
+///
+/// @brief The exp::closure struct
+///
+struct exp::closure : public exp {
+	closure(iptr env, iptr lambda) : exp(CELL_CLOSURE), env_(env), lambda_(lambda)	{}
 	virtual		~closure() override	{}
 
 	inline iptr	env() const		{ return env_;		}
@@ -394,9 +404,11 @@ private:
 	iptr		lambda_;		///< original args and body pair
 };
 
-// bind
-struct cell::bind : public cell {
-	bind(iptr bindings) : cell(CELL_BIND), bindings_(bindings)	{}
+///
+/// @brief The exp::bind struct
+///
+struct exp::bind : public exp {
+	bind(iptr bindings) : exp(CELL_BIND), bindings_(bindings)	{}
 	virtual		~bind() override	{}
 
 	inline iptr	bindings() const	{ return bindings_; }
@@ -405,7 +417,7 @@ private:
 	iptr		bindings_;		///< binding list
 };
 
-struct state : public cell {
+struct state : public exp {
 
 	state();
 	virtual		~state() override;
@@ -419,11 +431,11 @@ struct state : public cell {
 	static void	parse(state* state, const char* str);
 
 	static iptr	default_env();
-	static iptr	add_ffi(cell::iptr env, const char* sym, sint32 arg_count, ffi::call proc);
-	static iptr	add_special(cell::iptr env, const char* sym, sint32 arg_count, special::call proc);
-	static iptr	lookup(cell::iptr env, const char* sym);
+	static iptr	add_ffi(exp::iptr env, const char* sym, sint32 arg_count, ffi::call proc);
+	static iptr	add_special(exp::iptr env, const char* sym, sint32 arg_count, special::call proc);
+	static iptr	lookup(exp::iptr env, const char* sym);
 
-	static inline cell* add_token(state* s, cell* c) {
+	static inline exp* add_token(state* s, exp* c) {
 		s->parser_.token_list	= new list(c, s->parser_.token_list);
 		return c;
 	}
@@ -432,27 +444,11 @@ protected:
 
 	static iptr	eval_list(iptr env, iptr l);
 
-//	inline void	push_env(iptr env)	{ registers_.env_stack = new list(env, registers_.env_stack);	}
-//	inline void	pop_env()		{ registers_.env_stack = list::tail(registers_.env_stack);	}
-//	inline iptr	top_env()		{ return list::head(registers_.env_stack);			}
-
-//	inline void	push_exp(iptr exp)	{ registers_.exp_stack = new list(exp, registers_.exp_stack);	}
-//	inline void	pop_exp()		{ registers_.exp_stack = list::tail(registers_.exp_stack);	}
-//	inline iptr	top_exp()		{ return list::head(registers_.exp_stack);			}
-
 	static iptr	apply_bind(iptr env, iptr bexp);
 
-//	struct {
-//		cell::iptr	exp_stack;	///< expression/operator to execute
-//		//cell::iptr	env_stack;	///< environment stack
-
-//		/* volatile registers */
-//		//cell::iptr	current_env;	///< current environment
-//	} registers_;
-
 	struct {
-		cell::iptr	token_list;
-		cell::iptr	root;		///< root cell
+		exp::iptr	token_list;
+		exp::iptr	root;		///< root exp
 		const char*	token_start;
 		const char*	token_end;
 		uint32		token_line;
@@ -460,10 +456,10 @@ protected:
 };
 
 /* printing */
-void		print_cell(cell::iptr c, uint32 level);
+void		print_cell(exp::iptr c, uint32 level);
 
 /* lists */
-static inline cell::iptr	pair(cell::iptr fst, cell::iptr snd) { return new cell::list((fst), new cell::list((snd), nullptr)); }
+static inline exp::iptr	pair(exp::iptr fst, exp::iptr snd) { return new exp::list((fst), new exp::list((snd), nullptr)); }
 
 
 

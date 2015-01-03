@@ -66,11 +66,11 @@ using namespace schizo;
 #define YYCODETYPE unsigned char
 #define YYNOCODE 36
 #define YYACTIONTYPE unsigned char
-#define parserTOKENTYPE  cell* 
+#define parserTOKENTYPE  exp* 
 typedef union {
   int yyinit;
   parserTOKENTYPE yy0;
-  cell* yy5;
+  exp* yy6;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -763,18 +763,18 @@ static void yy_reduce(
         break;
       case 19: /* sexpr ::= LBR member_list RBR */
 #line 92 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list(PR(new cell::symbol("begin")), ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == CELL_LIST ) ? PR(cell::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)); }
+{ yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("begin")), ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == CELL_LIST ) ? PR(exp::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)); }
 #line 768 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 20: /* sexpr ::= LBR member_list sc RBR */
 #line 93 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list(PR(new cell::symbol("begin")), ( yymsp[-2].minor.yy0 && yymsp[-2].minor.yy0->type() == CELL_LIST ) ? PR(cell::list::reverse(yymsp[-2].minor.yy0).get()) : yymsp[-2].minor.yy0)); }
+{ yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("begin")), ( yymsp[-2].minor.yy0 && yymsp[-2].minor.yy0->type() == CELL_LIST ) ? PR(exp::list::reverse(yymsp[-2].minor.yy0).get()) : yymsp[-2].minor.yy0)); }
 #line 773 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 21: /* sexpr ::= ilist LSQB member_list RSQB */
 #line 94 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list(PR(new cell::symbol("vector.get")),
-									  PR(new cell::list(yymsp[-3].minor.yy0, ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == CELL_LIST ) ? PR(cell::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)))); }
+{ yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("vector.get")),
+									  PR(new exp::list(yymsp[-3].minor.yy0, ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == CELL_LIST ) ? PR(exp::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)))); }
 #line 779 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 22: /* ilist ::= atom */
@@ -785,12 +785,12 @@ static void yy_reduce(
         break;
       case 24: /* list ::= ilist */
 #line 99 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list(yymsp[0].minor.yy0, nullptr)); }
+{ yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, nullptr)); }
 #line 790 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 25: /* list ::= list ilist */
 #line 100 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list(yymsp[0].minor.yy0, yymsp[-1].minor.yy0)); }
+{ yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, yymsp[-1].minor.yy0)); }
 #line 795 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 26: /* se_members ::= */
@@ -802,17 +802,17 @@ static void yy_reduce(
       case 27: /* se_members ::= list */
       case 30: /* be_members ::= list */ yytestcase(yyruleno==30);
 #line 103 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(cell::list::reverse(yymsp[0].minor.yy0).get()); }
+{ yygotominor.yy0 = PR(exp::list::reverse(yymsp[0].minor.yy0).get()); }
 #line 807 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 32: /* member_list ::= be_members */
 #line 113 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list((cell::list::length(yymsp[0].minor.yy0) == 1) ? cell::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, nullptr)); }
+{ yygotominor.yy0 = PR(new exp::list((exp::list::length(yymsp[0].minor.yy0) == 1) ? exp::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, nullptr)); }
 #line 812 "/home/aifu/Projects/schizo/parser.c"
         break;
       case 33: /* member_list ::= member_list sc be_members */
 #line 114 "/home/aifu/Projects/schizo/parser.y"
-{ yygotominor.yy0 = PR(new cell::list((cell::list::length(yymsp[0].minor.yy0) == 1) ? cell::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, yymsp[-2].minor.yy0)); }
+{ yygotominor.yy0 = PR(new exp::list((exp::list::length(yymsp[0].minor.yy0) == 1) ? exp::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, yymsp[-2].minor.yy0)); }
 #line 817 "/home/aifu/Projects/schizo/parser.c"
         break;
       default:
