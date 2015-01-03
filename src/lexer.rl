@@ -24,7 +24,8 @@
 
 #include <stdio.h>
 
-#include "schizo.hpp"
+#include "parser.h"
+#include <schizo/schizo.hpp>
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));

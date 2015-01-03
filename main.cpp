@@ -20,7 +20,8 @@
 
 #include <stdio.h>
 
-#include "schizo.hpp"
+#include "./src/parser.h"
+#include <schizo/schizo.hpp>
 
 #include <sys/time.h>
 #include <stdio.h>

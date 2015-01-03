@@ -5,15 +5,16 @@
 ** in the input grammar file. */
 #include <stdio.h>
 #include <assert.h>
-#line 28 "/home/aifu/Projects/schizo/parser.y"
+#line 28 "/home/aifu/Projects/schizo/src/parser.y"
 
-#include "schizo.hpp"
+#include "parser.h"
+#include <schizo/schizo.hpp>
 
 using namespace schizo;
 
 #define PR(V)	state::add_token(s, V)
 
-#line 17 "/home/aifu/Projects/schizo/parser.c"
+#line 18 "/home/aifu/Projects/schizo/src/parser.c"
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
 */
@@ -742,9 +743,9 @@ static void yy_reduce(
   */
       case 0: /* program ::= atom */
       case 1: /* program ::= sexpr */ yytestcase(yyruleno==1);
-#line 66 "/home/aifu/Projects/schizo/parser.y"
+#line 67 "/home/aifu/Projects/schizo/src/parser.y"
 { s->set_root(PR(yymsp[0].minor.yy0)); }
-#line 748 "/home/aifu/Projects/schizo/parser.c"
+#line 749 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 2: /* atom ::= ATOM_SYMBOL */
       case 3: /* atom ::= ATOM_BOOL */ yytestcase(yyruleno==3);
@@ -752,68 +753,68 @@ static void yy_reduce(
       case 5: /* atom ::= ATOM_SINT64 */ yytestcase(yyruleno==5);
       case 6: /* atom ::= ATOM_REAL64 */ yytestcase(yyruleno==6);
       case 7: /* atom ::= ATOM_STRING */ yytestcase(yyruleno==7);
-#line 70 "/home/aifu/Projects/schizo/parser.y"
+#line 71 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = yymsp[0].minor.yy0; }
-#line 758 "/home/aifu/Projects/schizo/parser.c"
+#line 759 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 18: /* sexpr ::= LPAR se_members RPAR */
-#line 91 "/home/aifu/Projects/schizo/parser.y"
+#line 92 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(yymsp[-1].minor.yy0); }
-#line 763 "/home/aifu/Projects/schizo/parser.c"
+#line 764 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 19: /* sexpr ::= LBR member_list RBR */
-#line 92 "/home/aifu/Projects/schizo/parser.y"
+#line 93 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("begin")), ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == CELL_LIST ) ? PR(exp::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)); }
-#line 768 "/home/aifu/Projects/schizo/parser.c"
+#line 769 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 20: /* sexpr ::= LBR member_list sc RBR */
-#line 93 "/home/aifu/Projects/schizo/parser.y"
+#line 94 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("begin")), ( yymsp[-2].minor.yy0 && yymsp[-2].minor.yy0->type() == CELL_LIST ) ? PR(exp::list::reverse(yymsp[-2].minor.yy0).get()) : yymsp[-2].minor.yy0)); }
-#line 773 "/home/aifu/Projects/schizo/parser.c"
+#line 774 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 21: /* sexpr ::= ilist LSQB member_list RSQB */
-#line 94 "/home/aifu/Projects/schizo/parser.y"
+#line 95 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("vector.get")),
 									  PR(new exp::list(yymsp[-3].minor.yy0, ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == CELL_LIST ) ? PR(exp::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)))); }
-#line 779 "/home/aifu/Projects/schizo/parser.c"
+#line 780 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 22: /* ilist ::= atom */
       case 23: /* ilist ::= sexpr */ yytestcase(yyruleno==23);
-#line 96 "/home/aifu/Projects/schizo/parser.y"
+#line 97 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(yymsp[0].minor.yy0); }
-#line 785 "/home/aifu/Projects/schizo/parser.c"
+#line 786 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 24: /* list ::= ilist */
-#line 99 "/home/aifu/Projects/schizo/parser.y"
+#line 100 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, nullptr)); }
-#line 790 "/home/aifu/Projects/schizo/parser.c"
+#line 791 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 25: /* list ::= list ilist */
-#line 100 "/home/aifu/Projects/schizo/parser.y"
+#line 101 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, yymsp[-1].minor.yy0)); }
-#line 795 "/home/aifu/Projects/schizo/parser.c"
+#line 796 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 26: /* se_members ::= */
       case 31: /* member_list ::= */ yytestcase(yyruleno==31);
-#line 102 "/home/aifu/Projects/schizo/parser.y"
+#line 103 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = nullptr; }
-#line 801 "/home/aifu/Projects/schizo/parser.c"
+#line 802 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 27: /* se_members ::= list */
       case 30: /* be_members ::= list */ yytestcase(yyruleno==30);
-#line 103 "/home/aifu/Projects/schizo/parser.y"
+#line 104 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(exp::list::reverse(yymsp[0].minor.yy0).get()); }
-#line 807 "/home/aifu/Projects/schizo/parser.c"
+#line 808 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 32: /* member_list ::= be_members */
-#line 113 "/home/aifu/Projects/schizo/parser.y"
+#line 114 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list((exp::list::length(yymsp[0].minor.yy0) == 1) ? exp::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, nullptr)); }
-#line 812 "/home/aifu/Projects/schizo/parser.c"
+#line 813 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 33: /* member_list ::= member_list sc be_members */
-#line 114 "/home/aifu/Projects/schizo/parser.y"
+#line 115 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list((exp::list::length(yymsp[0].minor.yy0) == 1) ? exp::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, yymsp[-2].minor.yy0)); }
-#line 817 "/home/aifu/Projects/schizo/parser.c"
+#line 818 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       default:
       /* (8) sexpr ::= ATOM_ERROR */ yytestcase(yyruleno==8);
@@ -887,7 +888,7 @@ static void yy_syntax_error(
 ){
   parserARG_FETCH;
 #define TOKEN (yyminor.yy0)
-#line 52 "/home/aifu/Projects/schizo/parser.y"
+#line 53 "/home/aifu/Projects/schizo/src/parser.y"
 
 	int i = 0;
 	int n = sizeof(yyTokenName) / sizeof(yyTokenName[0]);
@@ -897,7 +898,7 @@ static void yy_syntax_error(
 			printf("possible token: %s\n", yyTokenName[i]);
 		}
 	}
-#line 901 "/home/aifu/Projects/schizo/parser.c"
+#line 902 "/home/aifu/Projects/schizo/src/parser.c"
   parserARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 

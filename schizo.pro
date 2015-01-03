@@ -18,18 +18,20 @@ QMAKE_LIBS	+= -ldl -lm
 QMAKE_LFLAGS	+= -Wl,--gc-sections
 QMAKE_LINK	= gcc
 
+INCLUDEPATH	+= $$PWD/include
+
 SOURCES += \
-    lexer.cpp \
+    src/lexer.cpp \
     main.cpp \
-    parser.cpp \
-    schizo.cpp
+    src/parser.cpp \
+    src/schizo.cpp
 
 lexer.target = lexer.cpp
-lexer.commands = ragel -C -o $$PWD/lexer.cpp $$PWD/lexer.rl
+lexer.commands = ragel -C -o $$PWD/src/lexer.cpp $$PWD/src/lexer.rl
 lexer.depends =
 
 parser.target = parser.cpp
-parser.commands = lemon -T$$PWD/lempar.c_template $$PWD/parser.y && mv $$PWD/parser.c $$PWD/parser.cpp
+parser.commands = lemon -T$$PWD/src/lempar.c_template $$PWD/src/parser.y && mv $$PWD/src/parser.c $$PWD/src/parser.cpp
 parser.depends =
 
 QMAKE_EXTRA_TARGETS	+= lexer parser
@@ -37,10 +39,10 @@ QMAKE_EXTRA_TARGETS	+= lexer parser
 PRE_TARGETDEPS	+= lexer.cpp parser.cpp
 
 OTHER_FILES += \
-    parser.y \
-    lempar.c_template \
-    lexer.rl
+    src/parser.y \
+    src/lempar.c_template \
+    src/lexer.rl
 
 HEADERS += \
-    parser.h \
-    schizo.hpp
+    src/parser.h \
+    include/schizo/schizo.hpp

@@ -18,7 +18,8 @@
   Also add information on how to contact you by electronic and paper mail.
 */
 
-#include "schizo.hpp"
+#include "parser.h"
+#include <schizo/schizo.hpp>
 #include <stdio.h>
 
 extern "C" void __cxa_pure_virtual() { fprintf(stderr, "attempt to call a pure virtual method!!!"); exit(1); }

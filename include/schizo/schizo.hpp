@@ -20,8 +20,6 @@
   Also add information on how to contact you by electronic and paper mail.
 */
 
-#include "parser.h"
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
