@@ -105,7 +105,7 @@ struct special_form_entry {
 	exp::special::call	call;
 };
 
-special_form_entry s_entries[]	= {
+static special_form_entry s_entries[]	= {
 	{ "lambda", -1, make_closure },
 	{ "define",  2,	symbol_bind },
 	{ "if",      4,	if_else }

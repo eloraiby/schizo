@@ -231,40 +231,6 @@ state::eval(exp::iptr env,
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-/// built-in functions
-////////////////////////////////////////////////////////////////////////////////
-static exp::iptr
-less_than(exp::iptr args)
-{
-	exp::iptr	left	= exp::list::head(args);
-	exp::iptr	right	= exp::list::head(exp::list::tail(args));
-
-	if( left->type() != right->type() &&
-	    left->type() != exp::EXP_REAL64 &&
-	    left->type() != exp::EXP_SINT64 ) {
-		return new exp::error("lt takes 2 values of the same number type");
-	}
-
-	switch(left->type()) {
-	case exp::EXP_REAL64:
-		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() < static_cast<exp::real64*>(right.get())->value());
-	case exp::EXP_SINT64:
-		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() < static_cast<exp::sint64*>(right.get())->value());
-	default:
-		return new exp::error("lt should not pass here");
-	}
-
-}
-
-static exp::iptr
-display(exp::iptr args)
-{
-	exp::print(args, 0);
-	return nullptr;
-}
-
 /*******************************************************************************
 ** schizo state
 *******************************************************************************/
@@ -309,11 +275,11 @@ exp::iptr
 state::default_env() {
 	iptr env	= nullptr;
 	extern exp::iptr __get_special_forms(exp::iptr env);
+	extern exp::iptr __get_built_ins(exp::iptr env);
 
 	env	= __get_special_forms(env);
+	env	= __get_built_ins(env);
 
-	env = add_ffi    (env, "display", 1,	display);
-	env = add_ffi    (env, "lt",	  2,	less_than);
 	return env;
 }
 
