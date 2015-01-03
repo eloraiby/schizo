@@ -18,7 +18,6 @@
   Also add information on how to contact you by electronic and paper mail.
 */
 
-#include "parser.h"
 #include <schizo/schizo.hpp>
 #include <stdio.h>
 
