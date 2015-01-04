@@ -96,9 +96,9 @@ main(int argc,
 				  "              (display \"res -> false\")" \
 				  "          )" \
 				  "          (if (lt 2 4)" \
-				  "              (display \"2\")" \
+				  "              (display (add 1 2 3))" \
 				  "           else" \
-				  "              (display \"4\")" \
+				  "              (display (sub 6 3 2))" \
 				  "          )" \
 				  "  )" \
 				  "  ()" \
