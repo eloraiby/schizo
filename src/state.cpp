@@ -70,8 +70,6 @@ state::eval_list(exp::iptr env,
 	return list::reverse(res);
 }
 
-#define DEBUG_EVAL
-
 schizo::exp::special::ret
 state::eval(exp::iptr env,
 	    exp::iptr e)

@@ -38,7 +38,7 @@ symbol_bind(exp::iptr env,
 	    exp::iptr args)
 {
 	exp::iptr sym	= exp::list::head(args);
-	exp::iptr body	= exp::list::head(exp::list::tail(args));
+	exp::iptr body	= state::eval(env, exp::list::head(exp::list::tail(args))).value();
 
 	exp::iptr pair_	= pair(sym, body);
 
@@ -108,7 +108,8 @@ struct special_form_entry {
 static special_form_entry s_entries[]	= {
 	{ "lambda", -1, make_closure },
 	{ "bind",    2,	symbol_bind },
-	{ "if",      4,	if_else }
+	{ "if",      4,	if_else },
+	{ "eval",    1, state::eval },
 };
 
 exp::iptr
