@@ -22,8 +22,6 @@
 #include "platform.hpp"
 #include "intrusive_ptr.hpp"
 
-#include <pthread.h>
-
 namespace schizo {
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief expression
@@ -74,26 +72,18 @@ struct exp {
 
 	friend inline void	intrusive_ptr_add_ref(exp* p) {
 		// increment reference count of object *p
-		pthread_mutex_lock(&p->lock_);
 		++(p->ref_count_);
-		pthread_mutex_unlock(&p->lock_);
 	}
 
 	friend inline void	intrusive_ptr_release(exp* p) {
 		// decrement reference count, and delete object when reference count reaches 0
-		pthread_mutex_lock(&p->lock_);
 		if( --(p->ref_count_) == 0 ) {
-			pthread_mutex_unlock(&p->lock_);
 			delete p;
-		} else {
-			pthread_mutex_unlock(&p->lock_);
 		}
 	}
 
 	friend inline void	intrusive_decrement_ref_count(exp* p) {
-		pthread_mutex_lock(&p->lock_);
 		--p->ref_count_;
-		pthread_mutex_unlock(&p->lock_);
 	}
 
 	static void	print(exp::iptr c, uint32 level);
@@ -102,7 +92,6 @@ struct exp {
 protected:
 	uint32		ref_count_;
 	TYPE		type_;
-	pthread_mutex_t	lock_;
 };	// exp
 
 // string
