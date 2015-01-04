@@ -22,8 +22,27 @@
 
 namespace schizo {
 
-exp::~exp() {
+exp::~exp() {}
 
+uint32
+exp::get_ref_count() const
+{
+	return ref_count_;
+}
+
+void
+exp::inc_ref_count()
+{
+	++ref_count_;
+}
+
+void
+exp::dec_ref_count()
+{
+	--ref_count_;
+	if( !ref_count_ ) {
+		delete this;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -66,23 +66,12 @@ struct exp {
 	void* operator	new(size_t s)		{ return malloc(s); }
 	void operator	delete(void* p)		{ free(p); }
 
-	inline size_t	get_ref_count() const	{ return ref_count_; }
+	virtual uint32	get_ref_count() const;
+	virtual void	inc_ref_count();
+	virtual void	dec_ref_count();
 
-	friend inline void	intrusive_ptr_add_ref(exp* p) {
-		// increment reference count of object *p
-		++(p->ref_count_);
-	}
-
-	friend inline void	intrusive_ptr_release(exp* p) {
-		// decrement reference count, and delete object when reference count reaches 0
-		if( --(p->ref_count_) == 0 ) {
-			delete p;
-		}
-	}
-
-	friend inline void	intrusive_decrement_ref_count(exp* p) {
-		--p->ref_count_;
-	}
+	friend inline void	intrusive_ptr_add_ref(exp* p) { p->inc_ref_count(); }
+	friend inline void	intrusive_ptr_release(exp* p) { p->dec_ref_count(); }
 
 	static void	print(exp::iptr c, uint32 level);
 	static void	print_env(exp::iptr env);
