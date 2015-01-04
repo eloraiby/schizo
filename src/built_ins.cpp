@@ -19,6 +19,7 @@
 */
 
 #include <schizo/schizo.hpp>
+#include <cmath>
 
 namespace schizo {
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +100,7 @@ greater_or_eq(exp::iptr args)
 	if( left->type() != right->type() &&
 	    left->type() != exp::EXP_REAL64 &&
 	    left->type() != exp::EXP_SINT64 ) {
-		return new exp::error("leq takes 2 values of the same number type");
+		return new exp::error("geq takes 2 values of the same number type");
 	}
 
 	switch(left->type()) {
@@ -108,7 +109,7 @@ greater_or_eq(exp::iptr args)
 	case exp::EXP_SINT64:
 		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() >= static_cast<exp::sint64*>(right.get())->value());
 	default:
-		return new exp::error("leq should not pass here");
+		return new exp::error("geq should not pass here");
 	}
 }
 
@@ -245,6 +246,87 @@ sub(exp::iptr args)
 }
 
 static exp::iptr
+div(exp::iptr args)
+{
+	exp::iptr	left	= exp::list::head(args);
+	exp::iptr	right	= exp::list::head(exp::list::tail(args));
+
+	if( left->type() != right->type() &&
+	    left->type() != exp::EXP_REAL64 &&
+	    left->type() != exp::EXP_SINT64 ) {
+		return new exp::error("div takes 2 values of the same number type");
+	}
+
+	switch(left->type()) {
+	case exp::EXP_REAL64:
+		return new exp::real64(static_cast<exp::real64*>(left.get())->value() / static_cast<exp::real64*>(right.get())->value());
+	case exp::EXP_SINT64:
+		return new exp::sint64(static_cast<exp::sint64*>(left.get())->value() / static_cast<exp::sint64*>(right.get())->value());
+	default:
+		return new exp::error("div should not pass here");
+	}
+}
+
+static exp::iptr
+mod(exp::iptr args)
+{
+	exp::iptr	left	= exp::list::head(args);
+	exp::iptr	right	= exp::list::head(exp::list::tail(args));
+
+	if( left->type() != right->type() &&
+	    left->type() != exp::EXP_REAL64 &&
+	    left->type() != exp::EXP_SINT64 ) {
+		return new exp::error("mod takes 2 values of the same number type");
+	}
+
+	switch(left->type()) {
+	case exp::EXP_REAL64:
+		return new exp::real64(fmod(static_cast<exp::real64*>(left.get())->value(), static_cast<exp::real64*>(right.get())->value()));
+	case exp::EXP_SINT64:
+		return new exp::sint64(static_cast<exp::sint64*>(left.get())->value() % static_cast<exp::sint64*>(right.get())->value());
+	default:
+		return new exp::error("mod should not pass here");
+	}
+}
+
+static exp::iptr
+head(exp::iptr args)
+{
+	exp::iptr	h	= exp::list::head(args);
+
+	if( h->type() != exp::EXP_LIST ) {
+		return new exp::error("head takes a list");
+	}
+
+	return exp::list::head(h);
+}
+
+static exp::iptr
+tail(exp::iptr args)
+{
+	exp::iptr	h	= exp::list::head(args);
+
+	if( h->type() != exp::EXP_LIST ) {
+		return new exp::error("tail takes a list");
+	}
+
+	return exp::list::tail(h);
+}
+
+static exp::iptr
+cons(exp::iptr args)
+{
+	exp::iptr	left	= exp::list::head(args);
+	exp::iptr	right	= exp::list::head(exp::list::tail(args));
+
+	if( right && right->type() != exp::EXP_LIST ) {
+		return new exp::error("cons requires the second argument to be a list");
+	}
+
+	return new exp::list(left, right);
+}
+
+static exp::iptr
 display(exp::iptr args)
 {
 	exp::print(args, 0);
@@ -261,7 +343,7 @@ struct built_in_entry {
 	exp::ffi::call	call;
 };
 
-static built_in_entry s_entries[]	= {
+static built_in_entry s_entries[] = {
 	{ "lt",		2, less_than },
 	{ "gt",		2, greater_than },
 	{ "leq",	2, less_or_eq },
@@ -271,6 +353,12 @@ static built_in_entry s_entries[]	= {
 
 	{ "add",       -1, add	},
 	{ "sub",       -1, sub	},
+	{ "div",	2, div },
+	{ "mod",	2, mod },
+
+	{ "head",	1, head },
+	{ "tail",	1, tail },
+	{ "cons",	1, cons },
 
 	{ "display",   -1, display   },
 };
