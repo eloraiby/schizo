@@ -358,7 +358,7 @@ static built_in_entry s_entries[] = {
 
 	{ "head",	1, head },
 	{ "tail",	1, tail },
-	{ "cons",	1, cons },
+	{ "cons",	2, cons },
 
 	{ "display",   -1, display   },
 };
