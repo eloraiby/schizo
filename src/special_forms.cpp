@@ -33,8 +33,8 @@ namespace schizo {
  * @param args
  * @return
  */
-static exp::iptr
-symbol_bind(exp::iptr UNUSED env,
+static exp::special::ret
+symbol_bind(exp::iptr env,
 	    exp::iptr args)
 {
 	exp::iptr sym	= exp::list::head(args);
@@ -42,7 +42,7 @@ symbol_bind(exp::iptr UNUSED env,
 
 	exp::iptr pair_	= pair(sym, body);
 
-	return new exp::bind(new exp::list(pair_, nullptr));
+	return exp::special::ret(new exp::list(pair_, env), nullptr);
 }
 
 /**
@@ -52,7 +52,7 @@ symbol_bind(exp::iptr UNUSED env,
  * @param args
  * @return
  */
-static exp::iptr
+static exp::special::ret
 make_closure(exp::iptr env,
 	     exp::iptr args)
 {
@@ -62,15 +62,15 @@ make_closure(exp::iptr env,
 
 	exp::iptr	lam	= new exp::lambda(syms, body);
 
-	return new exp::closure(env, lam);
+	return exp::special::ret(env, new exp::closure(env, lam));
 }
 
-static exp::iptr
+static exp::special::ret
 if_else(exp::iptr env,
 	exp::iptr args)
 {
 	if( exp::list::length(args) != 4 ) {
-		return new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1");
+		return exp::special::ret(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1"));
 	}
 
 	exp::iptr cond		= exp::list::head(args);
@@ -79,23 +79,23 @@ if_else(exp::iptr env,
 	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
 	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
-		exp::iptr b	= state::eval(env, cond);
-		switch( b->type() ) {
+		exp::special::ret b	= state::eval(env, cond);
+		switch( b.value()->type() ) {
 		case exp::EXP_ERROR:
-			return b;
+			return exp::special::ret(env, b.value());
 
 		case exp::EXP_BOOLEAN:
-			if( static_cast<exp::boolean*>(b.get())->value() ) {
-				return exp0;
+			if( static_cast<exp::boolean*>(b.value().get())->value() ) {
+				return exp::special::ret(env, exp0);
 			} else {
-				return exp1;
+				return exp::special::ret(env, exp1);
 			}
 
 		default:
-			return new exp::error("ERROR: \"if\" requires condition to be boolean");
+			return exp::special::ret(env, new exp::error("ERROR: \"if\" requires condition to be boolean"));
 		}
 	} else {
-		return new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1");
+		return exp::special::ret(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1"));
 	}
 }
 
@@ -107,7 +107,7 @@ struct special_form_entry {
 
 static special_form_entry s_entries[]	= {
 	{ "lambda", -1, make_closure },
-	{ "define",  2,	symbol_bind },
+	{ "bind",    2,	symbol_bind },
 	{ "if",      4,	if_else }
 };
 

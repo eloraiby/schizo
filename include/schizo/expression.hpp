@@ -41,7 +41,6 @@ struct exp {
 	struct closure;
 	struct ffi;
 	struct special;
-	struct bind;
 
 	enum TYPE {
 		EXP_ERROR,
@@ -56,13 +55,12 @@ struct exp {
 		EXP_CLOSURE,
 		EXP_FFI,
 		EXP_SPECIAL_FORM,
-		EXP_BIND,
 		EXP_STATE,
 	};
 
 	TYPE		type() const		{ return type_; }
 
-			exp(TYPE type) : ref_count_(0), type_(type), lock_(PTHREAD_MUTEX_INITIALIZER)	{}
+			exp(TYPE type) : ref_count_(0), type_(type)	{}
 	virtual		~exp()	= 0;
 
 	void* operator	new(size_t s)		{ return malloc(s); }
@@ -229,13 +227,24 @@ private:
 /// @brief special function
 ///
 struct exp::special : public exp {
-	typedef exp::iptr (*call)(exp::iptr env, exp::iptr args);
+	struct ret {
+		ret(exp::iptr env, exp::iptr ret) : env_(env), ret_(ret)	{}
+
+		inline exp::iptr	env() const	{ return env_;	}
+		inline exp::iptr	value() const	{ return ret_;	}
+
+	private:
+		exp::iptr	env_;
+		exp::iptr	ret_;
+	};
+
+	typedef ret	(*call)(exp::iptr env, exp::iptr args);
 
 	inline		special(sint32 arg_count, call proc) : exp(EXP_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~special() override		{}
 
 	inline sint32	arg_count() const	{ return arg_count_; }
-	inline iptr	operator()(iptr env, iptr args) const		{ return proc_(env, args); }
+	inline ret	operator()(iptr env, iptr args) const		{ return proc_(env, args); }
 
 private:
 	sint32		arg_count_;		///< total argument count, -1 = any
@@ -256,18 +265,6 @@ private:
 	iptr		lambda_;		///< original args and body pair
 };
 
-///
-/// @brief The exp::bind struct
-///
-struct exp::bind : public exp {
-	bind(iptr bindings) : exp(EXP_BIND), bindings_(bindings)	{}
-	virtual		~bind() override	{}
-
-	inline iptr	bindings() const	{ return bindings_; }
-
-private:
-	iptr		bindings_;		///< binding list
-};
 
 ///
 /// @brief The state
@@ -280,7 +277,7 @@ struct state : public exp {
 	inline iptr	root() const		{ return parser_.root; }
 	inline void	set_root(iptr root)	{ parser_.root = root; }
 
-	static iptr	eval(iptr env, iptr exp);
+	static special::ret	eval(iptr env, iptr e);
 
 	/// parser.y / lexer.rl
 	static void	parse(state* state, const char* str);
@@ -298,7 +295,6 @@ struct state : public exp {
 protected:
 
 	static iptr	eval_list(iptr env, iptr l);
-	static iptr	apply_bind(iptr env, iptr bexp);
 
 	struct {
 		exp::iptr	token_list;

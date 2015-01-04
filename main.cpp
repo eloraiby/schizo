@@ -74,8 +74,8 @@ main(int argc,
 
 				    "("\
 				    "  (lambda ()" \
-				    "          (define str \"hello\")" \
-				    "          (define b #t)" \
+				    "          (bind str \"hello\")" \
+				    "          (bind b #t)" \
 				    "          (if b" \
 				    "              (display \"true\")" \
 				    "           else" \
@@ -88,8 +88,8 @@ main(int argc,
 
 	const char*	example	= "("\
 				  "  (lambda ()" \
-				  "          (define str \"hello\")" \
-				  "          (define b #t)" \
+				  "          (bind str \"hello\")" \
+				  "          (bind b #t)" \
 				  "          (if b" \
 				  "              (display \"res -> true\")" \
 				  "           else" \
