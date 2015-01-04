@@ -14,7 +14,7 @@ TEMPLATE = app
 
 QMAKE_CXX	= g++
 QMAKE_CXXFLAGS	+= -std=c++11 -fno-rtti -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden -fvisibility-inlines-hidden -pedantic -ffunction-sections -fdata-sections
-QMAKE_LIBS	+= -ldl -lm
+QMAKE_LIBS	+= -ldl -lm -lpthread
 QMAKE_LFLAGS	+= -Wl,--gc-sections
 QMAKE_LINK	= gcc
 
