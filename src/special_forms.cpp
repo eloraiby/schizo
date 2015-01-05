@@ -54,7 +54,7 @@ symbol_bind(exp::iptr env,
  */
 static exp::special::ret
 make_lambda(exp::iptr env,
-	     exp::iptr args)
+	    exp::iptr args)
 {
 	// the new nullptr list is needed in case we pass a NIL argument ()
 	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);

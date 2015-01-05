@@ -45,16 +45,16 @@ lookup(exp::iptr env,
 		}
 
 		if( !pair ) {
-			return nullptr;
+			return new exp::error("symbol not found");
 		} else {
 			if( exp::list::tail(pair) ) {
 				return exp::list::head(exp::list::tail(pair));
 			} else {
-				return nullptr;
+				return new exp::error("symbol not found");
 			}
 		}
 	} else {
-		return nullptr;
+		return new exp::error("symbol not found");
 	}
 }
 
@@ -64,7 +64,15 @@ eval_list(exp::iptr env,
 {
 	exp::iptr	res	= nullptr;
 	while( expr ) {
-		res	= new exp::list(eval(env, exp::list::head(expr)).value(), res);
+		exp::special::ret	r = eval(env, exp::list::head(expr));
+
+		if( r.value() && r.value()->type() == exp::EXP_ERROR ) {
+			return res;	// if error, bail early
+		}
+
+		res	= new exp::list(r.value(), res);
+
+
 		expr	= exp::list::tail(expr);
 	}
 	return exp::list::reverse(res);
@@ -159,6 +167,10 @@ eval(exp::iptr env,
 
 				args	= eval_list(env, tail);
 
+				if( args && args->type() == exp::EXP_ERROR ) {
+					return exp::special::ret(env, args);	// if error, bail early
+				}
+
 				while( exp::list::head(syms) && exp::list::head(args) ) {
 					env	= new exp::list(pair(exp::list::head(syms), exp::list::head(args)), env);
 					args	= exp::list::tail(args);
@@ -176,6 +188,11 @@ eval(exp::iptr env,
 
 					while( next ) {
 						exp::special::ret r	= eval(env, e);	/* eval and bind */
+
+						if( r.value() && r.value()->type() == exp::EXP_ERROR ) {
+							return r;	// if error, bail early
+						}
+
 						env	= r.env();
 
 						e	= exp::list::head(next);
@@ -186,6 +203,9 @@ eval(exp::iptr env,
 				}
 				break;
 			}
+
+			case exp::EXP_ERROR:
+				return exp::special::ret(env, head);
 
 			default:
 				/* more error handling */
