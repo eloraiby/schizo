@@ -367,7 +367,7 @@ exp::iptr
 __get_built_ins(exp::iptr env)
 {
 	for( size_t i = 0; i < sizeof(s_entries) / sizeof(built_in_entry); ++i ) {
-		env = state::add_ffi(env, s_entries[i].name,  s_entries[i].arg_count, s_entries[i].call);
+		env = add_ffi(env, s_entries[i].name,  s_entries[i].arg_count, s_entries[i].call);
 	}
 	return env;
 }

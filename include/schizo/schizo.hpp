@@ -24,11 +24,34 @@
 
 namespace schizo {
 
+exp::special::ret	eval(exp::iptr env, exp::iptr e);
+exp::iptr	eval_list(exp::iptr env, exp::iptr l);
+
+/// parser.y / lexer.rl
+struct parser {
+	exp::iptr	token_list;
+	exp::iptr	root;		///< root exp
+	const char*	token_start;
+	const char*	token_end;
+	uint32		token_line;
+
+	parser() : token_list(nullptr), root(nullptr), token_start(nullptr), token_end(nullptr), token_line(0) {}
+
+	static inline exp* add_token(parser* s, exp* c) {
+		s->token_list	= new exp::list(c, s->token_list);
+		return c;
+	}
+};
+
+exp::iptr	parse(const char* str);
+
+exp::iptr	default_env();
+exp::iptr	add_ffi(exp::iptr env, const char* sym, sint32 arg_count, exp::ffi::call proc);
+exp::iptr	add_special(exp::iptr env, const char* sym, sint32 arg_count, exp::special::call proc);
+exp::iptr	lookup(exp::iptr env, const char* sym);
 
 /* lists */
 static inline exp::iptr	pair(exp::iptr fst, exp::iptr snd) { return new exp::list((fst), new exp::list((snd), nullptr)); }
-
-
 
 }	// namespace schizo
 

@@ -12,7 +12,7 @@
 
 using namespace schizo;
 
-#define PR(V)	state::add_token(s, V)
+#define PR(V)	parser::add_token(s, V)
 
 #line 18 "/home/aifu/Projects/schizo/src/parser.c"
 /* Next is all token values, in a form suitable for use by makeheaders.
@@ -76,9 +76,9 @@ typedef union {
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
 #endif
-#define parserARG_SDECL  state* s ;
-#define parserARG_PDECL , state* s 
-#define parserARG_FETCH  state* s  = yypParser->s 
+#define parserARG_SDECL  parser* s ;
+#define parserARG_PDECL , parser* s 
+#define parserARG_FETCH  parser* s  = yypParser->s 
 #define parserARG_STORE yypParser->s  = s 
 #define YYNSTATE 32
 #define YYNRULE 24
@@ -715,7 +715,7 @@ static void yy_reduce(
       case 0: /* program ::= atom */
       case 1: /* program ::= sexpr */ yytestcase(yyruleno==1);
 #line 67 "/home/aifu/Projects/schizo/src/parser.y"
-{ s->set_root(PR(yymsp[0].minor.yy0)); }
+{ s->root = PR(yymsp[0].minor.yy0); }
 #line 720 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 2: /* atom ::= TOK_SYMBOL */

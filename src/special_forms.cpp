@@ -38,7 +38,7 @@ symbol_bind(exp::iptr env,
 	    exp::iptr args)
 {
 	exp::iptr sym	= exp::list::head(args);
-	exp::iptr body	= state::eval(env, exp::list::head(exp::list::tail(args))).value();
+	exp::iptr body	= eval(env, exp::list::head(exp::list::tail(args))).value();
 
 	exp::iptr pair_	= pair(sym, body);
 
@@ -77,7 +77,7 @@ if_else(exp::iptr env,
 	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
 	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
-		exp::special::ret b	= state::eval(env, cond);
+		exp::special::ret b	= eval(env, cond);
 		switch( b.value()->type() ) {
 		case exp::EXP_ERROR:
 			return exp::special::ret(env, b.value());
@@ -107,14 +107,14 @@ static special_form_entry s_entries[]	= {
 	{ "lambda", -1, make_lambda },
 	{ "bind",    2,	symbol_bind },
 	{ "if",      4,	if_else },
-	{ "eval",    1, state::eval },
+	{ "eval",    1, eval },
 };
 
 exp::iptr
 __get_special_forms(exp::iptr env)
 {
 	for( size_t i = 0; i < sizeof(s_entries) / sizeof(special_form_entry); ++i ) {
-		env = state::add_special(env, s_entries[i].name,  s_entries[i].arg_count, s_entries[i].call);
+		env = add_special(env, s_entries[i].name,  s_entries[i].arg_count, s_entries[i].call);
 	}
 	return env;
 }

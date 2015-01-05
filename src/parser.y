@@ -23,7 +23,7 @@
 %name parser
 
 %token_type	{ exp* }
-%extra_argument { state* s }
+%extra_argument { parser* s }
 
 %include {
 #include "parser.h"
@@ -31,7 +31,7 @@
 
 using namespace schizo;
 
-#define PR(V)	state::add_token(s, V)
+#define PR(V)	parser::add_token(s, V)
 
 }
 
@@ -64,8 +64,8 @@ using namespace schizo;
 %start_symbol program
 
 /* a program is a exp */
-program		::= atom(B).				{ s->set_root(PR(B)); }
-program		::= sexpr(B).				{ s->set_root(PR(B)); }
+program		::= atom(B).				{ s->root = PR(B); }
+program		::= sexpr(B).				{ s->root = PR(B); }
 
 /* literals */
 atom(A)		::= TOK_SYMBOL(B).			{ A = B; }

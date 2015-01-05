@@ -29,18 +29,18 @@
 
 extern void*	parser_alloc(void *(*mallocProc)(size_t));
 extern void	parser_free(void *p, void (*freeProc)(void*));
-extern void	parser_advance(void *yyp, int yymajor, schizo::exp* yyminor, schizo::state* s);
+extern void	parser_advance(void *yyp, int yymajor, schizo::exp* yyminor, schizo::parser* s);
 
 namespace schizo {
-#define ADVANCE(A)	s->parser_.token_start	= ts; \
-			s->parser_.token_end	= te; \
-			s->parser_.token_line	= line; \
+#define ADVANCE(A)	parser_.token_start	= ts; \
+			parser_.token_end	= te; \
+			parser_.token_line	= line; \
 			copy_token(ts, te, tmp); \
 			exp::iptr tmpc = token_to_##A(tmp); \
-			s->parser_.token_list	= new list(tmpc, s->parser_.token_list); \
-			parser_advance(parser, tmpc->type(), tmpc.get(), s)
+			parser_.token_list	= new exp::list(tmpc, parser_.token_list); \
+			parser_advance(yyparser, tmpc->type(), tmpc.get(), &parser_)
 
-#define ADVANCE_TOKEN(A)	parser_advance(parser, A, nullptr, s)
+#define ADVANCE_TOKEN(A)	parser_advance(yyparser, A, nullptr, &parser_)
 
 #define PUSH_TE()	const char* tmp_te = te
 #define POP_TE()	te	= tmp_te
@@ -207,10 +207,12 @@ token_to_string(const char* str) {
 }
 
 
-void
-state::parse(state* s, const char* str)
+exp::iptr
+parse(const char* str)
 {
-	void*		parser;
+	parser		parser_;
+
+	void*		yyparser;
 	size_t		line	= 1;
 	const char*	ts	= str;
 	const char*	te	= str;
@@ -224,10 +226,10 @@ state::parse(state* s, const char* str)
 	int		cs	= 0;
 	char		tmp[4096];
 
-	s->parser_.root	= nullptr;
+	parser_.root	= nullptr;
 	exp::iptr token_list	= nullptr;
 
-	parser	= parser_alloc(malloc);
+	yyparser	= parser_alloc(malloc);
 
 	memset(tmp, 0, sizeof(tmp));
 
@@ -242,8 +244,9 @@ state::parse(state* s, const char* str)
 		exit(1);
 	}
 
-	parser_advance(parser, 0, nullptr, s);
+	parser_advance(yyparser, 0, nullptr, &parser_);
 
-	parser_free(parser, free);
+	parser_free(yyparser, free);
+	return parser_.root;
 }
 }

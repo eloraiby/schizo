@@ -54,7 +54,6 @@ struct exp {
 		EXP_LAMBDA,
 		EXP_FFI,
 		EXP_SPECIAL_FORM,
-		EXP_STATE,
 	};
 
 	TYPE		type() const		{ return type_; }
@@ -237,45 +236,6 @@ struct exp::special : public exp {
 private:
 	sint32		arg_count_;		///< total argument count, -1 = any
 	call		proc_;			///< the procedure
-};
-
-///
-/// @brief The state
-///
-struct state : public exp {
-
-	state();
-	virtual		~state() override;
-
-	inline iptr	root() const		{ return parser_.root; }
-	inline void	set_root(iptr root)	{ parser_.root = root; }
-
-	static special::ret	eval(iptr env, iptr e);
-
-	/// parser.y / lexer.rl
-	static void	parse(state* state, const char* str);
-
-	static iptr	default_env();
-	static iptr	add_ffi(exp::iptr env, const char* sym, sint32 arg_count, ffi::call proc);
-	static iptr	add_special(exp::iptr env, const char* sym, sint32 arg_count, special::call proc);
-	static iptr	lookup(exp::iptr env, const char* sym);
-
-	static inline exp* add_token(state* s, exp* c) {
-		s->parser_.token_list	= new list(c, s->parser_.token_list);
-		return c;
-	}
-
-protected:
-
-	static iptr	eval_list(iptr env, iptr l);
-
-	struct {
-		exp::iptr	token_list;
-		exp::iptr	root;		///< root exp
-		const char*	token_start;
-		const char*	token_end;
-		uint32		token_line;
-	} parser_;
 };
 
 }	// namespace schizo
