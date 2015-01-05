@@ -52,7 +52,6 @@ struct exp {
 		EXP_STRING,
 		EXP_LIST,
 		EXP_LAMBDA,
-		EXP_CLOSURE,
 		EXP_FFI,
 		EXP_SPECIAL_FORM,
 		EXP_STATE,
@@ -239,21 +238,6 @@ private:
 	sint32		arg_count_;		///< total argument count, -1 = any
 	call		proc_;			///< the procedure
 };
-
-///
-/// @brief The exp::closure struct
-///
-struct exp::closure : public exp {
-	closure(iptr env, iptr lambda) : exp(EXP_CLOSURE), env_(env), lambda_(lambda)	{}
-	virtual		~closure() override	{}
-
-	inline iptr	env() const		{ return env_;		}
-	inline iptr	lambda() const		{ return lambda_;	}
-private:
-	iptr		env_;			///< captured environment
-	iptr		lambda_;		///< original args and body pair
-};
-
 
 ///
 /// @brief The state

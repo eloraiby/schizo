@@ -89,7 +89,7 @@ state::eval(exp::iptr env,
 		case EXP_REAL64:
 		case EXP_STRING:
 		case EXP_ERROR:
-		case EXP_CLOSURE:
+		case EXP_LAMBDA:
 		case EXP_FFI:
 		//case EXP_QUOTE:
 			return special::ret(env, e);
@@ -134,7 +134,7 @@ state::eval(exp::iptr env,
 			}
 
 			case EXP_SPECIAL_FORM: {
-				/* lambda, define, if */
+				/* lambda, bind, if */
 				exp::special::ret r	= (*static_cast<special*>(head.get()))(env, tail);
 
 				env	= r.env();
@@ -143,15 +143,14 @@ state::eval(exp::iptr env,
 				break;
 			}
 
-			case EXP_CLOSURE: {
+			case EXP_LAMBDA: {
 				iptr	args	= nullptr;
 				iptr	syms	= nullptr;
-				iptr	lambda_	= nullptr;
+				lambda*	lambda_	= nullptr;
 
-				lambda_	= static_cast<closure*>(head.get())->lambda();
-				env	= static_cast<closure*>(head.get())->env();
+				lambda_	= static_cast<lambda*>(head.get());
 
-				syms	= static_cast<lambda*>(lambda_.get())->syms();
+				syms	= lambda_->syms();
 
 				// evaluate the arguments and zip them
 				if( (list::length(tail) != list::length(syms)) ) {
@@ -170,7 +169,7 @@ state::eval(exp::iptr env,
 					return special::ret(env, new error("ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
 					/* all good, evaluate the body(*) */
-					iptr	body	= static_cast<lambda*>(lambda_.get())->body();
+					iptr	body	= static_cast<lambda*>(lambda_)->body();
 					iptr	next	= list::tail(body);
 
 					e	= list::head(body);

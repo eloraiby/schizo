@@ -95,8 +95,8 @@ exp::print(exp::iptr c,
 			fprintf(stderr, "<ERROR>");
 			break;
 
-		case exp::EXP_CLOSURE:
-			fprintf(stderr, "<CLOSURE>");
+		case exp::EXP_LAMBDA:
+			fprintf(stderr, "<LAMBDA>");
 			break;
 
 		case exp::EXP_FFI:

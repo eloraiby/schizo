@@ -53,16 +53,14 @@ symbol_bind(exp::iptr env,
  * @return
  */
 static exp::special::ret
-make_closure(exp::iptr env,
+make_lambda(exp::iptr env,
 	     exp::iptr args)
 {
 	// the new nullptr list is needed in case we pass a NIL argument ()
 	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);
 	exp::iptr	body	= exp::list::tail(args);
 
-	exp::iptr	lam	= new exp::lambda(syms, body);
-
-	return exp::special::ret(env, new exp::closure(env, lam));
+	return exp::special::ret(env, new exp::lambda(syms, body));
 }
 
 static exp::special::ret
@@ -106,7 +104,7 @@ struct special_form_entry {
 };
 
 static special_form_entry s_entries[]	= {
-	{ "lambda", -1, make_closure },
+	{ "lambda", -1, make_lambda },
 	{ "bind",    2,	symbol_bind },
 	{ "if",      4,	if_else },
 	{ "eval",    1, state::eval },
