@@ -73,7 +73,7 @@ if_else(exp::iptr env,
 
 	exp::iptr cond		= exp::list::head(args);
 	exp::iptr exp0		= exp::list::head(exp::list::tail(args));
-	exp::iptr elsym	= exp::list::head(exp::list::tail(exp::list::tail(args)));
+	exp::iptr elsym		= exp::list::head(exp::list::tail(exp::list::tail(args)));
 	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
 	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
