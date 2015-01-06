@@ -7,6 +7,7 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="190"
@@ -14,9 +15,25 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="schizo-icon.svg">
+   sodipodi:docname="schizo-icon.svg"
+   inkscape:export-filename="/home/aifu/Projects/schizo/docs/schizo-icon.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
-     id="defs4" />
+     id="defs4">
+    <filter
+       id="f">
+      <feGaussianBlur
+         id="feGaussianBlur4128"
+         stdDeviation="12.375" />
+    </filter>
+    <path
+       d="m 450,200 c 0,27.61424 -22.38576,50 -50,50 -27.61424,0 -50,-22.38576 -50,-50 0,-27.61424 22.38576,-50 50,-50 27.61424,0 50,22.38576 50,50 z"
+       id="d" />
+    <path
+       d="m 425,25 c 110.4,0 200,89.6 200,200 0,110.4 -89.6,200 -200,200 -110.4,0 -200,89.6 -200,200 0,110.4 89.6,200 200,200 C 645.8,825 825,645.8 825,425 825,204.2 645.8,25 425,25 z m 0,537.5 c 34.5,0 62.5,28 62.5,62.5 0,34.5 -28,62.5 -62.5,62.5 -34.5,0 -62.5,-28 -62.5,-62.5 0,-34.5 28,-62.5 62.5,-62.5 z"
+       id="y" />
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -24,9 +41,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="131.21769"
-     inkscape:cy="94.713999"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="123.08914"
+     inkscape:cy="51.909418"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -52,6 +69,46 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-962.36218)">
+    <g
+       id="g4195"
+       transform="matrix(0.57191275,0,0,0.57191275,37.227875,454.25979)">
+      <use
+         style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:7.96285105;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         xlink:href="#y"
+         transform="matrix(0.03139579,0,0,0.03139579,180.10101,954.29242)"
+         id="use4140" />
+      <use
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         xlink:href="#d"
+         transform="matrix(0.03924474,0,0,0.03924474,177.74633,953.50752)"
+         id="use4142"
+         style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:6.37028027;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <use
+         transform="matrix(-0.03139579,0,0,-0.03139579,206.78743,980.97889)"
+         style="fill:#ff0001;fill-opacity:1;stroke:#000000;stroke-width:7.96285105;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         xlink:href="#y"
+         id="use4146" />
+      <use
+         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:6.37028027;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         height="1"
+         width="1"
+         y="0"
+         x="0"
+         xlink:href="#d"
+         transform="matrix(-0.03924474,0,0,0.03924474,209.14211,966.06589)"
+         id="use4148" />
+    </g>
     <g
        id="g4020"
        transform="translate(-113.38962,617.70828)">
