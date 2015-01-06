@@ -8,10 +8,13 @@
 ======
 
 Schizo is an embedded Lisp dialect aiming to simplify software complexity by extending Lisp with:
-* The Purity a la Erlang.
-* Modernization of the lisp syntax, by making "C" style syntax recommended but optional: brackets "{}" with semicolumns ";" to write lists.
+* The Purity of Erlang.
+* Modernization of the lisp syntax, by making "C" style syntax sugarring. For now this is optional but recommended:
+  - brackets "{}" with semicolumns ";" to write lists.
+  - Indexing using "[]".
 * Optional infix escape sequences for ease of reading.
 * Simple C++ foreign function interface.
 
 ------
+
 
