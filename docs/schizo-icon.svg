@@ -17,8 +17,8 @@
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="schizo-icon.svg"
    inkscape:export-filename="/home/aifu/Projects/schizo/docs/schizo-icon.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-xdpi="179.556"
+   inkscape:export-ydpi="179.556">
   <defs
      id="defs4">
     <filter
@@ -42,7 +42,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7.9195959"
-     inkscape:cx="123.08914"
+     inkscape:cx="92.36109"
      inkscape:cy="51.909418"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -71,9 +71,10 @@
      transform="translate(0,-962.36218)">
     <g
        id="g4195"
-       transform="matrix(0.57191275,0,0,0.57191275,37.227875,454.25979)">
+       transform="matrix(0.57191275,0,0,0.57191275,37.227875,454.25979)"
+       style="opacity:0.6">
       <use
-         style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:7.96285105;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:7.96285105000000026;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          height="1"
          width="1"
          y="0"
@@ -89,10 +90,10 @@
          xlink:href="#d"
          transform="matrix(0.03924474,0,0,0.03924474,177.74633,953.50752)"
          id="use4142"
-         style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:6.37028027;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+         style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:6.37028027000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
       <use
          transform="matrix(-0.03139579,0,0,-0.03139579,206.78743,980.97889)"
-         style="fill:#ff0001;fill-opacity:1;stroke:#000000;stroke-width:7.96285105;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:#ff0001;fill-opacity:1;stroke:#000000;stroke-width:7.96285105000000026;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          height="1"
          width="1"
          y="0"
@@ -100,7 +101,7 @@
          xlink:href="#y"
          id="use4146" />
       <use
-         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:6.37028027;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+         style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:6.37028027000000030;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          height="1"
          width="1"
          y="0"
