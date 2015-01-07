@@ -1,4 +1,13 @@
+To appreciate C, one has to return writing code in Assembly
+To appreciate C++, one has to return writing code in C
+To appreciate ML/Lisp, one has to return writing code in C++
+To appreciate schizo, one has to return writing code in ML/Lisp
+
+Schizo:
+=======
+
 special forms:		if...else..., lambda, bind, llmacro
+
 built-in functions: 
 						|b|i|r|s|S|e|
 					----+-+-+-+-+-+-+
