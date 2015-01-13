@@ -6,7 +6,7 @@ To appreciate schizo, one has to return writing code in ML/Lisp
 Schizo:
 =======
 
-special forms:		if...else..., lambda, bind, llmacro
+special forms:		if...else..., lambda, bind, eval, llmacro, quote, unquote
 
 built-in functions: 
 						|b|i|r|s|S|e|
@@ -42,8 +42,13 @@ built-in functions:
 					mod	| |X|X| | | |
 					----+-+-+-+-+-+-+
 
+					read
+
+					list
+
 					head
 					tail
 					cons
+
 
 
