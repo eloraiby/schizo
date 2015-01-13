@@ -91,7 +91,7 @@ main(int argc,
 				  "          (bind str \"hello\")" \
 				  "          (bind b #t)" \
 				  "          (if b" \
-				  "              (dispslay \"res -> true\")" \
+				  "              (display \"res -> true\")" \
 				  "           else" \
 				  "              (display \"res -> false\")" \
 				  "          )" \
