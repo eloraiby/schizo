@@ -71,6 +71,7 @@ main(int argc,
 				    "{ a + !b }",
 				    "{ !a + !b }",
 				    "{ a + b + c; a2 + b2 + c2; }",
+				    "{ a + b * 2 }",
 
 				    "("\
 				    "  (lambda ()" \

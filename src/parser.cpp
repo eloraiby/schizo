@@ -14,7 +14,7 @@ using namespace schizo;
 
 #define PR(V)	parser::add_token(s, V)
 
-#line 18 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 18 "/home/aifu/Projects/schizo/src/parser.c"
 /* Next is all token values, in a form suitable for use by makeheaders.
 ** This section will be null unless lemon is run with the -m switch.
 */
@@ -65,13 +65,14 @@ using namespace schizo;
 **                       defined, then do no error processing.
 */
 #define YYCODETYPE unsigned char
-#define YYNOCODE 29
+#define YYNOCODE 37
 #define YYACTIONTYPE unsigned char
 #define parserTOKENTYPE  exp* 
-typedef struct {
+typedef union {
   int yyinit;
   parserTOKENTYPE yy0;
-  exp* yy20;
+  exp* yy4;
+  int yy73;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -80,8 +81,10 @@ typedef struct {
 #define parserARG_PDECL , parser* s 
 #define parserARG_FETCH  parser* s  = yypParser->s 
 #define parserARG_STORE yypParser->s  = s 
-#define YYNSTATE 37
-#define YYNRULE 27
+#define YYNSTATE 50
+#define YYNRULE 36
+#define YYERRORSYMBOL 20
+#define YYERRSYMDT yy73
 #define YY_NO_ACTION      (YYNSTATE+YYNRULE+2)
 #define YY_ACCEPT_ACTION  (YYNSTATE+YYNRULE+1)
 #define YY_ERROR_ACTION   (YYNSTATE+YYNRULE)
@@ -150,56 +153,66 @@ static const YYMINORTYPE yyzerominor = { 0 };
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
-#define YY_ACTTAB_COUNT (113)
+#define YY_ACTTAB_COUNT (154)
 static const YYACTIONTYPE yy_action[] = {
- /*     0 */    36,   35,   34,   33,   32,   31,    5,   29,    2,   28,
- /*    10 */    26,   37,   21,    1,   36,   35,   34,   33,   32,   31,
- /*    20 */     5,   38,    2,   30,   25,   24,    3,    4,    7,   14,
- /*    30 */    36,   35,   34,   33,   32,   31,    5,   65,    2,   18,
- /*    40 */    17,   66,   66,    6,   12,   36,   35,   34,   33,   32,
- /*    50 */    31,    5,   66,    2,   66,   66,   66,   21,   66,   36,
- /*    60 */    35,   34,   33,   32,   31,    5,   66,    2,   25,   24,
- /*    70 */    66,   11,   66,   15,    9,   19,   27,   26,   66,   25,
- /*    80 */    24,   66,   10,   66,   15,    9,   19,   25,   24,   16,
- /*    90 */    66,   66,   15,    8,   25,   24,   66,   66,   66,   15,
- /*   100 */     9,   20,   25,   24,   25,   24,   66,   13,   66,   13,
- /*   110 */    22,   66,   23,
+ /*     0 */    49,   48,   47,   46,   45,   44,   11,    5,    6,   41,
+ /*    10 */    38,   37,   36,   15,   50,   26,   13,   30,    1,   43,
+ /*    20 */    49,   48,   47,   46,   45,   44,   11,   51,    6,    4,
+ /*    30 */    38,   37,   36,   14,    3,   26,   13,   30,    1,    9,
+ /*    40 */    49,   48,   47,   46,   45,   44,   11,   87,    6,   29,
+ /*    50 */    28,    2,    7,   10,   16,   49,   48,   47,   46,   45,
+ /*    60 */    44,   11,    8,    6,   33,   38,   37,   38,   37,   88,
+ /*    70 */    25,   42,   24,    1,   39,   32,   23,   22,   20,   18,
+ /*    80 */    49,   48,   47,   46,   45,   44,   11,   88,    6,   33,
+ /*    90 */    40,   39,   38,   37,   88,   88,   88,   24,   88,   88,
+ /*   100 */    32,   23,   22,   17,   33,   88,   88,   38,   37,   88,
+ /*   110 */    33,   88,   24,   38,   37,   32,   23,   19,   24,   88,
+ /*   120 */    88,   32,   21,   88,   38,   37,   27,   88,   33,   26,
+ /*   130 */    12,   38,   37,   88,   33,   88,   24,   38,   37,   34,
+ /*   140 */    88,   88,   24,   88,   88,   31,   38,   37,   88,   88,
+ /*   150 */    88,   26,   13,   35,
 };
 static const YYCODETYPE yy_lookahead[] = {
- /*     0 */     1,    2,    3,    4,    5,    6,    7,   10,    9,   10,
- /*    10 */    13,    0,   13,   11,    1,    2,    3,    4,    5,    6,
- /*    20 */     7,    0,    9,    8,   19,   20,   23,   23,   15,   24,
- /*    30 */     1,    2,    3,    4,    5,    6,    7,   17,    9,   19,
- /*    40 */    20,   28,   28,   14,   24,    1,    2,    3,    4,    5,
- /*    50 */     6,    7,   28,    9,   28,   28,   28,   13,   28,    1,
- /*    60 */     2,    3,    4,    5,    6,    7,   28,    9,   19,   20,
- /*    70 */    28,   22,   28,   24,   25,   26,   12,   13,   28,   19,
- /*    80 */    20,   28,   22,   28,   24,   25,   26,   19,   20,   21,
- /*    90 */    28,   28,   24,   25,   19,   20,   28,   28,   28,   24,
- /*   100 */    25,   26,   19,   20,   19,   20,   28,   24,   28,   24,
- /*   110 */    27,   28,   27,
+ /*     0 */     1,    2,    3,    4,    5,    6,    7,   11,    9,   10,
+ /*    10 */    23,   24,   13,   26,    0,   28,   29,   30,   19,    8,
+ /*    20 */     1,    2,    3,    4,    5,    6,    7,    0,    9,   16,
+ /*    30 */    23,   24,   13,   26,   17,   28,   29,   30,   19,   15,
+ /*    40 */     1,    2,    3,    4,    5,    6,    7,   21,    9,   23,
+ /*    50 */    24,   18,   27,   14,   28,    1,    2,    3,    4,    5,
+ /*    60 */     6,    7,   27,    9,   20,   23,   24,   23,   24,   36,
+ /*    70 */    28,   10,   28,   19,   13,   31,   32,   33,   34,   35,
+ /*    80 */     1,    2,    3,    4,    5,    6,    7,   36,    9,   20,
+ /*    90 */    12,   13,   23,   24,   36,   36,   36,   28,   36,   36,
+ /*   100 */    31,   32,   33,   34,   20,   36,   36,   23,   24,   36,
+ /*   110 */    20,   36,   28,   23,   24,   31,   32,   33,   28,   36,
+ /*   120 */    36,   31,   32,   36,   23,   24,   25,   36,   20,   28,
+ /*   130 */    29,   23,   24,   36,   20,   36,   28,   23,   24,   31,
+ /*   140 */    36,   36,   28,   36,   36,   31,   23,   24,   36,   36,
+ /*   150 */    36,   28,   29,   30,
 };
-#define YY_SHIFT_USE_DFLT (-4)
-#define YY_SHIFT_COUNT (18)
-#define YY_SHIFT_MIN   (-3)
-#define YY_SHIFT_MAX   (64)
+#define YY_SHIFT_USE_DFLT (-5)
+#define YY_SHIFT_COUNT (29)
+#define YY_SHIFT_MIN   (-4)
+#define YY_SHIFT_MAX   (79)
 static const signed char yy_shift_ofst[] = {
- /*     0 */    58,   58,   58,   -1,   44,   58,   29,   29,   13,   13,
- /*    10 */    64,   -3,    2,    2,    2,    2,   15,   21,   11,
+ /*     0 */    79,   39,   39,   39,   39,   54,   54,   -1,   19,   39,
+ /*    10 */    39,   79,   79,   79,   78,   61,   -4,   17,   33,   13,
+ /*    20 */    17,   24,   13,   24,   -4,   -4,   -4,   11,   27,   14,
 };
-#define YY_REDUCE_USE_DFLT (-1)
-#define YY_REDUCE_COUNT (11)
-#define YY_REDUCE_MIN   (0)
-#define YY_REDUCE_MAX   (85)
+#define YY_REDUCE_USE_DFLT (-14)
+#define YY_REDUCE_COUNT (15)
+#define YY_REDUCE_MIN   (-13)
+#define YY_REDUCE_MAX   (123)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    20,   60,   49,   75,   75,   68,   85,   83,    5,    5,
- /*    10 */     4,    3,
+ /*     0 */    26,   44,   69,   84,   90,    7,  -13,  123,  123,  114,
+ /*    10 */   108,  101,   42,   42,   35,   25,
 };
 static const YYACTIONTYPE yy_default[] = {
- /*     0 */    64,   58,   58,   64,   64,   53,   64,   64,   54,   57,
- /*    10 */    64,   64,   64,   61,   52,   51,   64,   50,   49,   59,
- /*    20 */    60,   56,   63,   62,   50,   49,   55,   48,   47,   46,
- /*    30 */    45,   44,   43,   42,   41,   40,   39,
+ /*     0 */    86,   86,   86,   86,   86,   71,   71,   86,   86,   86,
+ /*    10 */    86,   66,   67,   70,   86,   86,   86,   84,   85,   82,
+ /*    20 */    83,   80,   81,   79,   74,   65,   64,   86,   63,   62,
+ /*    30 */    72,   78,   77,   76,   75,   73,   69,   63,   62,   68,
+ /*    40 */    61,   60,   59,   58,   57,   56,   55,   54,   53,   52,
 };
 
 /* The next table maps tokens into fallback tokens.  If a construct
@@ -295,10 +308,12 @@ static const char *const yyTokenName[] = {
   "$",             "TOK_SYMBOL",    "TOK_BOOL",      "TOK_CHAR",    
   "TOK_SINT64",    "TOK_REAL64",    "TOK_STRING",    "TOK_LPAR",    
   "TOK_RPAR",      "TOK_LBR",       "TOK_RBR",       "TOK_LSQB",    
-  "TOK_RSQB",      "TOK_SEMICOL",   "TOK_OP_UNARY",  "TOK_OP_BINARY",
+  "TOK_RSQB",      "TOK_SEMICOL",   "TOK_OP_UNARY",  "TOK_OP_BIN0", 
+  "TOK_OP_BIN1",   "TOK_OP_BIN2",   "TOK_OP_BIN3",   "TOK_DO",      
   "error",         "program",       "cell_list",     "atom",        
   "sexpr",         "se_members",    "member_list",   "sc",          
   "ilist",         "list",          "be_members",    "unary",       
+  "binary0",       "binary1",       "binary2",       "binary3",     
 };
 #endif /* NDEBUG */
 
@@ -332,7 +347,16 @@ static const char *const yyRuleName[] = {
  /*  23 */ "member_list ::= member_list sc be_members",
  /*  24 */ "unary ::= ilist",
  /*  25 */ "unary ::= TOK_OP_UNARY unary",
- /*  26 */ "list ::= list TOK_OP_BINARY unary",
+ /*  26 */ "unary ::= error",
+ /*  27 */ "binary0 ::= unary",
+ /*  28 */ "binary0 ::= binary0 TOK_OP_BIN0 unary",
+ /*  29 */ "binary1 ::= binary0",
+ /*  30 */ "binary1 ::= binary1 TOK_OP_BIN1 binary0",
+ /*  31 */ "binary2 ::= binary1",
+ /*  32 */ "binary2 ::= binary2 TOK_OP_BIN2 binary1",
+ /*  33 */ "binary3 ::= binary2",
+ /*  34 */ "binary3 ::= binary3 TOK_OP_BIN3 binary2",
+ /*  35 */ "be_members ::= TOK_DO binary3",
 };
 #endif /* NDEBUG */
 
@@ -646,33 +670,42 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 17, 1 },
-  { 17, 1 },
-  { 19, 1 },
-  { 19, 1 },
-  { 19, 1 },
-  { 19, 1 },
-  { 19, 1 },
-  { 19, 1 },
-  { 20, 3 },
-  { 20, 3 },
-  { 20, 4 },
-  { 20, 4 },
-  { 24, 1 },
-  { 24, 1 },
-  { 25, 1 },
-  { 25, 2 },
-  { 21, 0 },
+  { 21, 1 },
   { 21, 1 },
   { 23, 1 },
-  { 23, 2 },
-  { 26, 1 },
-  { 22, 0 },
-  { 22, 1 },
-  { 22, 3 },
+  { 23, 1 },
+  { 23, 1 },
+  { 23, 1 },
+  { 23, 1 },
+  { 23, 1 },
+  { 24, 3 },
+  { 24, 3 },
+  { 24, 4 },
+  { 24, 4 },
+  { 28, 1 },
+  { 28, 1 },
+  { 29, 1 },
+  { 29, 2 },
+  { 25, 0 },
+  { 25, 1 },
   { 27, 1 },
   { 27, 2 },
-  { 25, 3 },
+  { 30, 1 },
+  { 26, 0 },
+  { 26, 1 },
+  { 26, 3 },
+  { 31, 1 },
+  { 31, 2 },
+  { 31, 1 },
+  { 32, 1 },
+  { 32, 3 },
+  { 33, 1 },
+  { 33, 3 },
+  { 34, 1 },
+  { 34, 3 },
+  { 35, 1 },
+  { 35, 3 },
+  { 30, 2 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -731,7 +764,7 @@ static void yy_reduce(
       case 1: /* program ::= sexpr */ yytestcase(yyruleno==1);
 #line 67 "/home/aifu/Projects/schizo/src/parser.y"
 { s->root = PR(yymsp[0].minor.yy0); }
-#line 735 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 768 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 2: /* atom ::= TOK_SYMBOL */
       case 3: /* atom ::= TOK_BOOL */ yytestcase(yyruleno==3);
@@ -741,77 +774,94 @@ static void yy_reduce(
       case 7: /* atom ::= TOK_STRING */ yytestcase(yyruleno==7);
 #line 71 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = yymsp[0].minor.yy0; }
-#line 745 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 778 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 8: /* sexpr ::= TOK_LPAR se_members TOK_RPAR */
 #line 79 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(yymsp[-1].minor.yy0); }
-#line 750 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 783 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 9: /* sexpr ::= TOK_LBR member_list TOK_RBR */
 #line 80 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("begin")), ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)); }
-#line 755 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 788 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 10: /* sexpr ::= TOK_LBR member_list sc TOK_RBR */
 #line 81 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("begin")), ( yymsp[-2].minor.yy0 && yymsp[-2].minor.yy0->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(yymsp[-2].minor.yy0).get()) : yymsp[-2].minor.yy0)); }
-#line 760 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 793 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 11: /* sexpr ::= ilist TOK_LSQB member_list TOK_RSQB */
 #line 83 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(PR(new exp::symbol("vector.get")),
 									  PR(new exp::list(yymsp[-3].minor.yy0, ( yymsp[-1].minor.yy0 && yymsp[-1].minor.yy0->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(yymsp[-1].minor.yy0).get()) : yymsp[-1].minor.yy0)))); }
-#line 766 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 799 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 12: /* ilist ::= atom */
       case 13: /* ilist ::= sexpr */ yytestcase(yyruleno==13);
+      case 27: /* binary0 ::= unary */ yytestcase(yyruleno==27);
+      case 29: /* binary1 ::= binary0 */ yytestcase(yyruleno==29);
+      case 31: /* binary2 ::= binary1 */ yytestcase(yyruleno==31);
+      case 33: /* binary3 ::= binary2 */ yytestcase(yyruleno==33);
+      case 35: /* be_members ::= TOK_DO binary3 */ yytestcase(yyruleno==35);
 #line 86 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(yymsp[0].minor.yy0); }
-#line 772 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 810 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 14: /* list ::= ilist */
-      case 24: /* unary ::= ilist */ yytestcase(yyruleno==24);
 #line 89 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, nullptr)); }
-#line 778 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 815 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 15: /* list ::= list ilist */
 #line 90 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, yymsp[-1].minor.yy0)); }
-#line 783 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 820 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 16: /* se_members ::= */
       case 21: /* member_list ::= */ yytestcase(yyruleno==21);
 #line 92 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = nullptr; }
-#line 789 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 826 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 17: /* se_members ::= list */
       case 20: /* be_members ::= list */ yytestcase(yyruleno==20);
 #line 93 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(exp::list::reverse(yymsp[0].minor.yy0).get()); }
-#line 795 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 832 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 22: /* member_list ::= be_members */
 #line 103 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list((exp::list::length(yymsp[0].minor.yy0) == 1) ? exp::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, nullptr)); }
-#line 800 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 837 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 23: /* member_list ::= member_list sc be_members */
 #line 104 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list((exp::list::length(yymsp[0].minor.yy0) == 1) ? exp::list::head(yymsp[0].minor.yy0) : yymsp[0].minor.yy0, yymsp[-2].minor.yy0)); }
-#line 805 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 842 "/home/aifu/Projects/schizo/src/parser.c"
+        break;
+      case 24: /* unary ::= ilist */
+#line 107 "/home/aifu/Projects/schizo/src/parser.y"
+{ fprintf(stderr, "*** UNARY ***\n"); yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, nullptr)); }
+#line 847 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 25: /* unary ::= TOK_OP_UNARY unary */
-#line 107 "/home/aifu/Projects/schizo/src/parser.y"
-{ yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, yymsp[0].minor.yy0)); }
-#line 810 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 108 "/home/aifu/Projects/schizo/src/parser.y"
+{ fprintf(stderr, "*** UNARY UNARY ***\n");yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, yymsp[0].minor.yy0)); }
+#line 852 "/home/aifu/Projects/schizo/src/parser.c"
         break;
-      case 26: /* list ::= list TOK_OP_BINARY unary */
-#line 110 "/home/aifu/Projects/schizo/src/parser.y"
+      case 26: /* unary ::= error */
+#line 109 "/home/aifu/Projects/schizo/src/parser.y"
+{ fprintf(stderr, "*** UNARY: error ***\n"); }
+#line 857 "/home/aifu/Projects/schizo/src/parser.c"
+        break;
+      case 28: /* binary0 ::= binary0 TOK_OP_BIN0 unary */
+      case 30: /* binary1 ::= binary1 TOK_OP_BIN1 binary0 */ yytestcase(yyruleno==30);
+      case 32: /* binary2 ::= binary2 TOK_OP_BIN2 binary1 */ yytestcase(yyruleno==32);
+      case 34: /* binary3 ::= binary3 TOK_OP_BIN3 binary2 */ yytestcase(yyruleno==34);
+#line 112 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, new exp::list(yymsp[-2].minor.yy0, yymsp[0].minor.yy0))); }
-#line 815 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 865 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       default:
       /* (18) sc ::= TOK_SEMICOL */ yytestcase(yyruleno==18);
@@ -885,7 +935,7 @@ static void yy_syntax_error(
 			printf("possible token: %s\n", yyTokenName[i]);
 		}
 	}
-#line 889 "/home/aifu/Projects/schizo/src/parser.cpp"
+#line 939 "/home/aifu/Projects/schizo/src/parser.c"
   parserARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 

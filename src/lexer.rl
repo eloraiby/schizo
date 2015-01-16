@@ -40,6 +40,14 @@ namespace schizo {
 			parser_.token_list	= new exp::list(tmpc, parser_.token_list); \
 			parser_advance(yyparser, tmpc->type(), tmpc.get(), &parser_)
 
+#define ADVANCE_OP(A, T)	parser_.token_start	= ts; \
+			parser_.token_end	= te; \
+			parser_.token_line	= line; \
+			copy_token(ts, te, tmp); \
+			exp::iptr tmpc = token_to_##A(tmp); \
+			parser_.token_list	= new exp::list(tmpc, parser_.token_list); \
+			parser_advance(yyparser, T, tmpc.get(), &parser_)
+
 #define ADVANCE_TOKEN(A)	parser_advance(yyparser, A, nullptr, &parser_)
 
 #define PUSH_TE()	const char* tmp_te = te
@@ -101,13 +109,6 @@ namespace schizo {
 									POP_TE();
 								};
 
-		# Identifiers
-		( [a-zA-Z_] [a-zA-Z0-9_]* )			{ ADVANCE( symbol );};
-		( op_char op_char* )				{ ADVANCE( symbol );};
-
-		# Floating literals.
-		( [+\-]? fract_const exponent? | [+\-]? digit+ exponent ) 	{ ADVANCE( real64 );};
-
 
 		# Integer decimal. Leading part buffered by float.
 		( [+\-]? ( '0' | [1-9] [0-9]* ) )		{ ADVANCE( sint64 ); };
@@ -121,6 +122,24 @@ namespace schizo {
 									fprintf(stderr, "\n");
 									cs	= scanner_error;
 								};
+
+		# Identifiers
+		( [a-zA-Z_] [a-zA-Z0-9_]* )			{ ADVANCE( symbol );};
+		( op_char op_char* )				{
+										copy_token(ts, te, tmp);
+
+										if( strcmp("+", tmp) == 0 ) {
+											ADVANCE_OP(symbol, TOK_OP_BIN3);
+										} else if( strcmp("*", tmp) == 0 ) {
+											ADVANCE_OP(symbol, TOK_OP_BIN0);
+										} else {
+											ADVANCE( symbol );
+										}
+								};
+
+
+		# Floating literals.
+		( [+\-]? fract_const exponent? | [+\-]? digit+ exponent ) 	{ ADVANCE( real64 );};
 
 		# Only buffer the second item, first buffered by symbol. */
 		'('						{ ADVANCE_TOKEN( TOK_LPAR );};

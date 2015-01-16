@@ -42,6 +42,14 @@ namespace schizo {
 			parser_.token_list	= new exp::list(tmpc, parser_.token_list); \
 			parser_advance(yyparser, tmpc->type(), tmpc.get(), &parser_)
 
+#define ADVANCE_OP(A, T)	parser_.token_start	= ts; \
+			parser_.token_end	= te; \
+			parser_.token_line	= line; \
+			copy_token(ts, te, tmp); \
+			exp::iptr tmpc = token_to_##A(tmp); \
+			parser_.token_list	= new exp::list(tmpc, parser_.token_list); \
+			parser_advance(yyparser, T, tmpc.get(), &parser_)
+
 #define ADVANCE_TOKEN(A)	parser_advance(yyparser, A, nullptr, &parser_)
 
 #define PUSH_TE()	const char* tmp_te = te
@@ -56,7 +64,7 @@ namespace schizo {
 
 
 
-#line 60 "/home/aifu/Projects/schizo/src/lexer.cpp"
+#line 68 "/home/aifu/Projects/schizo/src/lexer.cpp"
 static const char _scanner_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
 	3, 1, 4, 1, 10, 1, 11, 1, 
@@ -160,12 +168,12 @@ static const char _scanner_trans_targs[] = {
 
 static const char _scanner_trans_actions[] = {
 	0, 0, 19, 0, 0, 0, 15, 0, 
-	0, 17, 49, 58, 53, 0, 0, 51, 
+	0, 17, 51, 64, 53, 0, 0, 49, 
 	0, 0, 0, 55, 0, 1, 0, 3, 
 	70, 67, 0, 0, 35, 0, 21, 23, 
-	9, 0, 0, 61, 0, 33, 0, 29, 
-	31, 25, 27, 39, 47, 13, 11, 0, 
-	41, 43, 0, 64, 45, 9, 37
+	9, 0, 0, 58, 0, 33, 0, 29, 
+	31, 25, 27, 43, 47, 13, 11, 0, 
+	45, 37, 0, 61, 39, 9, 41
 };
 
 static const char _scanner_to_state_actions[] = {
@@ -196,7 +204,7 @@ static const int scanner_en_c_comment = 13;
 static const int scanner_en_main = 15;
 
 
-#line 144 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 163 "/home/aifu/Projects/schizo/src/lexer.rl"
 
 
 static uint32
@@ -290,7 +298,7 @@ parse(const char* str)
 	memset(tmp, 0, sizeof(tmp));
 
 	
-#line 294 "/home/aifu/Projects/schizo/src/lexer.cpp"
+#line 302 "/home/aifu/Projects/schizo/src/lexer.cpp"
 	{
 	cs = scanner_start;
 	ts = 0;
@@ -298,10 +306,10 @@ parse(const char* str)
 	act = 0;
 	}
 
-#line 237 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 256 "/home/aifu/Projects/schizo/src/lexer.rl"
 
 	
-#line 305 "/home/aifu/Projects/schizo/src/lexer.cpp"
+#line 313 "/home/aifu/Projects/schizo/src/lexer.cpp"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -322,7 +330,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 326 "/home/aifu/Projects/schizo/src/lexer.cpp"
+#line 334 "/home/aifu/Projects/schizo/src/lexer.cpp"
 		}
 	}
 
@@ -389,11 +397,11 @@ _eof_trans:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 68 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 76 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{ ++line; }
 	break;
 	case 1:
-#line 70 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 78 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{ {cs = 15; goto _again;} }
 	break;
 	case 4:
@@ -401,35 +409,35 @@ _eof_trans:
 	{te = p+1;}
 	break;
 	case 5:
-#line 109 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{act = 8;}
+#line 114 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{act = 6;}
 	break;
 	case 6:
-#line 113 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{act = 9;}
+#line 116 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{act = 7;}
 	break;
 	case 7:
-#line 115 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 142 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{act = 10;}
 	break;
 	case 8:
-#line 134 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 153 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{act = 18;}
 	break;
 	case 9:
-#line 142 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 161 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{act = 22;}
 	break;
 	case 10:
-#line 73 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 81 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE( boolean );}}
 	break;
 	case 11:
-#line 74 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 82 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE( boolean );}}
 	break;
 	case 12:
-#line 77 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 85 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -440,7 +448,7 @@ _eof_trans:
 								}}
 	break;
 	case 13:
-#line 86 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 94 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -451,7 +459,7 @@ _eof_trans:
 								}}
 	break;
 	case 14:
-#line 95 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 103 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -462,59 +470,47 @@ _eof_trans:
 								}}
 	break;
 	case 15:
-#line 126 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 145 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_LPAR );}}
 	break;
 	case 16:
-#line 127 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 146 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_RPAR );}}
 	break;
 	case 17:
-#line 128 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 147 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_LBR );}}
 	break;
 	case 18:
-#line 129 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 148 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_RBR );}}
 	break;
 	case 19:
-#line 130 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 149 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_LSQB );}}
 	break;
 	case 20:
-#line 131 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 150 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_RSQB );}}
 	break;
 	case 21:
-#line 132 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 151 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_SEMICOL );}}
 	break;
 	case 22:
-#line 137 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 156 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;{ printf("unexpected character %c\n", *ts); }}
 	break;
 	case 23:
-#line 141 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 160 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p+1;}
 	break;
 	case 24:
-#line 105 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p;p--;{ ADVANCE( symbol );}}
-	break;
-	case 25:
-#line 106 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p;p--;{ ADVANCE( symbol );}}
-	break;
-	case 26:
-#line 109 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{te = p;p--;{ ADVANCE( real64 );}}
-	break;
-	case 27:
-#line 113 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 114 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p;p--;{ ADVANCE( sint64 ); }}
 	break;
-	case 28:
-#line 115 "/home/aifu/Projects/schizo/src/lexer.rl"
+	case 25:
+#line 116 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p;p--;{
 									fprintf(stderr, "Error: invalid number:\n    ");
 
@@ -525,28 +521,57 @@ _eof_trans:
 									cs	= scanner_error;
 								}}
 	break;
+	case 26:
+#line 127 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{te = p;p--;{ ADVANCE( symbol );}}
+	break;
+	case 27:
+#line 128 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{te = p;p--;{
+										copy_token(ts, te, tmp);
+
+										if( strcmp("+", tmp) == 0 ) {
+											ADVANCE_OP(symbol, TOK_OP_BIN3);
+										} else if( strcmp("*", tmp) == 0 ) {
+											ADVANCE_OP(symbol, TOK_OP_BIN0);
+										} else {
+											ADVANCE( symbol );
+										}
+								}}
+	break;
+	case 28:
+#line 142 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{te = p;p--;{ ADVANCE( real64 );}}
+	break;
 	case 29:
-#line 137 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 156 "/home/aifu/Projects/schizo/src/lexer.rl"
 	{te = p;p--;{ printf("unexpected character %c\n", *ts); }}
 	break;
 	case 30:
-#line 106 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{{p = ((te))-1;}{ ADVANCE( symbol );}}
+#line 114 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{{p = ((te))-1;}{ ADVANCE( sint64 ); }}
 	break;
 	case 31:
-#line 113 "/home/aifu/Projects/schizo/src/lexer.rl"
-	{{p = ((te))-1;}{ ADVANCE( sint64 ); }}
+#line 128 "/home/aifu/Projects/schizo/src/lexer.rl"
+	{{p = ((te))-1;}{
+										copy_token(ts, te, tmp);
+
+										if( strcmp("+", tmp) == 0 ) {
+											ADVANCE_OP(symbol, TOK_OP_BIN3);
+										} else if( strcmp("*", tmp) == 0 ) {
+											ADVANCE_OP(symbol, TOK_OP_BIN0);
+										} else {
+											ADVANCE( symbol );
+										}
+								}}
 	break;
 	case 32:
 #line 1 "NONE"
 	{	switch( act ) {
-	case 8:
-	{{p = ((te))-1;} ADVANCE( real64 );}
-	break;
-	case 9:
+	case 6:
 	{{p = ((te))-1;} ADVANCE( sint64 ); }
 	break;
-	case 10:
+	case 7:
 	{{p = ((te))-1;}
 									fprintf(stderr, "Error: invalid number:\n    ");
 
@@ -557,6 +582,9 @@ _eof_trans:
 									cs	= scanner_error;
 								}
 	break;
+	case 10:
+	{{p = ((te))-1;} ADVANCE( real64 );}
+	break;
 	case 18:
 	{{p = ((te))-1;} ++line; }
 	break;
@@ -566,7 +594,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 570 "/home/aifu/Projects/schizo/src/lexer.cpp"
+#line 598 "/home/aifu/Projects/schizo/src/lexer.cpp"
 		}
 	}
 
@@ -579,7 +607,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 583 "/home/aifu/Projects/schizo/src/lexer.cpp"
+#line 611 "/home/aifu/Projects/schizo/src/lexer.cpp"
 		}
 	}
 
@@ -599,7 +627,7 @@ _again:
 	_out: {}
 	}
 
-#line 239 "/home/aifu/Projects/schizo/src/lexer.rl"
+#line 258 "/home/aifu/Projects/schizo/src/lexer.rl"
 
 	/* Check if we failed. */
 	if ( cs == scanner_error ) {

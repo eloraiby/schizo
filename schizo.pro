@@ -34,7 +34,7 @@ lexer.commands = ragel -C -o $$PWD/src/lexer.cpp $$PWD/src/lexer.rl
 lexer.depends =
 
 parser.target = parser.cpp
-parser.commands = $$PWD/lemon-cpp -X -T$$PWD/src/lempar.c_template $$PWD/src/parser.y
+parser.commands = lemon -T$$PWD/src/lempar.c_template $$PWD/src/parser.y && mv $$PWD/src/parser.c $$PWD/src/parser.cpp
 parser.depends = #lemon-cpp
 
 #lemon-cpp.target = lemon-cpp

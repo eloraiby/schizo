@@ -1,35 +1,19 @@
-#ifdef __cplusplus
-enum parser_tokens {
-	TOK_SYMBOL                     =  1,
-	TOK_BOOL                       =  2,
-	TOK_CHAR                       =  3,
-	TOK_SINT64                     =  4,
-	TOK_REAL64                     =  5,
-	TOK_STRING                     =  6,
-	TOK_LPAR                       =  7,
-	TOK_RPAR                       =  8,
-	TOK_LBR                        =  9,
-	TOK_RBR                        = 10,
-	TOK_LSQB                       = 11,
-	TOK_RSQB                       = 12,
-	TOK_SEMICOL                    = 13,
-	TOK_OP_UNARY                   = 14,
-	TOK_OP_BINARY                  = 15,
-};
-#else /* __cplusplus*/
-#define TOK_SYMBOL                       1
-#define TOK_BOOL                         2
-#define TOK_CHAR                         3
-#define TOK_SINT64                       4
-#define TOK_REAL64                       5
-#define TOK_STRING                       6
-#define TOK_LPAR                         7
-#define TOK_RPAR                         8
-#define TOK_LBR                          9
-#define TOK_RBR                         10
-#define TOK_LSQB                        11
-#define TOK_RSQB                        12
-#define TOK_SEMICOL                     13
-#define TOK_OP_UNARY                    14
-#define TOK_OP_BINARY                   15
-#endif /* __cplusplus*/
+#define TOK_SYMBOL                      1
+#define TOK_BOOL                        2
+#define TOK_CHAR                        3
+#define TOK_SINT64                      4
+#define TOK_REAL64                      5
+#define TOK_STRING                      6
+#define TOK_LPAR                        7
+#define TOK_RPAR                        8
+#define TOK_LBR                         9
+#define TOK_RBR                        10
+#define TOK_LSQB                       11
+#define TOK_RSQB                       12
+#define TOK_SEMICOL                    13
+#define TOK_OP_UNARY                   14
+#define TOK_OP_BIN0                    15
+#define TOK_OP_BIN1                    16
+#define TOK_OP_BIN2                    17
+#define TOK_OP_BIN3                    18
+#define TOK_DO                         19
