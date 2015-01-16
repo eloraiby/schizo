@@ -12,7 +12,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-QMAKE_CXX	= g++
+QMAKE_CXX	= clang
 QMAKE_CXXFLAGS	+= -std=c++11 -fno-rtti -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden -fvisibility-inlines-hidden -pedantic -ffunction-sections -fdata-sections
 QMAKE_LIBS	+= -ldl -lm -lpthread
 QMAKE_LFLAGS	+= -Wl,--gc-sections
@@ -27,24 +27,29 @@ SOURCES += \
     src/expression.cpp \
     src/special_forms.cpp \
     src/built_ins.cpp \
-    src/eval.cpp
+    src/eval.cpp \
 
 lexer.target = lexer.cpp
 lexer.commands = ragel -C -o $$PWD/src/lexer.cpp $$PWD/src/lexer.rl
 lexer.depends =
 
 parser.target = parser.cpp
-parser.commands = lemon -T$$PWD/src/lempar.c_template $$PWD/src/parser.y && mv $$PWD/src/parser.c $$PWD/src/parser.cpp
-parser.depends =
+parser.commands = $$PWD/lemon-cpp -X -T$$PWD/src/lempar.c_template $$PWD/src/parser.y
+parser.depends = #lemon-cpp
 
-QMAKE_EXTRA_TARGETS	+= lexer parser
+#lemon-cpp.target = lemon-cpp
+#lemon-cpp.commands = gcc -o$$PWD/lemon-cpp $$PWD/src/lemon-cpp.c
+#lemon-cpp.depends =
 
-PRE_TARGETDEPS	+= lexer.cpp parser.cpp
+QMAKE_EXTRA_TARGETS	+= lexer parser #lemon-cpp
+
+PRE_TARGETDEPS	+= lexer.cpp parser.cpp #lemon-cpp
 
 OTHER_FILES += \
     src/parser.y \
     src/lempar.c_template \
-    src/lexer.rl
+    src/lexer.rl \
+    src/lemon-cpp.c
 
 HEADERS += \
     src/parser.h \

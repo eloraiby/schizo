@@ -79,8 +79,10 @@ atom(A)		::= TOK_STRING(B).			{ A = B; }
 sexpr(A)	::= TOK_LPAR se_members(B) TOK_RPAR.	{ A = PR(B); }
 sexpr(A)	::= TOK_LBR member_list(B) TOK_RBR.	{ A = PR(new exp::list(PR(new exp::symbol("begin")), ( B && B->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(B).get()) : B)); }
 sexpr(A)	::= TOK_LBR member_list(B) sc TOK_RBR.	{ A = PR(new exp::list(PR(new exp::symbol("begin")), ( B && B->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(B).get()) : B)); }
+
 sexpr(A)	::= ilist(B) TOK_LSQB member_list(C) TOK_RSQB.	{ A = PR(new exp::list(PR(new exp::symbol("vector.get")),
 									  PR(new exp::list(B, ( C && C->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(C).get()) : C)))); }
+
 ilist(A)	::= atom(B).				{ A = PR(B); }
 ilist(A)	::= sexpr(B).				{ A = PR(B); }
 
@@ -101,4 +103,7 @@ member_list(A)	::=.					{ A = nullptr; }
 member_list(A)	::= be_members(B).			{ A = PR(new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, nullptr)); }
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new exp::list((exp::list::length(C) == 1) ? exp::list::head(C) : C, B)); }
 
-/* TODO: operator precedence */
+unary(A)	::= ilist(B).				{ A = PR(new exp::list(B, nullptr)); }
+unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(new exp::list(B, C)); }
+
+list(A)		::= list(B) TOK_OP_BINARY(C) unary(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
