@@ -792,23 +792,23 @@ static void yy_reduce(
 #line 793 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 12: /* list ::= sexpr */
-      case 21: /* unary ::= list */ yytestcase(yyruleno==21);
 #line 87 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, nullptr)); }
-#line 799 "/home/aifu/Projects/schizo/src/parser.c"
+#line 798 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 13: /* list ::= list sexpr */
 #line 88 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(new exp::list(yymsp[0].minor.yy0, yymsp[-1].minor.yy0)); }
-#line 804 "/home/aifu/Projects/schizo/src/parser.c"
+#line 803 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 14: /* se_members ::= */
       case 18: /* member_list ::= */ yytestcase(yyruleno==18);
 #line 90 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = nullptr; }
-#line 810 "/home/aifu/Projects/schizo/src/parser.c"
+#line 809 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 15: /* se_members ::= list */
+      case 21: /* unary ::= list */ yytestcase(yyruleno==21);
 #line 91 "/home/aifu/Projects/schizo/src/parser.y"
 { yygotominor.yy0 = PR(exp::list::reverse(yymsp[0].minor.yy0).get()); }
 #line 815 "/home/aifu/Projects/schizo/src/parser.c"
@@ -825,7 +825,7 @@ static void yy_reduce(
         break;
       case 22: /* unary ::= TOK_OP_UNARY unary */
 #line 104 "/home/aifu/Projects/schizo/src/parser.y"
-{ yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, yymsp[0].minor.yy0)); }
+{ yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, (exp::list::length(yymsp[0].minor.yy0) == 1) ? PR(new exp::list(exp::list::head(yymsp[0].minor.yy0), nullptr)) : yymsp[0].minor.yy0)); }
 #line 830 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       case 24: /* binary0 ::= binary0 TOK_OP_BIN0 unary */
@@ -833,7 +833,7 @@ static void yy_reduce(
       case 28: /* binary2 ::= binary2 TOK_OP_BIN2 binary1 */ yytestcase(yyruleno==28);
       case 30: /* binary3 ::= binary3 TOK_OP_BIN3 binary2 */ yytestcase(yyruleno==30);
 #line 107 "/home/aifu/Projects/schizo/src/parser.y"
-{ yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, new exp::list(yymsp[-2].minor.yy0, yymsp[0].minor.yy0))); }
+{ yygotominor.yy0 = PR(new exp::list(yymsp[-1].minor.yy0, new exp::list((exp::list::length(yymsp[-2].minor.yy0) == 1) ? exp::list::head(yymsp[-2].minor.yy0) : yymsp[-2].minor.yy0, (exp::list::length(yymsp[0].minor.yy0) == 1) ? PR(new exp::list(exp::list::head(yymsp[0].minor.yy0), nullptr)) : yymsp[0].minor.yy0))); }
 #line 838 "/home/aifu/Projects/schizo/src/parser.c"
         break;
       default:

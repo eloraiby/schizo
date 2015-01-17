@@ -100,20 +100,20 @@ member_list(A)	::= be_members(B).			{ A = PR(new exp::list((exp::list::length(B)
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new exp::list((exp::list::length(C) == 1) ? exp::list::head(C) : C, B)); }
 
 /* TEST ZONE */
-unary(A)	::= list(B).				{ A = PR(new exp::list(B, nullptr)); }
-unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(new exp::list(B, C)); }
+unary(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
+unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(new exp::list(B, (exp::list::length(C) == 1) ? PR(new exp::list(exp::list::head(C), nullptr)) : C)); }
 
 binary0(A)	::= unary(B).				{ A = PR(B); }
-binary0(A)	::= binary0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
+binary0(A)	::= binary0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
 
 binary1(A)	::= binary0(B).				{ A = PR(B); }
-binary1(A)	::= binary1(B) TOK_OP_BIN1(C) binary0(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
+binary1(A)	::= binary1(B) TOK_OP_BIN1(C) binary0(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
 
 binary2(A)	::= binary1(B).				{ A = PR(B); }
-binary2(A)	::= binary2(B) TOK_OP_BIN2(C) binary1(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
+binary2(A)	::= binary2(B) TOK_OP_BIN2(C) binary1(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
 
 binary3(A)	::= binary2(B).				{ A = PR(B); }
-binary3(A)	::= binary3(B) TOK_OP_BIN3(C) binary2(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
+binary3(A)	::= binary3(B) TOK_OP_BIN3(C) binary2(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
 
 be_members(A)	::= binary3(B).				{ A = PR(B); }
 
