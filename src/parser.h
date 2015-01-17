@@ -16,4 +16,3 @@
 #define TOK_OP_BIN1                    16
 #define TOK_OP_BIN2                    17
 #define TOK_OP_BIN3                    18
-#define TOK_DO                         19

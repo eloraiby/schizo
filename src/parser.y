@@ -64,7 +64,6 @@ using namespace schizo;
 %start_symbol program
 
 /* a program is a exp */
-program		::= atom(B).				{ s->root = PR(B); }
 program		::= sexpr(B).				{ s->root = PR(B); }
 
 /* literals */
@@ -80,14 +79,13 @@ sexpr(A)	::= TOK_LPAR se_members(B) TOK_RPAR.	{ A = PR(B); }
 sexpr(A)	::= TOK_LBR member_list(B) TOK_RBR.	{ A = PR(new exp::list(PR(new exp::symbol("begin")), ( B && B->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(B).get()) : B)); }
 sexpr(A)	::= TOK_LBR member_list(B) sc TOK_RBR.	{ A = PR(new exp::list(PR(new exp::symbol("begin")), ( B && B->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(B).get()) : B)); }
 
-sexpr(A)	::= ilist(B) TOK_LSQB member_list(C) TOK_RSQB.	{ A = PR(new exp::list(PR(new exp::symbol("vector.get")),
+sexpr(A)	::= sexpr(B) TOK_LSQB member_list(C) TOK_RSQB.	{ A = PR(new exp::list(PR(new exp::symbol("vector.get")),
 									  PR(new exp::list(B, ( C && C->type() == exp::EXP_LIST ) ? PR(exp::list::reverse(C).get()) : C)))); }
 
-ilist(A)	::= atom(B).				{ A = PR(B); }
-ilist(A)	::= sexpr(B).				{ A = PR(B); }
+sexpr(A)	::= atom(B).				{ A = PR(B); }
 
-list(A)		::= ilist(B).				{ A = PR(new exp::list(B, nullptr)); }
-list(A)		::= list(B) ilist(C).			{ A = PR(new exp::list(C, B)); }
+list(A)		::= sexpr(B).				{ A = PR(new exp::list(B, nullptr)); }
+list(A)		::= list(B) sexpr(C).			{ A = PR(new exp::list(C, B)); }
 
 se_members(A)	::=.					{ A = nullptr; }
 se_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
@@ -96,17 +94,14 @@ se_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
 sc		::= TOK_SEMICOL.
 sc		::= sc TOK_SEMICOL.
 
-be_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
-
 /* { ... } */
 member_list(A)	::=.					{ A = nullptr; }
 member_list(A)	::= be_members(B).			{ A = PR(new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, nullptr)); }
 member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new exp::list((exp::list::length(C) == 1) ? exp::list::head(C) : C, B)); }
 
 /* TEST ZONE */
-unary(A)	::= ilist(B).				{ fprintf(stderr, "*** UNARY ***\n"); A = PR(new exp::list(B, nullptr)); }
-unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ fprintf(stderr, "*** UNARY UNARY ***\n");A = PR(new exp::list(B, C)); }
-unary		::= error.				{ fprintf(stderr, "*** UNARY: error ***\n"); }
+unary(A)	::= list(B).				{ A = PR(new exp::list(B, nullptr)); }
+unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(new exp::list(B, C)); }
 
 binary0(A)	::= unary(B).				{ A = PR(B); }
 binary0(A)	::= binary0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
@@ -120,5 +115,6 @@ binary2(A)	::= binary2(B) TOK_OP_BIN2(C) binary1(D).	{ A = PR(new exp::list(C, n
 binary3(A)	::= binary2(B).				{ A = PR(B); }
 binary3(A)	::= binary3(B) TOK_OP_BIN3(C) binary2(D).	{ A = PR(new exp::list(C, new exp::list(B, D))); }
 
-be_members(A)	::= TOK_DO binary3(B).			{ A = PR(B); }
+be_members(A)	::= binary3(B).				{ A = PR(B); }
+
 

@@ -73,7 +73,7 @@ main(int argc,
 				    "{ a + b + c; a2 + b2 + c2; }",
 				    "{ a + b * 2 }",
 
-				    "("\
+/*				    "("\
 				    "  (lambda ()" \
 				    "          (bind str \"hello\")" \
 				    "          (bind b #t)" \
@@ -85,7 +85,7 @@ main(int argc,
 				    "  )" \
 				    "  ()" \
 				    ")"
-	};
+*/	};
 
 	const char*	example	= "("\
 				  "  (lambda ()" \
