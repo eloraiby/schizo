@@ -31,7 +31,10 @@
 
 using namespace schizo;
 
-#define PR(V)	parser::add_token(s, V)
+#define PR(V)		parser::add_token(s, V)
+#define LIST		new exp::list
+#define LENGTH		exp::list::length
+#define HEAD		exp::list::head
 
 }
 
@@ -84,8 +87,8 @@ sexpr(A)	::= sexpr(B) TOK_LSQB member_list(C) TOK_RSQB.	{ A = PR(new exp::list(P
 
 sexpr(A)	::= atom(B).				{ A = PR(B); }
 
-list(A)		::= sexpr(B).				{ A = PR(new exp::list(B, nullptr)); }
-list(A)		::= list(B) sexpr(C).			{ A = PR(new exp::list(C, B)); }
+list(A)		::= sexpr(B).				{ A = PR(LIST(B, nullptr)); }
+list(A)		::= list(B) sexpr(C).			{ A = PR(LIST(C, B)); }
 
 se_members(A)	::=.					{ A = nullptr; }
 se_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
@@ -101,19 +104,35 @@ member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new exp::list((exp:
 
 /* TEST ZONE */
 unary(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
-unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(new exp::list(B, (exp::list::length(C) == 1) ? PR(new exp::list(exp::list::head(C), nullptr)) : C)); }
+unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(LIST(B, PR(LIST(LENGTH(C) == 1 ? PR(LIST(HEAD(C), nullptr)) : C, nullptr)))); }
 
 binary0(A)	::= unary(B).				{ A = PR(B); }
-binary0(A)	::= binary0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
+binary0(A)	::= binary0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(LIST(PR(LIST(C,
+									      PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
+										      PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
+											 nullptr))))))
+								      , nullptr)); }
 
 binary1(A)	::= binary0(B).				{ A = PR(B); }
-binary1(A)	::= binary1(B) TOK_OP_BIN1(C) binary0(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
+binary1(A)	::= binary1(B) TOK_OP_BIN1(C) binary0(D).	{ A = PR(LIST(PR(LIST(C,
+								PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
+									PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
+									   nullptr))))))
+								, nullptr)); }
 
 binary2(A)	::= binary1(B).				{ A = PR(B); }
-binary2(A)	::= binary2(B) TOK_OP_BIN2(C) binary1(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
+binary2(A)	::= binary2(B) TOK_OP_BIN2(C) binary1(D).	{ A = PR(LIST(PR(LIST(C,
+								PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
+									PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
+									   nullptr))))))
+								, nullptr)); }
 
 binary3(A)	::= binary2(B).				{ A = PR(B); }
-binary3(A)	::= binary3(B) TOK_OP_BIN3(C) binary2(D).	{ A = PR(new exp::list(C, new exp::list((exp::list::length(B) == 1) ? exp::list::head(B) : B, (exp::list::length(D) == 1) ? PR(new exp::list(exp::list::head(D), nullptr)) : D))); }
+binary3(A)	::= binary3(B) TOK_OP_BIN3(C) binary2(D).	{ A = PR(LIST(PR(LIST(C,
+								PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
+									PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
+									   nullptr))))))
+								, nullptr)); }
 
 be_members(A)	::= binary3(B).				{ A = PR(B); }
 
