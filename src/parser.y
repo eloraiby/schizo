@@ -36,8 +36,15 @@ using namespace schizo;
 #define LENGTH		exp::list::length
 #define HEAD		exp::list::head
 
+exp::iptr
+make_binary_op(parser* s, exp::iptr op, exp::iptr left, exp::iptr right)
+{ return LIST(PR(LIST(op,
+		      PR(LIST(LENGTH(left) == 1 ? HEAD(left) : left,
+			      PR(LIST(LENGTH(right) == 1 ? HEAD(right) : right,
+			      nullptr))))))
+		      , nullptr);
 }
-
+}
 %type program	{ exp* }
 %type cell_list	{ exp* }
 
@@ -106,34 +113,18 @@ member_list(A)	::= member_list(B) sc be_members(C).	{ A = PR(new exp::list((exp:
 unary(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
 unary(A)	::= TOK_OP_UNARY(B) unary(C).		{ A = PR(LIST(B, PR(LIST(LENGTH(C) == 1 ? PR(LIST(HEAD(C), nullptr)) : C, nullptr)))); }
 
-binary0(A)	::= unary(B).				{ A = PR(B); }
-binary0(A)	::= binary0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(LIST(PR(LIST(C,
-									      PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
-										      PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
-											 nullptr))))))
-								      , nullptr)); }
+binop0(A)	::= unary(B).				{ A = PR(B); }
+binop0(A)	::= binop0(B) TOK_OP_BIN0(C) unary(D).	{ A = PR(make_binary_op(s, C, B, D).get()); }
 
-binary1(A)	::= binary0(B).				{ A = PR(B); }
-binary1(A)	::= binary1(B) TOK_OP_BIN1(C) binary0(D).	{ A = PR(LIST(PR(LIST(C,
-								PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
-									PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
-									   nullptr))))))
-								, nullptr)); }
+binop1(A)	::= binop0(B).				{ A = PR(B); }
+binop1(A)	::= binop1(B) TOK_OP_BIN1(C) binop0(D).	{ A = PR(make_binary_op(s, C, B, D).get()); }
 
-binary2(A)	::= binary1(B).				{ A = PR(B); }
-binary2(A)	::= binary2(B) TOK_OP_BIN2(C) binary1(D).	{ A = PR(LIST(PR(LIST(C,
-								PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
-									PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
-									   nullptr))))))
-								, nullptr)); }
+binop2(A)	::= binop1(B).				{ A = PR(B); }
+binop2(A)	::= binop2(B) TOK_OP_BIN2(C) binop1(D).	{ A = PR(make_binary_op(s, C, B, D).get()); }
 
-binary3(A)	::= binary2(B).				{ A = PR(B); }
-binary3(A)	::= binary3(B) TOK_OP_BIN3(C) binary2(D).	{ A = PR(LIST(PR(LIST(C,
-								PR(LIST(LENGTH(B) == 1 ? HEAD(B) : B,
-									PR(LIST(LENGTH(D) == 1 ? HEAD(D) : D,
-									   nullptr))))))
-								, nullptr)); }
+binop3(A)	::= binop2(B).				{ A = PR(B); }
+binop3(A)	::= binop3(B) TOK_OP_BIN3(C) binop2(D).	{ A = PR(make_binary_op(s, C, B, D).get()); }
 
-be_members(A)	::= binary3(B).				{ A = PR(B); }
+be_members(A)	::= binop3(B).				{ A = PR(B); }
 
 
