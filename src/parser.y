@@ -98,7 +98,7 @@ list(A)		::= sexpr(B).				{ A = PR(LIST(B, nullptr)); }
 list(A)		::= list(B) sexpr(C).			{ A = PR(LIST(C, B)); }
 
 se_members(A)	::=.					{ A = nullptr; }
-se_members(A)	::= list(B).				{ A = PR(exp::list::reverse(B).get()); }
+se_members(A)	::= be_members(B).			{ A = PR(B); }
 
 /* ; ;;... */
 sc		::= TOK_SEMICOL.
