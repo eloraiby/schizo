@@ -54,6 +54,9 @@ OTHER_FILES += \
 HEADERS += \
     src/parser.h \
     include/schizo/schizo.hpp \
-    include/schizo/platform.hpp \
-    include/schizo/intrusive_ptr.hpp \
-    include/schizo/expression.hpp
+    include/schizo/expression.hpp \
+    include/ftl/function.hpp \
+    include/ftl/intrusive_ptr.hpp \
+    include/ftl/continuation.hpp \
+    include/ftl/array.hpp \
+    include/ftl/platform.hpp

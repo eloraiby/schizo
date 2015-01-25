@@ -1,5 +1,5 @@
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+#ifndef FTL_PLATFORM_HPP
+#define FTL_PLATFORM_HPP
 /*
   Schizo programming language
   Copyright (C) 2014-2015  Wael El Oraiby
@@ -54,4 +54,4 @@ template<typename T>	T max(T a, T b)	{ return a > b ? a : b; }
 
 }	// namespace schizo
 
-#endif // PLATFORM_HPP
+#endif // FTL_PLATFORM_HPP

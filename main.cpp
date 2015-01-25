@@ -25,6 +25,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 
 using namespace schizo;
 
@@ -72,6 +73,7 @@ main(int argc,
 				    "{ !a + !b }",
 				    "{ a + b + c; a2 + b2 + c2; }",
 				    "{ a + b * 2 }",
+				    "{ a x y + b z w * 2 }",
 
 /*				    "("\
 				    "  (lambda ()" \
@@ -124,6 +126,8 @@ main(int argc,
 
 	mtime = (long)(((seconds) * 1000 + useconds/1000.0) + 0.5);
 	fprintf(stderr, "took %ld ms to scan memory\n", mtime);
+
+	fprintf(stderr, "sizeof(mutex): %u\n", sizeof(pthread_mutex_t));
 
 	return 0;
 }

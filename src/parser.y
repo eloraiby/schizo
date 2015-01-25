@@ -48,18 +48,6 @@ make_binary_op(parser* s, exp::iptr op, exp::iptr left, exp::iptr right)
 %type program	{ exp* }
 %type cell_list	{ exp* }
 
-/*
-%left BIN_OP3
-%left BIN_OP2
-%left BIN_OP1
-%left BIN_OP0
-
-%left UN_OP3
-%left UN_OP2
-%left UN_OP1
-%left UN_OP0
-*/
-
 %syntax_error {
 	int i = 0;
 	int n = sizeof(yyTokenName) / sizeof(yyTokenName[0]);

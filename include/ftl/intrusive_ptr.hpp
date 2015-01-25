@@ -1,5 +1,5 @@
-#ifndef INTRUSIVE_PTR_HPP
-#define INTRUSIVE_PTR_HPP
+#ifndef FTL_INTRUSIVE_PTR_HPP
+#define FTL_INTRUSIVE_PTR_HPP
 /*
   Schizo programming language
   Copyright (C) 2014-2015  Wael El Oraiby
@@ -19,7 +19,7 @@
 
   Also add information on how to contact you by electronic and paper mail.
 */
-namespace schizo {
+namespace ftl {
 //
 //  intrusive_ptr.hpp
 //
@@ -149,5 +149,5 @@ template<class T> T * get_pointer(intrusive_ptr<T> const & p)	{	return p.get(); 
 template<class T, class U> intrusive_ptr<T> static_pointer_cast(intrusive_ptr<U> const & p)	{	return static_cast<T *>(p.get());	}
 template<class T, class U> intrusive_ptr<T> const_pointer_cast(intrusive_ptr<U> const & p)	{	return const_cast<T *>(p.get());	}
 template<class T, class U> intrusive_ptr<T> dynamic_pointer_cast(intrusive_ptr<U> const & p)	{	return dynamic_cast<T *>(p.get());	}
-}	// namespace schizo
-#endif // INTRUSIVE_PTR_HPP
+}	// namespace ftl
+#endif // FTL_INTRUSIVE_PTR_HPP

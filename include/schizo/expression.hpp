@@ -19,15 +19,15 @@
 
   Also add information on how to contact you by electronic and paper mail.
 */
-#include "platform.hpp"
-#include "intrusive_ptr.hpp"
+
+#include "../ftl/function.hpp"
 
 namespace schizo {
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief expression
 ////////////////////////////////////////////////////////////////////////////////
 struct exp {
-	typedef intrusive_ptr<exp>	iptr;
+	typedef ftl::intrusive_ptr<exp>	iptr;
 
 	struct error;
 	struct string;
