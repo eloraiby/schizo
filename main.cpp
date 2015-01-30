@@ -20,14 +20,12 @@
 
 #include <stdio.h>
 
-#include <schizo/schizo.hpp>
-#include <ftl/array.hpp>
-#include <ftl/string.hpp>
-
 #include <sys/time.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+
+#include <schizo/schizo.hpp>
+#include <ftl/function.hpp>
 
 using namespace schizo;
 

@@ -23,12 +23,6 @@
 #ifndef FTL_STRING_HPP
 #define FTL_STRING_HPP
 
-#ifndef FTL_ARRAY_HPP
-#	include "array.hpp"
-#endif
-
-#include <string.h>
-
 namespace ftl {
 
 struct string : public array<char> {

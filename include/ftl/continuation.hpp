@@ -42,11 +42,11 @@ struct result {
 
 	struct exception {
 		exception() {}
-		exception(const rstring& msg) : msg__(msg)	{}
-		const rstring&	message() const			{ return msg__; }
+		exception(const string& msg) : msg__(msg)	{}
+		const string&	message() const			{ return msg__; }
 
 	private:
-		rstring		msg__;
+		string		msg__;
 	};
 
 	TYPE		get_type() const	{ return type__; }

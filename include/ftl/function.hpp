@@ -80,4 +80,8 @@ public:
 
 }	// namespace ftl
 
+#include "array.hpp"
+#include "string.hpp"
+#include "continuation.hpp"
+
 #endif // FTL_FUNCTION_HPP
