@@ -22,6 +22,7 @@
 
 #include <schizo/schizo.hpp>
 #include <ftl/array.hpp>
+#include <ftl/string.hpp>
 
 #include <sys/time.h>
 #include <stdio.h>
@@ -127,6 +128,12 @@ main(int argc,
 
 	mtime = (long)(((seconds) * 1000 + useconds/1000.0) + 0.5);
 	fprintf(stderr, "took %ld ms to scan memory\n", mtime);
+
+	ftl::string	hello("hello");
+	ftl::string	world("world");
+	ftl::string	hello_world	= hello + world;
+
+	fprintf(stderr, "string: %s\n", hello_world.get());
 
 	fprintf(stderr, "sizeof(mutex): %u\n", sizeof(pthread_mutex_t));
 

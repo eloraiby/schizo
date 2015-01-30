@@ -34,6 +34,10 @@
 #	define UNUSED
 #endif
 
+template<typename T>	void*  UNUSED operator new(size_t UNUSED c, T* placement) { return placement; }
+void*	operator new(size_t count);
+void	operator delete(void* p);
+
 namespace schizo {
 
 typedef int8_t		sint8;
@@ -51,6 +55,7 @@ typedef double		real64;
 
 template<typename T>	T min(T a, T b)	{ return a < b ? a : b; }
 template<typename T>	T max(T a, T b)	{ return a > b ? a : b; }
+
 
 }	// namespace schizo
 

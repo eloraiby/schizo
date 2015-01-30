@@ -196,7 +196,7 @@ protected:
 			case OWNERSHIP::COPY:
 				//printf("array created of type: %s\n", typeid(T).name());
 				if( size ) {
-					__data	= static_cast<T*>(raja_alloc(__size * sizeof(T)));
+					__data	= static_cast<T*>(malloc(__size * sizeof(T)));
 					for( size_t i = 0; i < __size; ++i )
 						new(&__data[i]) T(data[i]);
 				}
@@ -212,8 +212,8 @@ protected:
 		const T*		value() const	{ return __data; }
 		size_t			size() const	{ return __size; }
 
-		friend inline void	intrusive_ptr_add_ref(node* p) { ++p->count__; }
-		friend inline void	intrusive_ptr_release(node* p) { --p->count__; if(p->count == 0) delete p; }
+		friend inline void	intrusive_ptr_add_ref(const node* p) { ++p->count__; }
+		friend inline void	intrusive_ptr_release(const node* p) { --p->count__; if( p->count__ == 0 ) delete p; }
 
 	protected:
 		mutable size_t		count__;
@@ -221,9 +221,9 @@ protected:
 		T*			__data;
 	};
 
-	explicit array(typename node::const_optr n) : __arr(n), __fast_array(n->value()), __fast_size(n->size())	{}
+	explicit array(typename node::const_iptr n) : __arr(n), __fast_array(n->value()), __fast_size(n->size())	{}
 
-	typename node::const_optr	__arr;
+	typename node::const_iptr	__arr;
 	const T*		__fast_array;	///< fast accessor (optim tweek)
 	size_t			__fast_size;	///< fast size copy (optim tweek)
 
