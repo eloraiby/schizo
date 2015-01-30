@@ -2,6 +2,26 @@
 #	include "function.hpp"
 #endif
 
+/*
+  Schizo programming language
+  Copyright (C) 2014-2015  Wael El Oraiby
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  Also add information on how to contact you by electronic and paper mail.
+*/
+
 #ifndef FTL_ARRAY_HPP
 #define FTL_ARRAY_HPP
 
@@ -60,7 +80,7 @@ struct array {
 
 	array<T>		set(size_t idx, const T& val) const {
 		assert(( __fast_array && idx < __fast_size ) && "index out of range");
-		let data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
+		auto data	= static_cast<T*>(alloc(__fast_size * sizeof(T)));
 		for( size_t i = 0; i < idx; ++i )
 			new(&data[i]) T(__fast_array[i]);
 		new(&data[idx]) T(val);
@@ -83,7 +103,7 @@ struct array {
 		if( !__fast_size )
 			return array<R>();
 
-		let data	= static_cast<R*>(raja_alloc(__fast_size * sizeof(R)));
+		auto data	= static_cast<R*>(raja_alloc(__fast_size * sizeof(R)));
 		for( size_t i = 0; i < __fast_size; ++i )
 			new(&data[i]) R(f(__fast_array[i]));
 
@@ -105,7 +125,7 @@ struct array {
 		if( !__fast_size )
 			return array<T>();
 
-		let data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
+		auto data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
 		for( size_t i = 0; i < __fast_size; ++i )
 			new(&data[i]) T(__fast_array[__fast_size - 1 - i]);
 
@@ -116,7 +136,7 @@ struct array {
 		if( !__fast_size )
 			return array<T>();
 
-		let data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
+		auto data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
 		for( size_t i = 0; i < __fast_size; ++i )
 			new(&data[i]) T(__fast_array[i]);
 
@@ -169,9 +189,9 @@ protected:
 		TAKE,
 	};
 
-	struct node final : public object, public ::raja::noncopyable {
-		make_all_ptrs(node);
-		explicit node(size_t size, const T* data, OWNERSHIP osh = COPY) : __size(size), __data(nullptr) {
+	struct node final : public noncopyable {
+		typedef intrusive_ptr<const node> const_iptr;
+		explicit node(size_t size, const T* data, OWNERSHIP osh = COPY) : count__(0), __size(size), __data(nullptr) {
 			switch(osh) {
 			case OWNERSHIP::COPY:
 				//printf("array created of type: %s\n", typeid(T).name());
@@ -188,11 +208,15 @@ protected:
 			}
 		}
 
-		~node()			{ for(size_t i = 0; i < __size; ++i ) __data[i].~T(); raja_free(__data); /*printf("array deleted of type: %s\n", typeid(T).name());*/ }
+		~node()			{ for(size_t i = 0; i < __size; ++i ) __data[i].~T(); free(__data); /*printf("array deleted of type: %s\n", typeid(T).name());*/ }
 		const T*		value() const	{ return __data; }
 		size_t			size() const	{ return __size; }
 
+		friend inline void	intrusive_ptr_add_ref(node* p) { ++p->count__; }
+		friend inline void	intrusive_ptr_release(node* p) { --p->count__; if(p->count == 0) delete p; }
+
 	protected:
+		mutable size_t		count__;
 		size_t			__size;
 		T*			__data;
 	};

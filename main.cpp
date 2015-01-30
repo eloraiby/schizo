@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include <schizo/schizo.hpp>
+#include <ftl/array.hpp>
 
 #include <sys/time.h>
 #include <stdio.h>

@@ -59,4 +59,5 @@ HEADERS += \
     include/ftl/intrusive_ptr.hpp \
     include/ftl/continuation.hpp \
     include/ftl/array.hpp \
-    include/ftl/platform.hpp
+    include/ftl/platform.hpp \
+    include/ftl/noncopyable.hpp

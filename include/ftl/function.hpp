@@ -21,6 +21,7 @@
 */
 
 #include "platform.hpp"
+#include "noncopyable.hpp"
 #include "intrusive_ptr.hpp"
 
 #define const_lambda [=]
