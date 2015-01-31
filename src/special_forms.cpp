@@ -33,16 +33,22 @@ namespace schizo {
  * @param args
  * @return
  */
-static exp::special::ret
+static exp::special::val
 symbol_bind(exp::iptr env,
 	    exp::iptr args)
 {
 	exp::iptr sym	= exp::list::head(args);
-	exp::iptr body	= eval(env, exp::list::head(exp::list::tail(args))).value();
+	exp::special::env_ret body	= eval(env, exp::list::head(exp::list::tail(args))).value();
 
-	exp::iptr pair_	= pair(sym, body);
+	exp::iptr	body_val	= body.value();
+	switch( body_val->type() ) {
+	case exp::EXP_ERROR:
+		return exp::special::val(env, body_val);
+	default: {
+		exp::iptr pair_	= pair(sym, body.value());
 
-	return exp::special::ret(new exp::list(pair_, env), nullptr);
+		return exp::special::val(new exp::list(pair_, env), nullptr); }
+	}
 }
 
 /**
@@ -52,7 +58,7 @@ symbol_bind(exp::iptr env,
  * @param args
  * @return
  */
-static exp::special::ret
+static exp::special::val
 make_lambda(exp::iptr env,
 	    exp::iptr args)
 {
@@ -60,15 +66,15 @@ make_lambda(exp::iptr env,
 	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);
 	exp::iptr	body	= exp::list::tail(args);
 
-	return exp::special::ret(env, new exp::lambda(syms, body));
+	return exp::special::val(env, new exp::lambda(syms, body));
 }
 
-static exp::special::ret
+static exp::special::val
 if_else(exp::iptr env,
 	exp::iptr args)
 {
 	if( exp::list::length(args) != 4 ) {
-		return exp::special::ret(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1"));
+		return exp::special::val(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1"));
 	}
 
 	exp::iptr cond		= exp::list::head(args);
@@ -77,23 +83,24 @@ if_else(exp::iptr env,
 	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
 	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
-		exp::special::ret b	= eval(env, cond);
-		switch( b.value()->type() ) {
+		exp::special::val b	= eval(env, cond);
+		exp::iptr	b_val	= b.value().value();
+		switch( b_val->type() ) {
 		case exp::EXP_ERROR:
-			return exp::special::ret(env, b.value());
+			return exp::special::val(env, b_val);
 
 		case exp::EXP_BOOLEAN:
-			if( static_cast<exp::boolean*>(b.value().get())->value() ) {
-				return exp::special::ret(env, exp0);
+			if( static_cast<exp::boolean*>(b_val.get())->value() ) {
+				return exp::special::val(env, exp0);
 			} else {
-				return exp::special::ret(env, exp1);
+				return exp::special::val(env, exp1);
 			}
 
 		default:
-			return exp::special::ret(env, new exp::error("ERROR: \"if\" requires condition to be boolean"));
+			return exp::special::val(env, new exp::error("ERROR: \"if\" requires condition to be boolean"));
 		}
 	} else {
-		return exp::special::ret(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1"));
+		return exp::special::val(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1"));
 	}
 }
 

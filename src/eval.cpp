@@ -64,7 +64,7 @@ eval_list(exp::iptr env,
 {
 	exp::iptr	res	= nullptr;
 	while( expr ) {
-		exp::special::ret	r = eval(env, exp::list::head(expr));
+		exp::special::val	r = eval(env, exp::list::head(expr));
 
 		if( r.value() && r.value()->type() == exp::EXP_ERROR ) {
 			return res;	// if error, bail early
@@ -78,7 +78,7 @@ eval_list(exp::iptr env,
 	return exp::list::reverse(res);
 }
 
-schizo::exp::special::ret
+exp::special::val
 eval(exp::iptr env,
      exp::iptr e)
 {

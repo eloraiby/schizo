@@ -23,9 +23,8 @@
 #include "expression.hpp"
 
 namespace schizo {
-
-exp::special::ret	eval(exp::iptr env, exp::iptr e);
-exp::iptr	eval_list(exp::iptr env, exp::iptr l);
+exp::special::val	eval(exp::iptr env, exp::iptr e);
+exp::iptr		eval_list(exp::iptr env, exp::iptr l);
 
 /// parser.y / lexer.rl
 struct parser {

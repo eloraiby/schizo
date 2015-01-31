@@ -34,9 +34,9 @@
 #	define UNUSED
 #endif
 
-template<typename T>	void*  UNUSED operator new(size_t UNUSED c, T* placement) { return placement; }
-void*	operator new(size_t count);
-void	operator delete(void* p);
+template<typename T>	void*  UNUSED operator new(size_t UNUSED c, T* placement) noexcept { return placement; }
+void*	operator new(size_t count) noexcept;
+void	operator delete(void* p) noexcept;
 
 namespace schizo {
 

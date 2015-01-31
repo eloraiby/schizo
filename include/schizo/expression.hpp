@@ -214,8 +214,8 @@ private:
 /// @brief special function
 ///
 struct exp::special : public exp {
-	struct ret {
-		ret(exp::iptr env, exp::iptr ret) : env_(env), ret_(ret)	{}
+	struct env_ret {
+		env_ret(exp::iptr env, exp::iptr ret) : env_(env), ret_(ret)	{}
 
 		inline exp::iptr	env() const	{ return env_;	}
 		inline exp::iptr	value() const	{ return ret_;	}
@@ -225,13 +225,14 @@ struct exp::special : public exp {
 		exp::iptr	ret_;
 	};
 
-	typedef ret	(*call)(exp::iptr env, exp::iptr args);
+	typedef ftl::result<env_ret>	val;
+	typedef val	(*call)(exp::iptr env, exp::iptr args);
 
 	inline		special(sint32 arg_count, call proc) : exp(EXP_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
 	virtual		~special() override		{}
 
 	inline sint32	arg_count() const	{ return arg_count_; }
-	inline ret	operator()(iptr env, iptr args) const		{ return proc_(env, args); }
+	inline val	operator()(iptr env, iptr args) const		{ return proc_(env, args); }
 
 private:
 	sint32		arg_count_;		///< total argument count, -1 = any

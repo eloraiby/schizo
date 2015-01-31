@@ -37,57 +37,29 @@ struct result {
 	enum TYPE {
 		FINAL,
 		CONTINUATION,
-		EXCEPTION,
-	};
-
-	struct exception {
-		exception() {}
-		exception(const string& msg) : msg__(msg)	{}
-		const string&	message() const			{ return msg__; }
-
-	private:
-		string		msg__;
 	};
 
 	TYPE		get_type() const	{ return type__; }
 
-	result(const R& r) : type__(FINAL), v__(r) {}
+	template<typename... T>
+	result(T... r) : type__(FINAL), v__(r...) {}
 	result(rfunction<result<R>()> f) : type__(CONTINUATION), f__(f) {}
-	result(const exception& except) : type__(EXCEPTION), except__(except) {}
 
-	TYPE	step() {
+	result<R>	step() {
 		switch(type__) {
-		case CONTINUATION: {
-				result<R>	r = f__();
+		case CONTINUATION:
+			return f__();
 
-				type__	= r.type__;
-
-				switch( type__ ) {
-				case FINAL:
-					v__	= r.v__;
-					break;
-				case EXCEPTION:
-					except__	= r.except__;
-					break;
-				default:
-					break;
-				}
-			}
-			break;
-		default:
-			break;
+		case FINAL:
+			return *this;
 		}
-		return type__;
 	}
 
 	template<typename RM>
-	RM	match(const rfunction<RM(R)>& lambda_res, const rfunction<RM(const exception&)>& except) {
+	RM	map(const rfunction<RM(R)>& lambda_res) {
 		switch(type__) {
 		case FINAL:
 			return lambda_res(v__);
-
-		case EXCEPTION:
-			return except(except__);
 
 		case CONTINUATION:
 			result<R>	r = f__();
@@ -96,15 +68,25 @@ struct result {
 				r	= r.f__();
 			}
 
-			switch( r.type__ ) {
-			case FINAL:
-				v__	= r.v__;
-				return lambda_res(r.v__);
-			case EXCEPTION:
-				except__	= r.except__;
-				return except(r.except__);
+			v__	= r.v__;
+			return lambda_res(r.v__);
+		}
+	}
+
+	R		value() {
+		switch(type__) {
+		case FINAL:
+			return v__;
+
+		case CONTINUATION:
+			result<R>	r = f__();
+
+			while( r.type__ == CONTINUATION ) {
+				r	= r.f__();
 			}
-			break;
+
+			v__	= r.v__;
+			return v__;
 		}
 	}
 
@@ -114,7 +96,6 @@ private:
 
 	R		v__;
 	rfunction<result<R>()>	f__;
-	exception	except__;
 };
 
 
