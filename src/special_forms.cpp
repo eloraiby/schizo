@@ -43,7 +43,7 @@ symbol_bind(exp::iptr env,
 	// TODO: do we bind the error regardless ?
 	exp::iptr pair_	= pair(sym, body.ret());
 
-	return exp::special::val(new exp::list(pair_, env), nullptr);
+	return SP_VAL(ENV_RET(new exp::list(pair_, env), nullptr));
 }
 
 /**
@@ -61,7 +61,7 @@ make_lambda(exp::iptr env,
 	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);
 	exp::iptr	body	= exp::list::tail(args);
 
-	return exp::special::val(env, new exp::lambda(syms, body));
+	return SP_VAL(ENV_RET(env, new exp::lambda(syms, body)));
 }
 
 static exp::special::val
@@ -69,7 +69,7 @@ if_else(exp::iptr env,
 	exp::iptr args)
 {
 	if( exp::list::length(args) != 4 ) {
-		return exp::special::val(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1"));
+		return SP_VAL(ENV_RET(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1")));
 	}
 
 	exp::iptr cond		= exp::list::head(args);
@@ -82,20 +82,20 @@ if_else(exp::iptr env,
 		exp::iptr	b_val	= b.value().ret();
 		switch( b_val->type() ) {
 		case exp::EXP_ERROR:
-			return exp::special::val(env, b_val);
+			return SP_VAL(ENV_RET(env, b_val));
 
 		case exp::EXP_BOOLEAN:
 			if( static_cast<exp::boolean*>(b_val.get())->value() ) {
-				return exp::special::val(env, exp0);
+				return SP_VAL(ENV_RET(env, exp0));
 			} else {
-				return exp::special::val(env, exp1);
+				return SP_VAL(ENV_RET(env, exp1));
 			}
 
 		default:
-			return exp::special::val(env, new exp::error("ERROR: \"if\" requires condition to be boolean"));
+			return SP_VAL(ENV_RET(env, new exp::error("ERROR: \"if\" requires condition to be boolean")));
 		}
 	} else {
-		return exp::special::val(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1"));
+		return SP_VAL(ENV_RET(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1")));
 	}
 }
 

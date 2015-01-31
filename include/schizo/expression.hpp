@@ -215,6 +215,7 @@ private:
 ///
 struct exp::special : public exp {
 	struct env_ret {
+		env_ret() : env_(nullptr), ret_(nullptr)	{}
 		env_ret(exp::iptr env, exp::iptr ret) : env_(env), ret_(ret)	{}
 
 		inline exp::iptr	env() const	{ return env_;	}
@@ -238,6 +239,9 @@ private:
 	sint32		arg_count_;		///< total argument count, -1 = any
 	call		proc_;			///< the procedure
 };
+
+#define ENV_RET	::schizo::exp::special::env_ret
+#define SP_VAL ::schizo::exp::special::val
 
 }	// namespace schizo
 #endif // EXPRESSION_HPP

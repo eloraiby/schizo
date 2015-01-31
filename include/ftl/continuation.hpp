@@ -41,8 +41,7 @@ struct result {
 
 	TYPE		get_type() const	{ return type__; }
 
-	template<typename... T>
-	result(T... r) : type__(FINAL), v__(r...) {}
+	result(const R& r) : type__(FINAL), v__(r) {}
 	result(rfunction<result<R>()> f) : type__(CONTINUATION), f__(f) {}
 
 	result<R>	step() {
