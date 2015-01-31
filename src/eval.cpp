@@ -64,7 +64,7 @@ eval_list(exp::iptr env,
 {
 	exp::iptr	res	= nullptr;
 	while( expr ) {
-		exp::special::env_ret	r = eval(env, exp::list::head(expr)).value();
+		exp::special::env_ret	r = eval(env, exp::list::head(expr)).eval();
 
 		if( r.ret() && r.ret()->type() == exp::EXP_ERROR ) {
 			return res;	// if error, bail early
@@ -101,7 +101,7 @@ eval(exp::iptr env,
 		case exp::EXP_LAMBDA:
 		case exp::EXP_FFI:
 		//case EXP_QUOTE:
-			return SP_VAL(ENV_RET(env, e));
+			SCHIZO_RETURN(env, e);
 
 		// symbols
 		case exp::EXP_SYMBOL:
@@ -113,7 +113,7 @@ eval(exp::iptr env,
 			print_cell(exp, 0);
 			fprintf(stderr, "\n");
 #endif	// DEBUG_LOOKUP
-			return SP_VAL(ENV_RET(env, e));
+			SCHIZO_RETURN(env, e);
 
 			/* applications */
 		case exp::EXP_LIST:	{
@@ -121,11 +121,11 @@ eval(exp::iptr env,
 			exp::iptr	tail	= nullptr;
 
 			if( !head ) {
-				return SP_VAL(ENV_RET(env, nullptr));
+				SCHIZO_RETURN(env, nullptr);
 			}
 
 			tail	= exp::list::tail(e);	/* NOT NEEDED ? */
-			head	= eval(env, head).value().ret();
+			head	= eval(env, head).eval().ret();
 
 			switch( head->type() ) {
 			case exp::EXP_FFI: {
@@ -133,18 +133,18 @@ eval(exp::iptr env,
 				assert( l < 0x7FFFFFFF );
 				if( static_cast<exp::ffi*>(head.get())->arg_count() > 0 && (sint32)l != static_cast<exp::ffi*>(head.get())->arg_count() ) {
 					fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, static_cast<exp::ffi*>(head.get())->arg_count());
-					return SP_VAL(ENV_RET(env, nullptr));
+					SCHIZO_RETURN(env, nullptr);
 				} else {
 					exp::iptr args	= eval_list(env, tail);
 
-					return SP_VAL(ENV_RET(env, (*static_cast<exp::ffi*>(head.get()))(args)));
+					SCHIZO_RETURN(env, (*static_cast<exp::ffi*>(head.get()))(args));
 				}
 				break;
 			}
 
 			case exp::EXP_SPECIAL_FORM: {
 				/* lambda, bind, if */
-				exp::special::env_ret r	= (*static_cast<exp::special*>(head.get()))(env, tail).value();
+				exp::special::env_ret r	= (*static_cast<exp::special*>(head.get()))(env, tail).eval();
 
 				env	= r.env();
 				e	= r.ret();
@@ -163,13 +163,13 @@ eval(exp::iptr env,
 
 				// evaluate the arguments and zip them
 				if( (exp::list::length(tail) != exp::list::length(syms)) ) {
-					return SP_VAL(ENV_RET(env, new exp::error("ERROR: closure arguments do not match given arguments")));
+					SCHIZO_RETURN(env, new exp::error("ERROR: closure arguments do not match given arguments"));
 				}
 
 				args	= eval_list(env, tail);
 
 				if( args && args->type() == exp::EXP_ERROR ) {
-					return SP_VAL(ENV_RET(env, args));	// if error, bail early
+					SCHIZO_RETURN(env, args);	// if error, bail early
 				}
 
 				while( exp::list::head(syms) && exp::list::head(args) ) {
@@ -179,7 +179,7 @@ eval(exp::iptr env,
 				}
 
 				if( exp::list::length(syms) != exp::list::length(args) ) {
-					return SP_VAL(ENV_RET(env, new exp::error("ERROR: couldn't zip the lists, one is longer than the other")));
+					SCHIZO_RETURN(env, new exp::error("ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
 					/* all good, evaluate the body(*) */
 					exp::iptr	body	= static_cast<exp::lambda*>(lambda_)->body();
@@ -188,7 +188,7 @@ eval(exp::iptr env,
 					e	= exp::list::head(body);
 
 					while( next ) {
-						exp::special::env_ret r	= eval(env, e).value();	/* eval and bind */
+						exp::special::env_ret r	= eval(env, e).eval();	/* eval and bind */
 
 						if( r.ret() && r.ret()->type() == exp::EXP_ERROR ) {
 							return exp::special::val(r);	// if error, bail early
@@ -206,7 +206,7 @@ eval(exp::iptr env,
 			}
 
 			case exp::EXP_ERROR:
-				return SP_VAL(ENV_RET(env, head));
+				SCHIZO_RETURN(env, head);
 
 			default:
 				/* more error handling */
@@ -224,7 +224,7 @@ eval(exp::iptr env,
 	}
 
 	/* if expression is NIL_CELL */
-	return SP_VAL(ENV_RET(env, nullptr));
+	SCHIZO_RETURN(env, nullptr);
 }
 
 

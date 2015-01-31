@@ -2,8 +2,8 @@
 #	include "function.hpp"
 #endif
 
-#ifndef FTL_CONTINUATION_HPP
-#define FTL_CONTINUATION_HPP
+#ifndef FTL_THUNK_HPP
+#define FTL_THUNK_HPP
 
 /*
   Schizo programming language
@@ -32,21 +32,21 @@
 namespace ftl {
 
 template<typename R>
-struct result {
+struct thunk {
 
 	enum TYPE {
 		FINAL,
-		CONTINUATION,
+		DELAYED,
 	};
 
 	TYPE		get_type() const	{ return type__; }
 
-	result(const R& r) : type__(FINAL), v__(r) {}
-	result(rfunction<result<R>()> f) : type__(CONTINUATION), f__(f) {}
+	thunk(R r) : type__(FINAL), v__(r) {}
+	thunk(rfunction<thunk<R>()> f) : type__(DELAYED), f__(f) {}
 
-	result<R>	step() {
+	thunk<R>	eval_once() {
 		switch(type__) {
-		case CONTINUATION:
+		case DELAYED:
 			return f__();
 
 		case FINAL:
@@ -60,10 +60,10 @@ struct result {
 		case FINAL:
 			return lambda_res(v__);
 
-		case CONTINUATION:
-			result<R>	r = f__();
+		case DELAYED:
+			thunk<R>	r = f__();
 
-			while( r.type__ == CONTINUATION ) {
+			while( r.type__ == DELAYED ) {
 				r	= r.f__();
 			}
 
@@ -72,15 +72,15 @@ struct result {
 		}
 	}
 
-	R		value() {
+	R		eval() {
 		switch(type__) {
 		case FINAL:
 			return v__;
 
-		case CONTINUATION:
-			result<R>	r = f__();
+		case DELAYED:
+			thunk<R>	r = f__();
 
-			while( r.type__ == CONTINUATION ) {
+			while( r.type__ == DELAYED ) {
 				r	= r.f__();
 			}
 
@@ -94,11 +94,11 @@ private:
 	TYPE		type__;
 
 	R		v__;
-	rfunction<result<R>()>	f__;
+	rfunction<thunk<R>()>	f__;
 };
 
 
 }	// namespace ftl
 
 
-#endif // FTL_CONTINUATION_HPP
+#endif // FTL_THUNK_HPP

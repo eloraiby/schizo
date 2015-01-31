@@ -226,7 +226,7 @@ struct exp::special : public exp {
 		exp::iptr	ret_;
 	};
 
-	typedef ftl::result<env_ret>	val;
+	typedef ftl::thunk<env_ret>	val;
 	typedef val	(*call)(exp::iptr env, exp::iptr args);
 
 	inline		special(sint32 arg_count, call proc) : exp(EXP_SPECIAL_FORM), arg_count_(arg_count), proc_(proc)	{}
@@ -240,8 +240,7 @@ private:
 	call		proc_;			///< the procedure
 };
 
-#define ENV_RET	::schizo::exp::special::env_ret
-#define SP_VAL ::schizo::exp::special::val
+#define SCHIZO_RETURN(ENV, RET) return ::schizo::exp::special::val(::schizo::exp::special::env_ret(ENV, RET))
 
 }	// namespace schizo
 #endif // EXPRESSION_HPP

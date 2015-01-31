@@ -117,7 +117,7 @@ main(int argc,
 	}
 
 	exp::iptr root = parse(example);
-	eval(default_env(), root).value();
+	eval(default_env(), root).eval();
 	gettimeofday(&start, NULL);
 	gettimeofday(&end, NULL);
 

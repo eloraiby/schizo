@@ -58,8 +58,8 @@ HEADERS += \
     include/schizo/expression.hpp \
     include/ftl/function.hpp \
     include/ftl/intrusive_ptr.hpp \
-    include/ftl/continuation.hpp \
     include/ftl/array.hpp \
     include/ftl/platform.hpp \
     include/ftl/noncopyable.hpp \
-    include/ftl/string.hpp
+    include/ftl/string.hpp \
+    include/ftl/thunk.hpp

@@ -38,12 +38,12 @@ symbol_bind(exp::iptr env,
 	    exp::iptr args)
 {
 	exp::iptr sym	= exp::list::head(args);
-	exp::special::env_ret body	= eval(env, exp::list::head(exp::list::tail(args))).value();
+	exp::special::env_ret body	= eval(env, exp::list::head(exp::list::tail(args))).eval();
 
 	// TODO: do we bind the error regardless ?
 	exp::iptr pair_	= pair(sym, body.ret());
 
-	return SP_VAL(ENV_RET(new exp::list(pair_, env), nullptr));
+	SCHIZO_RETURN(new exp::list(pair_, env), nullptr);
 }
 
 /**
@@ -61,7 +61,7 @@ make_lambda(exp::iptr env,
 	exp::iptr	syms	= exp::list::head(args) ? args : new exp::list(nullptr, nullptr);
 	exp::iptr	body	= exp::list::tail(args);
 
-	return SP_VAL(ENV_RET(env, new exp::lambda(syms, body)));
+	SCHIZO_RETURN(env, new exp::lambda(syms, body));
 }
 
 static exp::special::val
@@ -69,7 +69,7 @@ if_else(exp::iptr env,
 	exp::iptr args)
 {
 	if( exp::list::length(args) != 4 ) {
-		return SP_VAL(ENV_RET(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1")));
+		SCHIZO_RETURN(env, new exp::error("ERROR in \"if\" usage: if cond exp0 else exp1"));
 	}
 
 	exp::iptr cond		= exp::list::head(args);
@@ -79,23 +79,23 @@ if_else(exp::iptr env,
 
 	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
 		exp::special::val b	= eval(env, cond);
-		exp::iptr	b_val	= b.value().ret();
+		exp::iptr	b_val	= b.eval().ret();
 		switch( b_val->type() ) {
 		case exp::EXP_ERROR:
-			return SP_VAL(ENV_RET(env, b_val));
+			SCHIZO_RETURN(env, b_val);
 
 		case exp::EXP_BOOLEAN:
 			if( static_cast<exp::boolean*>(b_val.get())->value() ) {
-				return SP_VAL(ENV_RET(env, exp0));
+				SCHIZO_RETURN(env, exp0);
 			} else {
-				return SP_VAL(ENV_RET(env, exp1));
+				SCHIZO_RETURN(env, exp1);
 			}
 
 		default:
-			return SP_VAL(ENV_RET(env, new exp::error("ERROR: \"if\" requires condition to be boolean")));
+			SCHIZO_RETURN(env, new exp::error("ERROR: \"if\" requires condition to be boolean"));
 		}
 	} else {
-		return SP_VAL(ENV_RET(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1")));
+		SCHIZO_RETURN(env, new exp::error("ERROR: \"if\" requires \"else\" keyword: if cond exp0 else exp1"));
 	}
 }
 
