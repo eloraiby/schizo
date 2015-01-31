@@ -7,12 +7,14 @@
 
 ======
 
-Schizo is an embedded Lisp dialect aiming to simplify software complexity by extending Lisp with:
-* The Purity of Erlang.
-* Modernization of the lisp syntax, by making "C" style syntax sugarring. For now this is optional but recommended:
-  - brackets "{}" with semicolumns ";" to write lists.
-  - Indexing using "[]".
-* Optional infix escape sequences for ease of reading.
+Schizo is an embedded Lisp dialect aiming to simplify software complexity by modernizing Lisp with:
+* Immutability.
+* "C" style syntax sugarring. While this is optional, it is recommended:
+  - brackets "{}" with semicolumns ";" for un-evaluated lists.
+  - Indexing using square brackets "[]".
+* Parser control via "#[expr...]#":
+  - infix escape sequences for ease of reading.
+  - ...
 * Simple C++ foreign function interface.
 
 ------
