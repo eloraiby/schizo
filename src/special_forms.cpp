@@ -40,15 +40,10 @@ symbol_bind(exp::iptr env,
 	exp::iptr sym	= exp::list::head(args);
 	exp::special::env_ret body	= eval(env, exp::list::head(exp::list::tail(args))).value();
 
-	exp::iptr	body_val	= body.value();
-	switch( body_val->type() ) {
-	case exp::EXP_ERROR:
-		return exp::special::val(env, body_val);
-	default: {
-		exp::iptr pair_	= pair(sym, body.value());
+	// TODO: do we bind the error regardless ?
+	exp::iptr pair_	= pair(sym, body.ret());
 
-		return exp::special::val(new exp::list(pair_, env), nullptr); }
-	}
+	return exp::special::val(new exp::list(pair_, env), nullptr);
 }
 
 /**
@@ -84,7 +79,7 @@ if_else(exp::iptr env,
 
 	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
 		exp::special::val b	= eval(env, cond);
-		exp::iptr	b_val	= b.value().value();
+		exp::iptr	b_val	= b.value().ret();
 		switch( b_val->type() ) {
 		case exp::EXP_ERROR:
 			return exp::special::val(env, b_val);

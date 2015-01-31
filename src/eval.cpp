@@ -66,15 +66,16 @@ eval_list(exp::iptr env,
 	while( expr ) {
 		exp::special::val	r = eval(env, exp::list::head(expr));
 
-		if( r.value() && r.value()->type() == exp::EXP_ERROR ) {
+		if( r.value().ret() && r.value().ret()->type() == exp::EXP_ERROR ) {
 			return res;	// if error, bail early
 		}
 
-		res	= new exp::list(r.value(), res);
-
+		// TODO: what happens in case of error ?
+		res	= new exp::list(r.value().ret(), res);
 
 		expr	= exp::list::tail(expr);
 	}
+
 	return exp::list::reverse(res);
 }
 
@@ -100,7 +101,7 @@ eval(exp::iptr env,
 		case exp::EXP_LAMBDA:
 		case exp::EXP_FFI:
 		//case EXP_QUOTE:
-			return exp::special::ret(env, e);
+			return exp::special::val(env, e);
 
 		// symbols
 		case exp::EXP_SYMBOL:
@@ -112,7 +113,7 @@ eval(exp::iptr env,
 			print_cell(exp, 0);
 			fprintf(stderr, "\n");
 #endif	// DEBUG_LOOKUP
-			return exp::special::ret(env, e);
+			return exp::special::val(env, e);
 
 			/* applications */
 		case exp::EXP_LIST:	{
@@ -120,11 +121,11 @@ eval(exp::iptr env,
 			exp::iptr	tail	= nullptr;
 
 			if( !head ) {
-				return exp::special::ret(env, nullptr);
+				return exp::special::val(env, nullptr);
 			}
 
 			tail	= exp::list::tail(e);	/* NOT NEEDED ? */
-			head	= eval(env, head).value();
+			head	= eval(env, head).value().ret();
 
 			switch( head->type() ) {
 			case exp::EXP_FFI: {
@@ -132,21 +133,21 @@ eval(exp::iptr env,
 				assert( l < 0x7FFFFFFF );
 				if( static_cast<exp::ffi*>(head.get())->arg_count() > 0 && (sint32)l != static_cast<exp::ffi*>(head.get())->arg_count() ) {
 					fprintf(stderr, "ERROR: function requires %d arguments, only %d were given\n", l, static_cast<exp::ffi*>(head.get())->arg_count());
-					return exp::special::ret(env, nullptr);
+					return exp::special::val(env, nullptr);
 				} else {
 					exp::iptr args	= eval_list(env, tail);
 
-					return exp::special::ret(env, (*static_cast<exp::ffi*>(head.get()))(args));
+					return exp::special::val(env, (*static_cast<exp::ffi*>(head.get()))(args));
 				}
 				break;
 			}
 
 			case exp::EXP_SPECIAL_FORM: {
 				/* lambda, bind, if */
-				exp::special::ret r	= (*static_cast<exp::special*>(head.get()))(env, tail);
+				exp::special::val r	= (*static_cast<exp::special*>(head.get()))(env, tail);
 
-				env	= r.env();
-				e	= r.value();
+				env	= r.value().env();
+				e	= r.value().ret();
 
 				break;
 			}
@@ -162,13 +163,13 @@ eval(exp::iptr env,
 
 				// evaluate the arguments and zip them
 				if( (exp::list::length(tail) != exp::list::length(syms)) ) {
-					return exp::special::ret(env, new exp::error("ERROR: closure arguments do not match given arguments"));
+					return exp::special::val(env, new exp::error("ERROR: closure arguments do not match given arguments"));
 				}
 
 				args	= eval_list(env, tail);
 
 				if( args && args->type() == exp::EXP_ERROR ) {
-					return exp::special::ret(env, args);	// if error, bail early
+					return exp::special::val(env, args);	// if error, bail early
 				}
 
 				while( exp::list::head(syms) && exp::list::head(args) ) {
@@ -178,7 +179,7 @@ eval(exp::iptr env,
 				}
 
 				if( exp::list::length(syms) != exp::list::length(args) ) {
-					return exp::special::ret(env, new exp::error("ERROR: couldn't zip the lists, one is longer than the other"));
+					return exp::special::val(env, new exp::error("ERROR: couldn't zip the lists, one is longer than the other"));
 				} else {
 					/* all good, evaluate the body(*) */
 					exp::iptr	body	= static_cast<exp::lambda*>(lambda_)->body();
@@ -187,13 +188,13 @@ eval(exp::iptr env,
 					e	= exp::list::head(body);
 
 					while( next ) {
-						exp::special::ret r	= eval(env, e);	/* eval and bind */
+						exp::special::val r	= eval(env, e);	/* eval and bind */
 
-						if( r.value() && r.value()->type() == exp::EXP_ERROR ) {
+						if( r.value().ret() && r.value().ret()->type() == exp::EXP_ERROR ) {
 							return r;	// if error, bail early
 						}
 
-						env	= r.env();
+						env	= r.value().env();
 
 						e	= exp::list::head(next);
 						next	= exp::list::tail(next);
@@ -205,7 +206,7 @@ eval(exp::iptr env,
 			}
 
 			case exp::EXP_ERROR:
-				return exp::special::ret(env, head);
+				return exp::special::val(env, head);
 
 			default:
 				/* more error handling */
@@ -223,7 +224,7 @@ eval(exp::iptr env,
 	}
 
 	/* if expression is NIL_CELL */
-	return exp::special::ret(env, nullptr);
+	return exp::special::val(env, nullptr);
 }
 
 

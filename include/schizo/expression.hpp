@@ -218,7 +218,7 @@ struct exp::special : public exp {
 		env_ret(exp::iptr env, exp::iptr ret) : env_(env), ret_(ret)	{}
 
 		inline exp::iptr	env() const	{ return env_;	}
-		inline exp::iptr	value() const	{ return ret_;	}
+		inline exp::iptr	ret() const	{ return ret_;	}
 
 	private:
 		exp::iptr	env_;
