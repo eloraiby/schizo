@@ -74,6 +74,8 @@ main(int argc,
 				    "{ a + b + c; a2 + b2 + c2; }",
 				    "{ a + b * 2 }",
 				    "{ a x y + b z w * 2 }",
+				    "#[infixl]#",
+
 
 /*				    "("\
 				    "  (lambda ()" \

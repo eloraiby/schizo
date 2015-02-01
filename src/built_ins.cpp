@@ -39,9 +39,9 @@ less_than(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() < static_cast<exp::real64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_real64*>(left.get())->value() < static_cast<exp::atom_real64*>(right.get())->value());
 	case exp::EXP_SINT64:
-		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() < static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_sint64*>(left.get())->value() < static_cast<exp::atom_sint64*>(right.get())->value());
 	default:
 		return new exp::error("lt should not pass here");
 	}
@@ -61,9 +61,9 @@ greater_than(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() > static_cast<exp::real64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_real64*>(left.get())->value() > static_cast<exp::atom_real64*>(right.get())->value());
 	case exp::EXP_SINT64:
-		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() > static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_sint64*>(left.get())->value() > static_cast<exp::atom_sint64*>(right.get())->value());
 	default:
 		return new exp::error("gt should not pass here");
 	}
@@ -83,9 +83,9 @@ less_or_eq(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() <= static_cast<exp::real64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_real64*>(left.get())->value() <= static_cast<exp::atom_real64*>(right.get())->value());
 	case exp::EXP_SINT64:
-		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() <= static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_sint64*>(left.get())->value() <= static_cast<exp::atom_sint64*>(right.get())->value());
 	default:
 		return new exp::error("leq should not pass here");
 	}
@@ -105,9 +105,9 @@ greater_or_eq(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() >= static_cast<exp::real64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_real64*>(left.get())->value() >= static_cast<exp::atom_real64*>(right.get())->value());
 	case exp::EXP_SINT64:
-		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() >= static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_sint64*>(left.get())->value() >= static_cast<exp::atom_sint64*>(right.get())->value());
 	default:
 		return new exp::error("geq should not pass here");
 	}
@@ -130,15 +130,15 @@ equal(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::boolean(static_cast<exp::real64*>(left.get())->value() == static_cast<exp::real64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_real64*>(left.get())->value() == static_cast<exp::atom_real64*>(right.get())->value());
 	case exp::EXP_SINT64:
-		return new exp::boolean(static_cast<exp::sint64*>(left.get())->value() == static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_sint64*>(left.get())->value() == static_cast<exp::atom_sint64*>(right.get())->value());
 	case exp::EXP_BOOLEAN:
-		return new exp::boolean(static_cast<exp::boolean*>(left.get())->value() == static_cast<exp::boolean*>(right.get())->value());
+		return new exp::atom_boolean(static_cast<exp::atom_boolean*>(left.get())->value() == static_cast<exp::atom_boolean*>(right.get())->value());
 	case exp::EXP_SYMBOL:
-		return new exp::boolean(strcmp(static_cast<exp::symbol*>(left.get())->value(), static_cast<exp::symbol*>(right.get())->value()) == 0);
+		return new exp::atom_boolean(strcmp(static_cast<exp::atom_symbol*>(left.get())->value(), static_cast<exp::atom_symbol*>(right.get())->value()) == 0);
 	case exp::EXP_STRING:
-		return new exp::boolean(strcmp(static_cast<exp::string*>(left.get())->value(), static_cast<exp::string*>(right.get())->value()) == 0);
+		return new exp::atom_boolean(strcmp(static_cast<exp::atom_string*>(left.get())->value(), static_cast<exp::atom_string*>(right.get())->value()) == 0);
 	default:
 		return new exp::error("eq should not pass here");
 	}
@@ -165,25 +165,25 @@ add(exp::iptr args)
 
 		switch( t ) {
 		case exp::EXP_REAL64: {
-			real64	r	= static_cast<exp::real64*>(v.get())->value();
+			real64	r	= static_cast<exp::atom_real64*>(v.get())->value();
 			tmp		= exp::list::tail(args);
 			while( tmp ) {
-				r	+= static_cast<exp::real64*>(exp::list::head(tmp).get())->value();
+				r	+= static_cast<exp::atom_real64*>(exp::list::head(tmp).get())->value();
 				tmp	= exp::list::tail(args);
 			}
 
-			return new exp::real64(r);
+			return new exp::atom_real64(r);
 		}
 
 		case exp::EXP_SINT64: {
-			sint64	i	= static_cast<exp::sint64*>(v.get())->value();
+			sint64	i	= static_cast<exp::atom_sint64*>(v.get())->value();
 			tmp		= exp::list::tail(args);
 			while( tmp ) {
-				i	+= static_cast<exp::sint64*>(exp::list::head(tmp).get())->value();
+				i	+= static_cast<exp::atom_sint64*>(exp::list::head(tmp).get())->value();
 				tmp	= exp::list::tail(tmp);
 			}
 
-			return new exp::sint64(i);
+			return new exp::atom_sint64(i);
 		}
 
 		default:
@@ -216,25 +216,25 @@ sub(exp::iptr args)
 
 		switch( t ) {
 		case exp::EXP_REAL64: {
-			real64	r	= static_cast<exp::real64*>(v.get())->value();
+			real64	r	= static_cast<exp::atom_real64*>(v.get())->value();
 			tmp		= exp::list::tail(args);
 			while( tmp ) {
-				r	-= static_cast<exp::real64*>(exp::list::head(tmp).get())->value();
+				r	-= static_cast<exp::atom_real64*>(exp::list::head(tmp).get())->value();
 				tmp	= exp::list::tail(args);
 			}
 
-			return new exp::real64(r);
+			return new exp::atom_real64(r);
 		}
 
 		case exp::EXP_SINT64: {
-			sint64	i	= static_cast<exp::sint64*>(v.get())->value();
+			sint64	i	= static_cast<exp::atom_sint64*>(v.get())->value();
 			tmp		= exp::list::tail(args);
 			while( tmp ) {
-				i	-= static_cast<exp::sint64*>(exp::list::head(tmp).get())->value();
+				i	-= static_cast<exp::atom_sint64*>(exp::list::head(tmp).get())->value();
 				tmp	= exp::list::tail(tmp);
 			}
 
-			return new exp::sint64(i);
+			return new exp::atom_sint64(i);
 		}
 
 		default:
@@ -259,9 +259,9 @@ div(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::real64(static_cast<exp::real64*>(left.get())->value() / static_cast<exp::real64*>(right.get())->value());
+		return new exp::atom_real64(static_cast<exp::atom_real64*>(left.get())->value() / static_cast<exp::atom_real64*>(right.get())->value());
 	case exp::EXP_SINT64:
-		return new exp::sint64(static_cast<exp::sint64*>(left.get())->value() / static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_sint64(static_cast<exp::atom_sint64*>(left.get())->value() / static_cast<exp::atom_sint64*>(right.get())->value());
 	default:
 		return new exp::error("div should not pass here");
 	}
@@ -281,9 +281,9 @@ mod(exp::iptr args)
 
 	switch(left->type()) {
 	case exp::EXP_REAL64:
-		return new exp::real64(fmod(static_cast<exp::real64*>(left.get())->value(), static_cast<exp::real64*>(right.get())->value()));
+		return new exp::atom_real64(fmod(static_cast<exp::atom_real64*>(left.get())->value(), static_cast<exp::atom_real64*>(right.get())->value()));
 	case exp::EXP_SINT64:
-		return new exp::sint64(static_cast<exp::sint64*>(left.get())->value() % static_cast<exp::sint64*>(right.get())->value());
+		return new exp::atom_sint64(static_cast<exp::atom_sint64*>(left.get())->value() % static_cast<exp::atom_sint64*>(right.get())->value());
 	default:
 		return new exp::error("mod should not pass here");
 	}

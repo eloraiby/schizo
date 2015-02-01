@@ -35,7 +35,7 @@ lookup(exp::iptr env,
 	if( env ) {
 		exp::iptr	pair	= exp::list::head(env);
 
-		while( pair && strcmp(sym, static_cast<exp::symbol*>(exp::list::head(pair).get())->value()) != 0 ) {
+		while( pair && strcmp(sym, static_cast<exp::atom_symbol*>(exp::list::head(pair).get())->value()) != 0 ) {
 			env	= exp::list::tail(env);
 			if( env ) {
 				pair	= exp::list::head(env);
@@ -108,7 +108,7 @@ eval(exp::iptr env,
 #ifdef DEBUG_LOOKUP
 			fprintf(stderr, "SYMBOL %s -> eval to: ", static_cast<exp::symbol*>(e.get())->value());
 #endif	// DEBUG_LOOKUP
-			e	= lookup(env, static_cast<exp::symbol*>(e.get())->value());
+			e	= lookup(env, static_cast<exp::atom_symbol*>(e.get())->value());
 #ifdef DEBUG_LOOKUP
 			print_cell(exp, 0);
 			fprintf(stderr, "\n");
@@ -238,7 +238,7 @@ add_ffi(exp::iptr env,
 	exp::ffi::call proc)
 {
 	exp::iptr	p	= nullptr;
-	exp::iptr	_s	= new exp::symbol(sym);
+	exp::iptr	_s	= new exp::atom_symbol(sym);
 
 	exp::iptr	f	= new exp::ffi(arg_count, proc);
 
@@ -252,7 +252,7 @@ add_special(exp::iptr env,
 	    exp::special::call proc)
 {
 	exp::iptr	p	= nullptr;
-	exp::iptr	_s	= new exp::symbol(sym);
+	exp::iptr	_s	= new exp::atom_symbol(sym);
 
 	exp::iptr	f	= new exp::special(arg_count, proc);
 

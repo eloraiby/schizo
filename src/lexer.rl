@@ -80,6 +80,7 @@ namespace schizo {
 	main := |*
 		'#t'						{ ADVANCE( boolean );};
 		'#f'						{ ADVANCE( boolean );};
+		'infixl'					{ fprintf(stderr, "INFIXL\n"); };
 
 		# Single and double literals.
 		( "'" (any - ['\\] ) "'" )			{
@@ -148,6 +149,8 @@ namespace schizo {
 		'}'						{ ADVANCE_TOKEN( TOK_RBR );};
 		'['						{ ADVANCE_TOKEN( TOK_LSQB );};
 		']'						{ ADVANCE_TOKEN( TOK_RSQB );};
+		'#['						{ ADVANCE_TOKEN( TOK_LHASH );};
+		']#'						{ ADVANCE_TOKEN( TOK_RHASH );};
 		';'						{ ADVANCE_TOKEN( TOK_SEMICOL );};
 
 		'\n'						{ ++line; };
@@ -175,7 +178,7 @@ copy_token(const char* ts, const char *te, char* dst) {
 
 static exp::iptr
 token_to_symbol(const char* sym) {
-	return new exp::symbol(sym);
+	return new exp::atom_symbol(sym);
 }
 
 /*
@@ -193,15 +196,15 @@ token_to_binary_op(state_t* s, const char* op) {
 static exp::iptr
 token_to_boolean(const char* b) {
 	if( !strcmp(b, "#t") ) {
-		return new exp::boolean(true);
+		return new exp::atom_boolean(true);
 	} else {
-		return new exp::boolean(false);
+		return new exp::atom_boolean(false);
 	}
 }
 
 static exp::iptr
 token_to_char(const char* ch) {
-	return new exp::character(*ch);
+	return new exp::atom_character(*ch);
 }
 
 static exp::iptr
@@ -209,7 +212,7 @@ token_to_sint64(const char* i) {
 	sint64	v	= 0;
 	sscanf(i, "%ld", &v);
 	/* TODO: check limit */
-	return new exp::sint64(v);
+	return new exp::atom_sint64(v);
 }
 
 static exp::iptr
@@ -217,12 +220,12 @@ token_to_real64(const char* r) {
 	real64	v	= 0;
 	sscanf(r, "%lf", &v);
 	/* TODO: check limit */
-	return new exp::real64(v);
+	return new exp::atom_real64(v);
 }
 
 static exp::iptr
 token_to_string(const char* str) {
-	return new exp::string(str);
+	return new exp::atom_string(str);
 }
 
 

@@ -67,22 +67,24 @@ namespace schizo {
 #line 68 "/home/aifu/projects/schizo/src/lexer.cpp"
 static const char _scanner_actions[] = {
 	0, 1, 0, 1, 1, 1, 2, 1, 
-	3, 1, 4, 1, 10, 1, 11, 1, 
-	12, 1, 13, 1, 14, 1, 15, 1, 
-	16, 1, 17, 1, 18, 1, 19, 1, 
-	20, 1, 21, 1, 22, 1, 24, 1, 
-	25, 1, 26, 1, 27, 1, 28, 1, 
-	29, 1, 30, 1, 31, 1, 32, 2, 
-	0, 23, 2, 4, 5, 2, 4, 6, 
-	2, 4, 7, 2, 4, 8, 2, 4, 
-	9
+	3, 1, 4, 1, 12, 1, 13, 1, 
+	14, 1, 15, 1, 16, 1, 17, 1, 
+	18, 1, 19, 1, 20, 1, 21, 1, 
+	22, 1, 23, 1, 24, 1, 25, 1, 
+	27, 1, 28, 1, 29, 1, 30, 1, 
+	31, 1, 32, 1, 33, 1, 34, 1, 
+	35, 1, 36, 2, 0, 26, 2, 4, 
+	5, 2, 4, 6, 2, 4, 7, 2, 
+	4, 8, 2, 4, 9, 2, 4, 10, 
+	2, 4, 11
 };
 
 static const unsigned char _scanner_key_offsets[] = {
 	0, 0, 3, 3, 5, 6, 13, 14, 
 	17, 19, 23, 25, 30, 31, 33, 36, 
-	68, 70, 83, 85, 102, 106, 108, 118, 
-	123, 132, 142, 144, 157, 171, 178
+	69, 71, 84, 87, 104, 108, 110, 120, 
+	125, 134, 144, 146, 159, 173, 180, 181, 
+	189, 197, 205, 213, 221
 };
 
 static const char _scanner_trans_keys[] = {
@@ -92,44 +94,52 @@ static const char _scanner_trans_keys[] = {
 	57, 46, 69, 101, 48, 57, 10, 10, 
 	42, 10, 42, 47, 10, 34, 35, 36, 
 	39, 40, 41, 44, 46, 47, 48, 59, 
-	64, 91, 92, 93, 94, 96, 123, 125, 
-	33, 42, 43, 45, 49, 57, 58, 63, 
-	65, 122, 124, 126, 33, 126, 33, 45, 
-	47, 58, 94, 124, 126, 37, 38, 42, 
-	43, 60, 63, 102, 116, 33, 46, 48, 
-	58, 94, 124, 126, 37, 38, 42, 43, 
-	45, 47, 49, 57, 60, 63, 69, 101, 
-	48, 57, 48, 57, 46, 69, 95, 101, 
-	48, 57, 65, 90, 97, 122, 95, 65, 
-	90, 97, 122, 43, 45, 95, 48, 57, 
-	65, 90, 97, 122, 46, 69, 95, 101, 
-	48, 57, 65, 90, 97, 122, 48, 57, 
+	64, 91, 92, 93, 94, 96, 105, 123, 
+	125, 33, 42, 43, 45, 49, 57, 58, 
+	63, 65, 122, 124, 126, 33, 126, 33, 
+	45, 47, 58, 94, 124, 126, 37, 38, 
+	42, 43, 60, 63, 91, 102, 116, 33, 
+	46, 48, 58, 94, 124, 126, 37, 38, 
+	42, 43, 45, 47, 49, 57, 60, 63, 
+	69, 101, 48, 57, 48, 57, 46, 69, 
+	95, 101, 48, 57, 65, 90, 97, 122, 
+	95, 65, 90, 97, 122, 43, 45, 95, 
+	48, 57, 65, 90, 97, 122, 46, 69, 
+	95, 101, 48, 57, 65, 90, 97, 122, 
+	48, 57, 33, 45, 47, 58, 94, 124, 
+	126, 37, 38, 42, 43, 60, 63, 10, 
 	33, 45, 47, 58, 94, 124, 126, 37, 
-	38, 42, 43, 60, 63, 10, 33, 45, 
-	47, 58, 94, 124, 126, 37, 38, 42, 
-	43, 60, 63, 95, 48, 57, 65, 90, 
-	97, 122, 0
+	38, 42, 43, 60, 63, 95, 48, 57, 
+	65, 90, 97, 122, 35, 95, 110, 48, 
+	57, 65, 90, 97, 122, 95, 102, 48, 
+	57, 65, 90, 97, 122, 95, 105, 48, 
+	57, 65, 90, 97, 122, 95, 120, 48, 
+	57, 65, 90, 97, 122, 95, 108, 48, 
+	57, 65, 90, 97, 122, 0
 };
 
 static const char _scanner_single_lengths[] = {
 	0, 3, 0, 2, 1, 5, 1, 1, 
-	0, 2, 0, 3, 1, 2, 3, 20, 
-	0, 7, 2, 7, 2, 0, 4, 1, 
-	3, 4, 0, 7, 8, 1, 0
+	0, 2, 0, 3, 1, 2, 3, 21, 
+	0, 7, 3, 7, 2, 0, 4, 1, 
+	3, 4, 0, 7, 8, 1, 1, 2, 
+	2, 2, 2, 2, 0
 };
 
 static const char _scanner_range_lengths[] = {
 	0, 0, 0, 0, 0, 1, 0, 1, 
 	1, 1, 1, 1, 0, 0, 0, 6, 
 	1, 3, 0, 5, 1, 1, 3, 2, 
-	3, 3, 1, 3, 3, 3, 0
+	3, 3, 1, 3, 3, 3, 0, 3, 
+	3, 3, 3, 3, 0
 };
 
 static const unsigned char _scanner_index_offsets[] = {
 	0, 0, 4, 5, 8, 10, 17, 19, 
 	22, 24, 28, 30, 35, 37, 40, 44, 
-	71, 73, 84, 87, 100, 104, 106, 114, 
-	118, 125, 133, 135, 146, 158, 163
+	72, 74, 85, 89, 102, 106, 108, 116, 
+	120, 127, 135, 137, 148, 160, 165, 167, 
+	173, 179, 185, 191, 197
 };
 
 static const char _scanner_indicies[] = {
@@ -141,60 +151,69 @@ static const char _scanner_indicies[] = {
 	21, 22, 23, 20, 25, 0, 27, 28, 
 	29, 30, 31, 28, 33, 34, 35, 37, 
 	28, 39, 28, 40, 26, 28, 41, 42, 
-	26, 32, 36, 26, 38, 26, 24, 12, 
-	24, 26, 26, 26, 26, 26, 26, 26, 
-	26, 26, 26, 43, 45, 46, 44, 26, 
-	47, 35, 26, 26, 26, 26, 26, 26, 
-	26, 36, 26, 43, 17, 17, 11, 48, 
-	14, 48, 11, 51, 50, 51, 16, 50, 
-	50, 49, 50, 50, 50, 52, 13, 13, 
-	50, 14, 50, 50, 52, 11, 51, 50, 
-	51, 36, 50, 50, 49, 11, 44, 26, 
-	26, 53, 26, 26, 26, 26, 26, 26, 
-	26, 43, 19, 53, 53, 53, 53, 53, 
-	53, 53, 53, 53, 53, 18, 38, 38, 
-	38, 38, 54, 1, 0
+	43, 26, 32, 36, 26, 38, 26, 24, 
+	12, 24, 26, 26, 26, 26, 26, 26, 
+	26, 26, 26, 26, 44, 46, 47, 48, 
+	45, 26, 49, 35, 26, 26, 26, 26, 
+	26, 26, 26, 36, 26, 44, 17, 17, 
+	11, 50, 14, 50, 11, 53, 52, 53, 
+	16, 52, 52, 51, 52, 52, 52, 54, 
+	13, 13, 52, 14, 52, 52, 54, 11, 
+	53, 52, 53, 36, 52, 52, 51, 11, 
+	45, 26, 26, 55, 26, 26, 26, 26, 
+	26, 26, 26, 44, 19, 55, 55, 55, 
+	55, 55, 55, 55, 55, 55, 55, 18, 
+	38, 38, 38, 38, 12, 57, 56, 38, 
+	59, 38, 38, 38, 58, 38, 60, 38, 
+	38, 38, 58, 38, 61, 38, 38, 38, 
+	58, 38, 62, 38, 38, 38, 58, 38, 
+	63, 38, 38, 38, 58, 1, 0
 };
 
 static const char _scanner_trans_targs[] = {
 	1, 0, 15, 2, 4, 5, 15, 6, 
 	7, 15, 15, 20, 15, 10, 21, 15, 
-	11, 9, 12, 15, 13, 13, 14, 30, 
+	11, 9, 12, 15, 13, 13, 14, 36, 
 	16, 16, 17, 18, 15, 3, 15, 15, 
 	19, 26, 27, 22, 25, 15, 29, 15, 
-	15, 15, 15, 15, 15, 15, 15, 8, 
-	15, 15, 23, 24, 15, 28, 15
+	30, 31, 15, 15, 15, 15, 15, 15, 
+	15, 8, 15, 15, 23, 24, 15, 28, 
+	15, 15, 15, 32, 33, 34, 35, 29
 };
 
 static const char _scanner_trans_actions[] = {
 	0, 0, 19, 0, 0, 0, 15, 0, 
-	0, 17, 51, 64, 53, 0, 0, 49, 
-	0, 0, 0, 55, 0, 1, 0, 3, 
-	70, 67, 0, 0, 35, 0, 21, 23, 
-	9, 0, 0, 58, 0, 33, 0, 29, 
-	31, 25, 27, 43, 47, 13, 11, 0, 
-	45, 37, 0, 61, 39, 9, 41
+	0, 17, 55, 74, 57, 0, 0, 53, 
+	0, 0, 0, 59, 0, 1, 0, 3, 
+	80, 77, 0, 0, 37, 0, 21, 23, 
+	9, 0, 0, 65, 0, 35, 71, 29, 
+	0, 0, 25, 27, 45, 51, 31, 13, 
+	11, 0, 47, 39, 0, 68, 41, 9, 
+	49, 33, 43, 0, 0, 0, 0, 62
 };
 
 static const char _scanner_to_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 5, 0, 5, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0
 };
 
 static const char _scanner_from_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 7, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0
 };
 
 static const unsigned char _scanner_eof_trans[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	11, 13, 13, 16, 11, 0, 0, 0, 
-	13, 44, 45, 44, 49, 49, 50, 53, 
-	53, 50, 45, 44, 44, 55, 0
+	13, 45, 46, 45, 51, 51, 52, 55, 
+	55, 52, 46, 45, 45, 13, 57, 59, 
+	59, 59, 59, 59, 0
 };
 
 static const int scanner_start = 15;
@@ -204,7 +223,7 @@ static const int scanner_en_c_comment = 13;
 static const int scanner_en_main = 15;
 
 
-#line 163 "/home/aifu/projects/schizo/src/lexer.rl"
+#line 166 "/home/aifu/projects/schizo/src/lexer.rl"
 
 
 static uint32
@@ -220,7 +239,7 @@ copy_token(const char* ts, const char *te, char* dst) {
 
 static exp::iptr
 token_to_symbol(const char* sym) {
-	return new exp::symbol(sym);
+	return new exp::atom_symbol(sym);
 }
 
 /*
@@ -238,15 +257,15 @@ token_to_binary_op(state_t* s, const char* op) {
 static exp::iptr
 token_to_boolean(const char* b) {
 	if( !strcmp(b, "#t") ) {
-		return new exp::boolean(true);
+		return new exp::atom_boolean(true);
 	} else {
-		return new exp::boolean(false);
+		return new exp::atom_boolean(false);
 	}
 }
 
 static exp::iptr
 token_to_char(const char* ch) {
-	return new exp::character(*ch);
+	return new exp::atom_character(*ch);
 }
 
 static exp::iptr
@@ -254,7 +273,7 @@ token_to_sint64(const char* i) {
 	sint64	v	= 0;
 	sscanf(i, "%ld", &v);
 	/* TODO: check limit */
-	return new exp::sint64(v);
+	return new exp::atom_sint64(v);
 }
 
 static exp::iptr
@@ -262,12 +281,12 @@ token_to_real64(const char* r) {
 	real64	v	= 0;
 	sscanf(r, "%lf", &v);
 	/* TODO: check limit */
-	return new exp::real64(v);
+	return new exp::atom_real64(v);
 }
 
 static exp::iptr
 token_to_string(const char* str) {
-	return new exp::string(str);
+	return new exp::atom_string(str);
 }
 
 
@@ -298,7 +317,7 @@ parse(const char* str)
 	memset(tmp, 0, sizeof(tmp));
 
 	
-#line 302 "/home/aifu/projects/schizo/src/lexer.cpp"
+#line 321 "/home/aifu/projects/schizo/src/lexer.cpp"
 	{
 	cs = scanner_start;
 	ts = 0;
@@ -306,10 +325,10 @@ parse(const char* str)
 	act = 0;
 	}
 
-#line 256 "/home/aifu/projects/schizo/src/lexer.rl"
+#line 259 "/home/aifu/projects/schizo/src/lexer.rl"
 
 	
-#line 313 "/home/aifu/projects/schizo/src/lexer.cpp"
+#line 332 "/home/aifu/projects/schizo/src/lexer.cpp"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -330,7 +349,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 334 "/home/aifu/projects/schizo/src/lexer.cpp"
+#line 353 "/home/aifu/projects/schizo/src/lexer.cpp"
 		}
 	}
 
@@ -409,57 +428,65 @@ _eof_trans:
 	{te = p+1;}
 	break;
 	case 5:
-#line 114 "/home/aifu/projects/schizo/src/lexer.rl"
-	{act = 6;}
+#line 83 "/home/aifu/projects/schizo/src/lexer.rl"
+	{act = 3;}
 	break;
 	case 6:
-#line 116 "/home/aifu/projects/schizo/src/lexer.rl"
+#line 115 "/home/aifu/projects/schizo/src/lexer.rl"
 	{act = 7;}
 	break;
 	case 7:
-#line 142 "/home/aifu/projects/schizo/src/lexer.rl"
-	{act = 10;}
+#line 117 "/home/aifu/projects/schizo/src/lexer.rl"
+	{act = 8;}
 	break;
 	case 8:
-#line 153 "/home/aifu/projects/schizo/src/lexer.rl"
-	{act = 18;}
+#line 128 "/home/aifu/projects/schizo/src/lexer.rl"
+	{act = 9;}
 	break;
 	case 9:
-#line 161 "/home/aifu/projects/schizo/src/lexer.rl"
-	{act = 22;}
+#line 143 "/home/aifu/projects/schizo/src/lexer.rl"
+	{act = 11;}
 	break;
 	case 10:
+#line 156 "/home/aifu/projects/schizo/src/lexer.rl"
+	{act = 21;}
+	break;
+	case 11:
+#line 164 "/home/aifu/projects/schizo/src/lexer.rl"
+	{act = 25;}
+	break;
+	case 12:
 #line 81 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE( boolean );}}
 	break;
-	case 11:
+	case 13:
 #line 82 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE( boolean );}}
 	break;
-	case 12:
-#line 85 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p+1;{
-									PUSH_TE();
-									PUSH_TS();
-									++ts; --te;
-									ADVANCE( char );
-									POP_TS();
-									POP_TE();
-								}}
-	break;
-	case 13:
-#line 94 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p+1;{
-									PUSH_TE();
-									PUSH_TS();
-									++ts; --te;
-									ADVANCE( char );
-									POP_TS();
-									POP_TE();
-								}}
-	break;
 	case 14:
-#line 103 "/home/aifu/projects/schizo/src/lexer.rl"
+#line 86 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;{
+									PUSH_TE();
+									PUSH_TS();
+									++ts; --te;
+									ADVANCE( char );
+									POP_TS();
+									POP_TE();
+								}}
+	break;
+	case 15:
+#line 95 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;{
+									PUSH_TE();
+									PUSH_TS();
+									++ts; --te;
+									ADVANCE( char );
+									POP_TS();
+									POP_TE();
+								}}
+	break;
+	case 16:
+#line 104 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{
 									PUSH_TE();
 									PUSH_TS();
@@ -469,48 +496,52 @@ _eof_trans:
 									POP_TE();
 								}}
 	break;
-	case 15:
-#line 145 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 17:
+#line 146 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_LPAR );}}
 	break;
-	case 16:
-#line 146 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 18:
+#line 147 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_RPAR );}}
 	break;
-	case 17:
-#line 147 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 19:
+#line 148 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_LBR );}}
 	break;
-	case 18:
-#line 148 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 20:
+#line 149 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_RBR );}}
 	break;
-	case 19:
-#line 149 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 21:
+#line 150 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p+1;{ ADVANCE_TOKEN( TOK_LSQB );}}
 	break;
-	case 20:
-#line 150 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( TOK_RSQB );}}
-	break;
-	case 21:
-#line 151 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p+1;{ ADVANCE_TOKEN( TOK_SEMICOL );}}
-	break;
 	case 22:
-#line 156 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p+1;{ printf("unexpected character %c\n", *ts); }}
+#line 152 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;{ ADVANCE_TOKEN( TOK_LHASH );}}
 	break;
 	case 23:
-#line 160 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p+1;}
+#line 153 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;{ ADVANCE_TOKEN( TOK_RHASH );}}
 	break;
 	case 24:
-#line 114 "/home/aifu/projects/schizo/src/lexer.rl"
-	{te = p;p--;{ ADVANCE( sint64 ); }}
+#line 154 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;{ ADVANCE_TOKEN( TOK_SEMICOL );}}
 	break;
 	case 25:
-#line 116 "/home/aifu/projects/schizo/src/lexer.rl"
+#line 159 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;{ printf("unexpected character %c\n", *ts); }}
+	break;
+	case 26:
+#line 163 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p+1;}
+	break;
+	case 27:
+#line 115 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p;p--;{ ADVANCE( sint64 ); }}
+	break;
+	case 28:
+#line 117 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p;p--;{
 									fprintf(stderr, "Error: invalid number:\n    ");
 
@@ -521,12 +552,12 @@ _eof_trans:
 									cs	= scanner_error;
 								}}
 	break;
-	case 26:
-#line 127 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 29:
+#line 128 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p;p--;{ ADVANCE( symbol );}}
 	break;
-	case 27:
-#line 128 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 30:
+#line 129 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p;p--;{
 										copy_token(ts, te, tmp);
 
@@ -539,20 +570,24 @@ _eof_trans:
 										}
 								}}
 	break;
-	case 28:
-#line 142 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 31:
+#line 143 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p;p--;{ ADVANCE( real64 );}}
 	break;
-	case 29:
-#line 156 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 32:
+#line 151 "/home/aifu/projects/schizo/src/lexer.rl"
+	{te = p;p--;{ ADVANCE_TOKEN( TOK_RSQB );}}
+	break;
+	case 33:
+#line 159 "/home/aifu/projects/schizo/src/lexer.rl"
 	{te = p;p--;{ printf("unexpected character %c\n", *ts); }}
 	break;
-	case 30:
-#line 114 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 34:
+#line 115 "/home/aifu/projects/schizo/src/lexer.rl"
 	{{p = ((te))-1;}{ ADVANCE( sint64 ); }}
 	break;
-	case 31:
-#line 128 "/home/aifu/projects/schizo/src/lexer.rl"
+	case 35:
+#line 129 "/home/aifu/projects/schizo/src/lexer.rl"
 	{{p = ((te))-1;}{
 										copy_token(ts, te, tmp);
 
@@ -565,13 +600,16 @@ _eof_trans:
 										}
 								}}
 	break;
-	case 32:
+	case 36:
 #line 1 "NONE"
 	{	switch( act ) {
-	case 6:
-	{{p = ((te))-1;} ADVANCE( sint64 ); }
+	case 3:
+	{{p = ((te))-1;} fprintf(stderr, "INFIXL\n"); }
 	break;
 	case 7:
+	{{p = ((te))-1;} ADVANCE( sint64 ); }
+	break;
+	case 8:
 	{{p = ((te))-1;}
 									fprintf(stderr, "Error: invalid number:\n    ");
 
@@ -582,10 +620,13 @@ _eof_trans:
 									cs	= scanner_error;
 								}
 	break;
-	case 10:
+	case 9:
+	{{p = ((te))-1;} ADVANCE( symbol );}
+	break;
+	case 11:
 	{{p = ((te))-1;} ADVANCE( real64 );}
 	break;
-	case 18:
+	case 21:
 	{{p = ((te))-1;} ++line; }
 	break;
 	default:
@@ -594,7 +635,7 @@ _eof_trans:
 	}
 	}
 	break;
-#line 598 "/home/aifu/projects/schizo/src/lexer.cpp"
+#line 639 "/home/aifu/projects/schizo/src/lexer.cpp"
 		}
 	}
 
@@ -607,7 +648,7 @@ _again:
 #line 1 "NONE"
 	{ts = 0;}
 	break;
-#line 611 "/home/aifu/projects/schizo/src/lexer.cpp"
+#line 652 "/home/aifu/projects/schizo/src/lexer.cpp"
 		}
 	}
 
@@ -627,7 +668,7 @@ _again:
 	_out: {}
 	}
 
-#line 258 "/home/aifu/projects/schizo/src/lexer.rl"
+#line 261 "/home/aifu/projects/schizo/src/lexer.rl"
 
 	/* Check if we failed. */
 	if ( cs == scanner_error ) {

@@ -54,24 +54,6 @@ struct thunk {
 		}
 	}
 
-	template<typename RM>
-	RM	map(const rfunction<RM(R)>& lambda_res) {
-		switch(type__) {
-		case FINAL:
-			return lambda_res(v__);
-
-		case DELAYED:
-			thunk<R>	r = f__();
-
-			while( r.type__ == DELAYED ) {
-				r	= r.f__();
-			}
-
-			v__	= r.v__;
-			return lambda_res(r.v__);
-		}
-	}
-
 	R		eval() {
 		switch(type__) {
 		case FINAL:

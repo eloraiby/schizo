@@ -82,6 +82,7 @@ public:
 
 #include "array.hpp"
 #include "string.hpp"
+#include "list.hpp"
 #include "thunk.hpp"
 
 #endif // FTL_FUNCTION_HPP

@@ -77,7 +77,7 @@ if_else(exp::iptr env,
 	exp::iptr elsym		= exp::list::head(exp::list::tail(exp::list::tail(args)));
 	exp::iptr exp1		= exp::list::head(exp::list::tail(exp::list::tail(exp::list::tail(args))));
 
-	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::symbol*>(elsym.get())->value(), "else") == 0 ) {
+	if( elsym->type() == exp::EXP_SYMBOL && strcmp(static_cast<exp::atom_symbol*>(elsym.get())->value(), "else") == 0 ) {
 		exp::special::val b	= eval(env, cond);
 		exp::iptr	b_val	= b.eval().ret();
 		switch( b_val->type() ) {
@@ -85,7 +85,7 @@ if_else(exp::iptr env,
 			SCHIZO_RETURN(env, b_val);
 
 		case exp::EXP_BOOLEAN:
-			if( static_cast<exp::boolean*>(b_val.get())->value() ) {
+			if( static_cast<exp::atom_boolean*>(b_val.get())->value() ) {
 				SCHIZO_RETURN(env, exp0);
 			} else {
 				SCHIZO_RETURN(env, exp1);

@@ -10,9 +10,11 @@
 #define TOK_RBR                        10
 #define TOK_LSQB                       11
 #define TOK_RSQB                       12
-#define TOK_SEMICOL                    13
-#define TOK_OP_UNARY                   14
-#define TOK_OP_BIN0                    15
-#define TOK_OP_BIN1                    16
-#define TOK_OP_BIN2                    17
-#define TOK_OP_BIN3                    18
+#define TOK_LHASH                      13
+#define TOK_RHASH                      14
+#define TOK_SEMICOL                    15
+#define TOK_OP_UNARY                   16
+#define TOK_OP_BIN0                    17
+#define TOK_OP_BIN1                    18
+#define TOK_OP_BIN2                    19
+#define TOK_OP_BIN3                    20

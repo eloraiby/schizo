@@ -64,7 +64,7 @@ exp::print(exp::iptr c,
 	if( c ) {
 		switch( c->type() ) {
 		case exp::EXP_BOOLEAN:
-			if( static_cast<exp::boolean*>(c.get())->value() ) {
+			if( static_cast<exp::atom_boolean*>(c.get())->value() ) {
 				fprintf(stderr, "#t");
 			} else {
 				fprintf(stderr, "#f");
@@ -72,23 +72,23 @@ exp::print(exp::iptr c,
 			break;
 
 		case exp::EXP_SYMBOL:
-			fprintf(stderr, "%s", static_cast<exp::symbol*>(c.get())->value());
+			fprintf(stderr, "%s", static_cast<exp::atom_symbol*>(c.get())->value());
 			break;
 
 		case exp::EXP_CHARACTER:
-			fprintf(stderr, "'%c'", static_cast<exp::character*>(c.get())->value());
+			fprintf(stderr, "'%c'", static_cast<exp::atom_character*>(c.get())->value());
 			break;
 
 		case exp::EXP_SINT64:
-			fprintf(stderr, "%ld", static_cast<exp::sint64*>(c.get())->value());
+			fprintf(stderr, "%ld", static_cast<exp::atom_sint64*>(c.get())->value());
 			break;
 
 		case exp::EXP_REAL64:
-			fprintf(stderr, "%lf", static_cast<exp::real64*>(c.get())->value());
+			fprintf(stderr, "%lf", static_cast<exp::atom_real64*>(c.get())->value());
 			break;
 
 		case exp::EXP_STRING:
-			fprintf(stderr, "\"%s\"", static_cast<exp::string*>(c.get())->value());
+			fprintf(stderr, "\"%s\"", static_cast<exp::atom_string*>(c.get())->value());
 			break;
 
 		case exp::EXP_ERROR:
@@ -139,7 +139,7 @@ exp::print_env(exp::iptr env)
 {
 	fprintf(stderr, "------------------------\n");
 	while( env ) {
-		fprintf(stderr, "* %s :: ", static_cast<exp::symbol*>(exp::list::head(exp::list::head(env)).get())->value());
+		fprintf(stderr, "* %s :: ", static_cast<exp::atom_symbol*>(exp::list::head(exp::list::head(env)).get())->value());
 		exp::print(exp::list::head(exp::list::tail(exp::list::head(env))), 0);
 		fprintf(stderr, "\n");
 		env	= exp::list::tail(env);

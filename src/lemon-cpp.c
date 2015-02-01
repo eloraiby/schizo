@@ -4191,7 +4191,7 @@ void ReportHeader(struct lemon *lemp, int outCpp)
       if( strcmp(line,pattern) ) cppComp = 0;
     }
     if( cppComp == -1 && fgets(line,LINESIZE,in) ){
-      lemon_sprintf(pattern,"enum %s_tokens {\n", lemp->name);
+      lemon_sprintf(pattern,"enum TYPE {\n");
       if( strcmp(line,pattern) ) cppComp = 0;
     }
     for(i=1; cppComp == -1 && i<lemp->nterminal && fgets(line,LINESIZE,in); i++){
@@ -4228,7 +4228,7 @@ void ReportHeader(struct lemon *lemp, int outCpp)
   out = file_open(lemp,".h","wb");
   if( out ){
     if( outCpp ){
-      fprintf(out,"#ifdef __cplusplus\nenum %s_tokens {\n", lemp->name);
+      fprintf(out,"#ifdef __cplusplus\nenum TYPE {\n");
       for(i=1; i<lemp->nterminal; i++){
 	fprintf(out,"\t%s%-30s = %2d,\n",prefix,lemp->symbols[i]->name,i);
       }

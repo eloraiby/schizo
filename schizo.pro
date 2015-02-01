@@ -36,7 +36,8 @@ lexer.depends =
 
 parser.target = parser.cpp
 parser.commands = lemon -T$$PWD/src/lempar.c_template $$PWD/src/parser.y && mv $$PWD/src/parser.c $$PWD/src/parser.cpp
-parser.depends = #lemon-cpp
+#$$PWD/lemon-cpp -X -T$$PWD/src/lempar.c_template $$PWD/src/parser.y #&& mv $$PWD/src/parser.c $$PWD/src/parser.cpp
+#parser.depends = lemon-cpp
 
 #lemon-cpp.target = lemon-cpp
 #lemon-cpp.commands = gcc -o$$PWD/lemon-cpp $$PWD/src/lemon-cpp.c
@@ -62,4 +63,6 @@ HEADERS += \
     include/ftl/platform.hpp \
     include/ftl/noncopyable.hpp \
     include/ftl/string.hpp \
-    include/ftl/thunk.hpp
+    include/ftl/thunk.hpp \
+    include/schizo/environment.hpp \
+    include/ftl/list.hpp

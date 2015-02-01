@@ -30,12 +30,12 @@ struct exp {
 	typedef ftl::intrusive_ptr<exp>	iptr;
 
 	struct error;
-	struct string;
-	struct boolean;
-	struct character;
-	struct sint64;
-	struct real64;
-	struct symbol;
+	struct atom_string;
+	struct atom_boolean;
+	struct atom_character;
+	struct atom_sint64;
+	struct atom_real64;
+	struct atom_symbol;
 	struct list;
 	struct lambda;
 	struct closure;
@@ -54,6 +54,7 @@ struct exp {
 		EXP_LAMBDA,
 		EXP_FFI,
 		EXP_SPECIAL_FORM,
+		EXP_META,
 	};
 
 	TYPE		type() const		{ return type_; }
@@ -80,9 +81,9 @@ protected:
 };	// exp
 
 // string
-struct exp::string : public exp {
-	string(const char* str) : exp(EXP_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
-	virtual		~string() override	{ free(string_); }
+struct exp::atom_string : public exp {
+	atom_string(const char* str) : exp(EXP_STRING), string_(static_cast<char*>(malloc(strlen(str) + 1)))	{ memcpy(string_, str, strlen(str) + 1); }
+	virtual		~atom_string() override	{ free(string_); }
 
 	const char*	value() const		{ return string_; }
 
@@ -102,9 +103,9 @@ protected:
 };
 
 // bool
-struct exp::boolean : public exp {
-	boolean(bool b) : exp(EXP_BOOLEAN), b_(b)	{}
-	virtual		~boolean() override	{}
+struct exp::atom_boolean : public exp {
+	atom_boolean(bool b) : exp(EXP_BOOLEAN), b_(b)	{}
+	virtual		~atom_boolean() override	{}
 
 	bool		value() const		{ return b_; }
 
@@ -113,9 +114,9 @@ protected:
 };
 
 // character
-struct exp::character : public exp {
-	character(char ch) : exp(EXP_CHARACTER), ch_(ch)	{}
-	virtual		~character() override	{}
+struct exp::atom_character : public exp {
+	atom_character(char ch) : exp(EXP_CHARACTER), ch_(ch)	{}
+	virtual		~atom_character() override	{}
 
 	char		value() const		{ return ch_; }
 
@@ -124,33 +125,33 @@ protected:
 };
 
 // sint64
-struct exp::sint64 : public exp {
-	sint64(::schizo::sint64 s64) : exp(EXP_SINT64), s64_(s64)	{}
-	virtual		~sint64() override	{}
+struct exp::atom_sint64 : public exp {
+	atom_sint64(sint64 s64) : exp(EXP_SINT64), s64_(s64)	{}
+	virtual		~atom_sint64() override	{}
 
-	::schizo::sint64	value() const		{ return s64_; }
+	sint64		value() const		{ return s64_; }
 
 protected:
-	::schizo::sint64	s64_;
+	sint64		s64_;
 };
 
 // real64
-struct exp::real64 : public exp {
-	real64(::schizo::real64 r64) : exp(EXP_REAL64), r64_(r64)	{}
-	virtual		~real64() override	{}
+struct exp::atom_real64 : public exp {
+	atom_real64(real64 r64) : exp(EXP_REAL64), r64_(r64)	{}
+	virtual		~atom_real64() override	{}
 
-	::schizo::real64	value() const		{ return r64_; }
+	real64		value() const		{ return r64_; }
 
 protected:
-	::schizo::real64	r64_;
+	real64		r64_;
 };
 
 ///
 /// @brief The exp::symbol struct
 ///
-struct exp::symbol : public exp {
-	symbol(const char* sym) : exp(EXP_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
-	virtual		~symbol() override	{ free(sym_); }
+struct exp::atom_symbol : public exp {
+	atom_symbol(const char* sym) : exp(EXP_SYMBOL), sym_(static_cast<char*>(malloc(strlen(sym) + 1)))	{ memcpy(sym_, sym, strlen(sym) + 1); }
+	virtual		~atom_symbol() override	{ free(sym_); }
 
 	const char*	value() const		{ return sym_; }
 
