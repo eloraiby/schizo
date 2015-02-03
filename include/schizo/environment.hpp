@@ -59,6 +59,9 @@ struct environment {
 	struct symbol_entry {
 		symbol_entry(ftl::string symbol, exp_iptr expression);
 
+		inline ftl::string	symbol() const		{ return symbol_;     }
+		inline ftl::string	expression() const	{ return expression_; }
+
 	private:
 		ftl::string	symbol_;
 		exp_iptr	expression_;
