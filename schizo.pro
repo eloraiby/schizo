@@ -28,7 +28,8 @@ SOURCES += \
     src/special_forms.cpp \
     src/built_ins.cpp \
     src/eval.cpp \
-    src/platform.cpp
+    src/platform.cpp \
+    src/environment.cpp
 
 lexer.target = lexer.cpp
 lexer.commands = ragel -C -o $$PWD/src/lexer.cpp $$PWD/src/lexer.rl

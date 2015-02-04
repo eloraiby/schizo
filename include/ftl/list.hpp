@@ -115,9 +115,9 @@ protected:
 		const_iptr		__tail;
 	};
 
-	list(typename node::const_optr n) :	__head(n)	{}
+	list(typename node::const_iptr n) :	__head(n)	{}
 
-	typename node::const_optr		__head;
+	typename node::const_iptr		__head;
 
 	template<typename U>
 	friend struct		list;

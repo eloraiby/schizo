@@ -20,6 +20,7 @@
   Also add information on how to contact you by electronic and paper mail.
 */
 
+#include "environment.hpp"
 #include "expression.hpp"
 
 namespace schizo {
