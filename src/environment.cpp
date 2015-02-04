@@ -19,3 +19,48 @@
 */
 
 #include <schizo/schizo.hpp>
+
+namespace schizo {
+
+environment::environment() : count__(0) {}
+
+environment::environment(const environment& other) :
+	operators_(other.operators_),
+	symbols_(other.symbols_),
+	count__(0)
+{}
+
+
+environment::iptr
+environment::add_operator(ftl::string symbol,
+			  ftl::string synonym,
+			  uint32 priority,
+			  bool is_unary) const
+{
+	iptr	env	= new environment(*this);
+	env->operators_	= operators_.push_front(operator_entry(symbol, synonym, priority, is_unary));
+	return env;
+}
+
+environment::iptr
+environment::add_symbol(ftl::string symbol,
+			environment::exp_iptr expression) const
+{
+	iptr	env	= new environment(*this);
+	env->symbols_	= symbols_.push_front(symbol_entry(symbol, expression));
+	return env;
+}
+
+environment::operator_entry
+environment::find_operator(ftl::string op) const
+{
+
+}
+
+environment::symbol_entry
+environment::find_symbol(ftl::string str) const
+{
+
+}
+
+}

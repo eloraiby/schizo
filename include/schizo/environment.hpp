@@ -74,8 +74,14 @@ struct environment {
 	iptr		add_operator(ftl::string symbol, ftl::string synonym, uint32 priority, bool is_unary) const;
 	iptr		add_symbol(ftl::string symbol, exp_iptr expression) const;
 
-	operator_entry	find_operator(ftl::string op);
-	symbol_entry	find_symbol(ftl::string str);
+	operator_entry	find_operator(ftl::string op) const;
+	symbol_entry	find_symbol(ftl::string str) const;
+
+	environment();
+	environment(const environment& other);
+
+	friend inline void	intrusive_ptr_add_ref(const environment* p) { ++p->count__; }
+	friend inline void	intrusive_ptr_release(const environment* p) { --p->count__; if( p->count__ == 0 ) delete p; }
 
 protected:
 
@@ -85,6 +91,9 @@ protected:
 
 	operator_list	operators_;
 	symbol_list	symbols_;
+
+	mutable size_t	count__;
+
 };
 
 }

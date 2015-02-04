@@ -26,11 +26,12 @@
 #define FTL_LIST_HPP
 
 namespace ftl {
-template<class T>
+template<typename T>
 struct list {
-	explicit list() : __head(nullptr)	{}
-	explicit list(const list<T>& other) : __head(other.__head)	{}
-	list<T>			operator = (const list<T>& other)	{ __head = other.__head; return *this; }
+	list() : __head(nullptr)				{}
+	list(const list<T>& other) : __head(other.__head)	{}
+
+	list<T>&		operator = (const list& other)		{ __head = other.__head; return *this; }
 
 
 	list<T>			push_front(const T& v) const		{ return list(new node(v, __head)); }
@@ -55,7 +56,7 @@ struct list {
 
 
 	void			iter(rfunction<void(const T&)> f) const {
-					typename node::const_optr	n(__head);
+					typename node::const_iptr	n(__head);
 					while( n ) {
 						f(n->value());
 						n	= n->tail();
@@ -64,8 +65,8 @@ struct list {
 
 	template<typename R>
 	list<R>			map(rfunction<R(const T&)> f) const {
-					typename node::const_optr	n(__head);
-					typename list<R>::node::const_optr	r(nullptr);
+					typename node::const_iptr	n(__head);
+					typename list<R>::node::const_iptr	r(nullptr);
 					while( n ) {
 						auto res	= f(n->value());
 						r	= new typename list<R>::node(res, r);
@@ -76,7 +77,7 @@ struct list {
 
 	template<typename R>
 	R			fold(rfunction<R(const R&, const T&)> f, const R& acc) const {
-					typename node::const_optr	n(__head);
+					typename node::const_iptr	n(__head);
 					R			r	= acc;
 					while( n ) {
 						r	= f(r, n->value());
@@ -86,8 +87,8 @@ struct list {
 				}
 
 	list<T>			rev() const {
-					typename node::const_optr	n = __head;
-					typename node::const_optr	r(nullptr);
+					typename node::const_iptr	n = __head;
+					typename node::const_iptr	r(nullptr);
 					while( n ) {
 						r	= new node(n->value(), r);
 						n	= n->tail();

@@ -80,7 +80,7 @@ struct array {
 
 	array<T>		set(size_t idx, const T& val) const {
 		assert(( __fast_array && idx < __fast_size ) && "index out of range");
-		auto data	= static_cast<T*>(alloc(__fast_size * sizeof(T)));
+		auto data	= static_cast<T*>(malloc(__fast_size * sizeof(T)));
 		for( size_t i = 0; i < idx; ++i )
 			new(&data[i]) T(__fast_array[i]);
 		new(&data[idx]) T(val);
@@ -103,7 +103,7 @@ struct array {
 		if( !__fast_size )
 			return array<R>();
 
-		auto data	= static_cast<R*>(raja_alloc(__fast_size * sizeof(R)));
+		auto data	= static_cast<R*>(malloc(__fast_size * sizeof(R)));
 		for( size_t i = 0; i < __fast_size; ++i )
 			new(&data[i]) R(f(__fast_array[i]));
 
@@ -125,7 +125,7 @@ struct array {
 		if( !__fast_size )
 			return array<T>();
 
-		auto data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
+		auto data	= static_cast<T*>(malloc(__fast_size * sizeof(T)));
 		for( size_t i = 0; i < __fast_size; ++i )
 			new(&data[i]) T(__fast_array[__fast_size - 1 - i]);
 
@@ -136,7 +136,7 @@ struct array {
 		if( !__fast_size )
 			return array<T>();
 
-		auto data	= static_cast<T*>(raja_alloc(__fast_size * sizeof(T)));
+		auto data	= static_cast<T*>(malloc(__fast_size * sizeof(T)));
 		for( size_t i = 0; i < __fast_size; ++i )
 			new(&data[i]) T(__fast_array[i]);
 
